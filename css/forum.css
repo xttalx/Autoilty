@@ -1,47 +1,35 @@
-/* Forum Page Styles */
-
-.page-header {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-    color: white;
-    padding: 48px 0;
-    text-align: center;
-}
-
-.page-header h1 {
-    font-size: 40px;
-    font-weight: 900;
-    margin-bottom: 12px;
-}
-
-.page-header p {
-    font-size: 18px;
-    color: rgba(255,255,255,0.8);
-    margin-bottom: 32px;
-}
+/* Forum Styles - Lenovo Design */
 
 .forum-search {
-    max-width: 600px;
-    margin: 0 auto;
+    margin-top: 32px;
     display: flex;
-    gap: 12px;
+    gap: 16px;
+    max-width: 800px;
 }
 
 .forum-search input {
     flex: 1;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 4px;
-    font-size: 15px;
+    padding: 16px 24px;
+    border: 2px solid #D9D9D9;
+    font-size: 16px;
+    background: white;
+    transition: border-color 0.2s;
+}
+
+.forum-search input:focus {
+    outline: none;
+    border-color: #E2231A;
 }
 
 .categories-section {
-    padding: 64px 0;
+    padding: 80px 0 40px;
+    background: #F4F4F4;
 }
 
 .categories-section h2 {
-    font-size: 28px;
-    font-weight: 800;
-    margin-bottom: 32px;
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 40px;
 }
 
 .categories-grid {
@@ -52,36 +40,31 @@
 
 .category-card {
     background: white;
-    border: 1px solid var(--border);
-    border-radius: 8px;
     padding: 32px;
+    border: 1px solid transparent;
     transition: all 0.3s;
-    border-left: 4px solid;
+    cursor: pointer;
 }
 
 .category-card:hover {
-    transform: translateX(4px);
-    box-shadow: var(--shadow-lg);
-}
-
-.category-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 12px;
+    border-color: #E2231A;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .category-icon {
     font-size: 32px;
+    margin-bottom: 16px;
 }
 
-.category-name {
+.category-card h3 {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: 600;
+    margin-bottom: 8px;
 }
 
-.category-description {
-    color: var(--text-secondary);
+.category-card p {
+    color: #767676;
     font-size: 14px;
     margin-bottom: 16px;
 }
@@ -89,174 +72,108 @@
 .category-stats {
     display: flex;
     gap: 24px;
-    font-size: 13px;
-    color: var(--text-secondary);
+    font-size: 12px;
+    color: #767676;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .threads-section {
-    padding: 64px 0;
-    background: var(--bg-secondary);
+    padding: 80px 0;
 }
 
 .threads-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 32px;
+    margin-bottom: 40px;
 }
 
 .threads-header h2 {
-    font-size: 28px;
-    font-weight: 800;
+    font-size: 32px;
+    font-weight: 600;
 }
 
 .threads-filters {
     display: flex;
-    gap: 12px;
+    gap: 16px;
 }
 
 .threads-filters select {
-    padding: 8px 16px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
+    padding: 12px 20px;
+    border: 2px solid #D9D9D9;
     background: white;
     font-size: 14px;
     cursor: pointer;
 }
 
 .threads-list {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
+    display: grid;
+    gap: 16px;
 }
 
 .thread-item {
+    background: white;
+    border: 1px solid #D9D9D9;
     padding: 24px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    gap: 20px;
-    transition: background 0.2s;
-}
-
-.thread-item:last-child {
-    border-bottom: none;
+    transition: all 0.2s;
 }
 
 .thread-item:hover {
-    background: var(--bg-secondary);
+    border-color: #E2231A;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.thread-item.pinned {
-    background: #fffbeb;
-}
-
-.thread-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), #ff6b6b);
-    color: white;
+.thread-header {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.thread-content {
-    flex: 1;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
 }
 
 .thread-title {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
+    color: #000;
     margin-bottom: 8px;
-    color: var(--text-primary);
-}
-
-.thread-title:hover {
-    color: var(--primary);
-}
-
-.thread-badges {
-    display: inline-flex;
-    gap: 8px;
-    margin-left: 8px;
-}
-
-.badge {
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.badge-pinned {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.badge-locked {
-    background: #fee2e2;
-    color: #991b1b;
 }
 
 .thread-meta {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
-
-.thread-tags {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.thread-tag {
-    background: var(--bg-secondary);
-    padding: 4px 12px;
-    border-radius: 16px;
+    gap: 16px;
     font-size: 12px;
-    color: var(--text-secondary);
-    font-weight: 500;
+    color: #767676;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .thread-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
     text-align: right;
-    font-size: 13px;
-    color: var(--text-secondary);
 }
 
 .pagination {
     display: flex;
     justify-content: center;
     gap: 8px;
-    margin-top: 32px;
+    margin-top: 40px;
 }
 
-.page-btn {
-    padding: 8px 16px;
+.pagination button {
+    padding: 12px 20px;
+    border: 1px solid #D9D9D9;
     background: white;
-    border: 1px solid var(--border);
-    border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
     transition: all 0.2s;
 }
 
-.page-btn:hover,
-.page-btn.active {
-    background: var(--primary);
+.pagination button:hover,
+.pagination button.active {
+    background: #E2231A;
     color: white;
-    border-color: var(--primary);
+    border-color: #E2231A;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .categories-grid {
         grid-template-columns: 1fr;
@@ -265,17 +182,15 @@
     .threads-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: 20px;
     }
     
-    .thread-item {
+    .threads-filters {
+        width: 100%;
         flex-direction: column;
     }
     
-    .thread-stats {
-        flex-direction: row;
-        gap: 16px;
-        text-align: left;
+    .threads-filters select {
+        width: 100%;
     }
 }
-
