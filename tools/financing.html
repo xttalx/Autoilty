@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Free car financing calculator for Canada. Calculate monthly payments, total interest, and total cost with Canadian tax rates.">
+    <title>Auto Financing Calculator | Calculate Car Payments | Autoilty</title>
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9421517198875255" crossorigin="anonymous"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .calculator-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 0;
+        }
+        
+        .calculator-card {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        
+        .calc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .results-section {
+            margin-top: 32px;
+            padding: 32px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .results-section.show {
+            display: block;
+        }
+        
+        .result-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        
+        .result-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .result-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #0066cc;
+        }
+        
+        .breakdown {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+        
+        .breakdown-item {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+        }
+        
+        .breakdown-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .breakdown-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+        
+        @media (max-width: 768px) {
+            .calc-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            
+            .calculator-card {
+                padding: 24px;
+            }
+            
+            .breakdown {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="brand">AUTOILTY</a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="../forum.html" class="nav-link">Forum</a>
+                <a href="../qa.html" class="nav-link">Q&A</a>
+                <a href="../reviews.html" class="nav-link">Reviews</a>
+                <a href="../guides.html" class="nav-link">Guides</a>
+                <a href="../tools.html" class="nav-link active">Tools</a>
+            </div>
+            <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="container">
+            <h1>💰 Auto Financing Calculator</h1>
+            <p>Calculate your monthly car payments with Canadian tax rates</p>
+        </div>
+    </div>
+
+    <!-- AdSense Top Ad -->
+    <div class="ad-container">
+        <div class="container">
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9421517198875255" data-ad-slot="7890123456" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
+
+    <section>
+        <div class="container">
+            <div class="calculator-container">
+                <div class="calculator-card">
+                    <h2 style="margin-bottom: 32px;">Calculate Your Car Payment</h2>
+                    
+                    <div class="calc-grid">
+                        <div class="form-group">
+                            <label>Vehicle Price ($)</label>
+                            <input type="number" id="vehiclePrice" value="35000" min="0" step="1000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Down Payment ($)</label>
+                            <input type="number" id="downPayment" value="5000" min="0" step="500">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Interest Rate (%)</label>
+                            <input type="number" id="interestRate" value="5.99" min="0" max="30" step="0.1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Loan Term</label>
+                            <select id="loanTerm">
+                                <option value="24">24 months (2 years)</option>
+                                <option value="36">36 months (3 years)</option>
+                                <option value="48">48 months (4 years)</option>
+                                <option value="60" selected>60 months (5 years)</option>
+                                <option value="72">72 months (6 years)</option>
+                                <option value="84">84 months (7 years)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Trade-In Value ($)</label>
+                            <input type="number" id="tradeIn" value="0" min="0" step="500">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Province</label>
+                            <select id="province">
+                                <option value="5">Alberta (5% GST)</option>
+                                <option value="5">British Columbia (5% GST + 7% PST = 12%)</option>
+                                <option value="5">Manitoba (5% GST + 7% PST = 12%)</option>
+                                <option value="5">New Brunswick (15% HST)</option>
+                                <option value="5">Newfoundland (15% HST)</option>
+                                <option value="5">Northwest Territories (5% GST)</option>
+                                <option value="5">Nova Scotia (15% HST)</option>
+                                <option value="5">Nunavut (5% GST)</option>
+                                <option value="13" selected>Ontario (13% HST)</option>
+                                <option value="5">Prince Edward Island (15% HST)</option>
+                                <option value="5">Quebec (5% GST + 9.975% QST)</option>
+                                <option value="6">Saskatchewan (6% PST + 5% GST = 11%)</option>
+                                <option value="5">Yukon (5% GST)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button class="calculate-btn" onclick="calculatePayment()">Calculate Payment</button>
+                    
+                    <div class="results-section" id="results">
+                        <div class="result-card">
+                            <div class="result-label">Monthly Payment</div>
+                            <div class="result-value" id="monthlyPayment">$0</div>
+                        </div>
+                        
+                        <div class="breakdown">
+                            <div class="breakdown-item">
+                                <div class="breakdown-label">Total Interest</div>
+                                <div class="breakdown-value" id="totalInterest">$0</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-label">Total Cost</div>
+                                <div class="breakdown-value" id="totalCost">$0</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-label">Amount Financed</div>
+                                <div class="breakdown-value" id="amountFinanced">$0</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-label">Total Taxes</div>
+                                <div class="breakdown-value" id="totalTaxes">$0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AdSense Footer Ad -->
+    <div class="ad-container">
+        <div class="container">
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9421517198875255" data-ad-slot="7890123457" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-brand">AUTOILTY</div>
+                    <p class="footer-text">Canada's premier automotive community.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="../forum.html">Forum</a></li>
+                        <li><a href="../qa.html">Q&A</a></li>
+                        <li><a href="../reviews.html">Reviews</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="../guides.html">Guides</a></li>
+                        <li><a href="../tools.html">Tools</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="../about.html">About</a></li>
+                        <li><a href="../contact.html">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Autoilty.com. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        function calculatePayment() {
+            // Get values
+            const vehiclePrice = parseFloat(document.getElementById('vehiclePrice').value) || 0;
+            const downPayment = parseFloat(document.getElementById('downPayment').value) || 0;
+            const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const loanTerm = parseInt(document.getElementById('loanTerm').value) || 60;
+            const tradeIn = parseFloat(document.getElementById('tradeIn').value) || 0;
+            const taxRate = parseFloat(document.getElementById('province').value) || 13;
+            
+            // Calculate tax-adjusted values
+            const provinceSelect = document.getElementById('province');
+            const provinceName = provinceSelect.options[provinceSelect.selectedIndex].text;
+            let actualTaxRate = 0;
+            
+            // Parse actual tax rate from province name
+            if (provinceName.includes('12%')) actualTaxRate = 12;
+            else if (provinceName.includes('13%')) actualTaxRate = 13;
+            else if (provinceName.includes('15%')) actualTaxRate = 15;
+            else if (provinceName.includes('11%')) actualTaxRate = 11;
+            else if (provinceName.includes('14.975%')) actualTaxRate = 14.975;
+            else actualTaxRate = 5;
+            
+            const priceAfterTradeIn = vehiclePrice - tradeIn;
+            const taxes = priceAfterTradeIn * (actualTaxRate / 100);
+            const totalPrice = priceAfterTradeIn + taxes;
+            const amountFinanced = totalPrice - downPayment;
+            
+            // Calculate monthly payment
+            const monthlyRate = interestRate / 100 / 12;
+            let monthlyPayment = 0;
+            
+            if (interestRate === 0) {
+                monthlyPayment = amountFinanced / loanTerm;
+            } else {
+                monthlyPayment = amountFinanced * (monthlyRate * Math.pow(1 + monthlyRate, loanTerm)) / (Math.pow(1 + monthlyRate, loanTerm) - 1);
+            }
+            
+            const totalPaid = monthlyPayment * loanTerm;
+            const totalInterest = totalPaid - amountFinanced;
+            const totalCost = totalPaid + downPayment;
+            
+            // Display results
+            document.getElementById('monthlyPayment').textContent = '$' + monthlyPayment.toFixed(2);
+            document.getElementById('totalInterest').textContent = '$' + totalInterest.toFixed(2);
+            document.getElementById('totalCost').textContent = '$' + totalCost.toFixed(2);
+            document.getElementById('amountFinanced').textContent = '$' + amountFinanced.toFixed(2);
+            document.getElementById('totalTaxes').textContent = '$' + taxes.toFixed(2);
+            
+            // Show results
+            document.getElementById('results').classList.add('show');
+        }
+        
+        // Calculate on page load
+        calculatePayment();
+    </script>
+</body>
+</html>
+

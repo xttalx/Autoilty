@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track your vehicle's maintenance schedule and service history. Never miss an oil change or service again.">
+    <title>Maintenance Tracker | Track Vehicle Service | Autoilty</title>
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9421517198875255" crossorigin="anonymous"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .tracker-container { padding: 48px 0; }
+        .tracker-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .maintenance-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border-left: 4px solid #0066cc;
+        }
+        .maintenance-item h3 { margin-bottom: 8px; color: #1a1a1a; }
+        .maintenance-item p { color: #666; margin-bottom: 4px; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-due { background: #fff3cd; color: #856404; }
+        .status-ok { background: #d4edda; color: #155724; }
+        .add-btn {
+            width: 100%;
+            padding: 14px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="brand">AUTOILTY</a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="../forum.html" class="nav-link">Forum</a>
+                <a href="../qa.html" class="nav-link">Q&A</a>
+                <a href="../reviews.html" class="nav-link">Reviews</a>
+                <a href="../guides.html" class="nav-link">Guides</a>
+                <a href="../tools.html" class="nav-link active">Tools</a>
+            </div>
+            <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="container">
+            <h1>📝 Maintenance Tracker</h1>
+            <p>Keep track of your vehicle's service history</p>
+        </div>
+    </div>
+
+    <div class="ad-container">
+        <div class="container">
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9421517198875255" data-ad-slot="0123456789" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
+
+    <section class="tracker-container">
+        <div class="container">
+            <div class="tracker-card">
+                <h2 style="margin-bottom: 24px;">Upcoming Maintenance</h2>
+                
+                <div class="maintenance-item">
+                    <h3>Oil Change <span class="status-badge status-due">Due Soon</span></h3>
+                    <p><strong>Last Service:</strong> 3,000 km ago</p>
+                    <p><strong>Next Service:</strong> 2,000 km or 2 months</p>
+                </div>
+                
+                <div class="maintenance-item">
+                    <h3>Tire Rotation <span class="status-badge status-ok">OK</span></h3>
+                    <p><strong>Last Service:</strong> 1,500 km ago</p>
+                    <p><strong>Next Service:</strong> 6,500 km or 6 months</p>
+                </div>
+                
+                <div class="maintenance-item">
+                    <h3>Brake Inspection <span class="status-badge status-ok">OK</span></h3>
+                    <p><strong>Last Service:</strong> 2 months ago</p>
+                    <p><strong>Next Service:</strong> 10 months</p>
+                </div>
+                
+                <button class="add-btn" onclick="alert('Add maintenance feature coming soon!')">+ Add Maintenance Record</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="ad-container">
+        <div class="container">
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9421517198875255" data-ad-slot="0123456780" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-brand">AUTOILTY</div>
+                    <p class="footer-text">Canada's premier automotive community.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Community</h4>
+                    <ul><li><a href="../forum.html">Forum</a></li><li><a href="../qa.html">Q&A</a></li></ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul><li><a href="../guides.html">Guides</a></li><li><a href="../tools.html">Tools</a></li></ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul><li><a href="../about.html">About</a></li><li><a href="../contact.html">Contact</a></li></ul>
+                </div>
+            </div>
+            <div class="footer-bottom"><p>&copy; 2024 Autoilty.com. All rights reserved.</p></div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+</body>
+</html>
+

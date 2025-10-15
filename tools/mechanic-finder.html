@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Find trusted mechanics near you. Read reviews, compare prices, and book appointments.">
+    <title>Mechanic Finder | Find Trusted Auto Mechanics | Autoilty</title>
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9421517198875255" crossorigin="anonymous"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .finder-container {
+            padding: 48px 0;
+        }
+        
+        .search-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            margin-bottom: 32px;
+        }
+        
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 16px;
+        }
+        
+        .search-input {
+            padding: 14px 18px;
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .search-btn {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .mechanic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+        
+        .mechanic-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+        
+        .mechanic-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        .mechanic-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        
+        .mechanic-location {
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .mechanic-rating {
+            color: #ffa500;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        
+        .mechanic-services {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .service-tag {
+            background: #f0f4f8;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            color: #0066cc;
+        }
+        
+        .contact-btn {
+            width: 100%;
+            padding: 12px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .search-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="brand">AUTOILTY</a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="../forum.html" class="nav-link">Forum</a>
+                <a href="../qa.html" class="nav-link">Q&A</a>
+                <a href="../reviews.html" class="nav-link">Reviews</a>
+                <a href="../guides.html" class="nav-link">Guides</a>
+                <a href="../tools.html" class="nav-link active">Tools</a>
+            </div>
+            <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="container">
+            <h1>🔍 Mechanic Finder</h1>
+            <p>Find trusted mechanics near you</p>
+        </div>
+    </div>
+
+    <!-- AdSense Top Ad -->
+    <div class="ad-container">
+        <div class="container">
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9421517198875255" data-ad-slot="9012345678" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
+
+    <section class="finder-container">
+        <div class="container">
+            <div class="search-card">
+                <div class="search-grid">
+                    <input type="text" class="search-input" placeholder="Enter city or postal code" id="locationInput">
+                    <select class="search-input" id="serviceType">
+                        <option value="">All Services</option>
+                        <option value="general">General Repair</option>
+                        <option value="oil">Oil Change</option>
+                        <option value="brakes">Brakes</option>
+                        <option value="tires">Tires</option>
+                        <option value="engine">Engine Repair</option>
+                    </select>
+                    <button class="search-btn" onclick="searchMechanics()">Search</button>
+                </div>
+            </div>
+            
+            <div class="mechanic-grid" id="mechanicResults">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- AdSense Footer Ad -->
+    <div class="ad-container">
+        <div class="container">
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9421517198875255" data-ad-slot="9012345679" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-brand">AUTOILTY</div>
+                    <p class="footer-text">Canada's premier automotive community.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="../forum.html">Forum</a></li>
+                        <li><a href="../qa.html">Q&A</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="../guides.html">Guides</a></li>
+                        <li><a href="../tools.html">Tools</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="../about.html">About</a></li>
+                        <li><a href="../contact.html">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom"><p>&copy; 2024 Autoilty.com. All rights reserved.</p></div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        const mechanics = [
+            {
+                name: "Precision Auto Care",
+                location: "Toronto, ON",
+                rating: "⭐⭐⭐⭐⭐ 4.8/5",
+                services: ["General Repair", "Oil Change", "Brakes", "Engine"],
+                reviews: 156
+            },
+            {
+                name: "Honest Mechanics",
+                location: "Vancouver, BC",
+                rating: "⭐⭐⭐⭐⭐ 4.9/5",
+                services: ["General Repair", "Tires", "Transmission"],
+                reviews: 203
+            },
+            {
+                name: "Quick Lube & Repair",
+                location: "Calgary, AB",
+                rating: "⭐⭐⭐⭐☆ 4.5/5",
+                services: ["Oil Change", "Brakes", "Tires"],
+                reviews: 89
+            },
+            {
+                name: "Master Mechanics",
+                location: "Montreal, QC",
+                rating: "⭐⭐⭐⭐⭐ 4.7/5",
+                services: ["Engine", "Transmission", "General Repair"],
+                reviews: 178
+            },
+            {
+                name: "AutoPro Service",
+                location: "Ottawa, ON",
+                rating: "⭐⭐⭐⭐⭐ 4.6/5",
+                services: ["Brakes", "Oil Change", "Tires"],
+                reviews: 134
+            },
+            {
+                name: "Elite Auto Repair",
+                location: "Edmonton, AB",
+                rating: "⭐⭐⭐⭐⭐ 4.8/5",
+                services: ["General Repair", "Engine", "Transmission"],
+                reviews: 167
+            }
+        ];
+        
+        function searchMechanics() {
+            const resultsDiv = document.getElementById('mechanicResults');
+            let html = '';
+            
+            mechanics.forEach(mechanic => {
+                html += `
+                    <div class="mechanic-card">
+                        <div class="mechanic-name">${mechanic.name}</div>
+                        <div class="mechanic-location">📍 ${mechanic.location}</div>
+                        <div class="mechanic-rating">${mechanic.rating}</div>
+                        <div class="mechanic-services">
+                            ${mechanic.services.map(s => `<span class="service-tag">${s}</span>`).join('')}
+                        </div>
+                        <button class="contact-btn" onclick="alert('Contact feature coming soon!')">View Details</button>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Load results on page load
+        searchMechanics();
+    </script>
+</body>
+</html>
+
