@@ -158,6 +158,88 @@ window.forumData = {
         }
     ],
     
+    // Hot Topics - Featured discussions
+    hotTopics: [
+        {
+            id: 101,
+            title: "🔥 Electric Vehicle Range in Canadian Winter - Real Data",
+            author: "EVResearch",
+            category: "General Discussion",
+            replies: 234,
+            views: 15632,
+            lastPost: "5 min ago",
+            isPinned: true,
+            isHot: true,
+            tags: ["EV", "Winter", "Range", "Canada"],
+            keywords: ["electric", "ev", "winter", "range", "cold", "battery"]
+        },
+        {
+            id: 102,
+            title: "🔥 Best Budget SUV Under $35K - Community Poll Results",
+            author: "BudgetAuto",
+            category: "Buying & Selling",
+            replies: 456,
+            views: 23451,
+            lastPost: "12 min ago",
+            isPinned: true,
+            isHot: true,
+            tags: ["SUV", "Budget", "Buying"],
+            keywords: ["suv", "budget", "cheap", "affordable", "buy", "purchase", "under 35k"]
+        },
+        {
+            id: 103,
+            title: "🔥 Oil Change DIY vs Dealership - Cost Breakdown 2024",
+            author: "DIYMechanic",
+            category: "Maintenance & Repair",
+            replies: 189,
+            views: 18934,
+            lastPost: "30 min ago",
+            isPinned: false,
+            isHot: true,
+            tags: ["Maintenance", "Oil", "DIY"],
+            keywords: ["oil change", "diy", "dealership", "maintenance", "service", "cost"]
+        },
+        {
+            id: 104,
+            title: "🔥 Tesla Model 3 vs Polestar 2 - Owner Comparison",
+            author: "EVOwner",
+            category: "Vehicle Reviews",
+            replies: 312,
+            views: 21234,
+            lastPost: "45 min ago",
+            isPinned: false,
+            isHot: true,
+            tags: ["Tesla", "Polestar", "EV", "Comparison"],
+            keywords: ["tesla", "polestar", "model 3", "comparison", "electric", "review"]
+        },
+        {
+            id: 105,
+            title: "🔥 How to Negotiate Car Prices in 2024 - Success Stories",
+            author: "DealMaster",
+            category: "Buying & Selling",
+            replies: 267,
+            views: 19876,
+            lastPost: "1 hour ago",
+            isPinned: false,
+            isHot: true,
+            tags: ["Negotiation", "Buying", "Tips"],
+            keywords: ["negotiate", "price", "deal", "buying", "discount", "haggle"]
+        },
+        {
+            id: 106,
+            title: "🔥 Winter Tire Recommendations for 2024-2025",
+            author: "TireExpert",
+            category: "Maintenance & Repair",
+            replies: 423,
+            views: 28543,
+            lastPost: "2 hours ago",
+            isPinned: true,
+            isHot: true,
+            tags: ["Tires", "Winter", "Safety"],
+            keywords: ["winter tire", "snow tire", "tire", "winter", "snow", "recommendations"]
+        }
+    ],
+    
     // Sample threads for forum page
     threads: [
         {
@@ -170,7 +252,8 @@ window.forumData = {
             lastPost: "15 min ago",
             isPinned: false,
             isLocked: false,
-            tags: ["Toyota", "Camry", "2024", "Review"]
+            tags: ["Toyota", "Camry", "2024", "Review"],
+            keywords: ["toyota", "camry", "review", "sedan"]
         },
         {
             id: 2,
@@ -182,9 +265,113 @@ window.forumData = {
             lastPost: "1 hour ago",
             isPinned: true,
             isLocked: false,
-            tags: ["Winter", "Maintenance", "Guide"]
+            tags: ["Winter", "Maintenance", "Guide"],
+            keywords: ["winter", "maintenance", "checklist", "prepare", "guide"]
         },
-        // Add more threads as needed
+        {
+            id: 3,
+            title: "Strange Engine Noise - Need Help Diagnosing",
+            author: "ConcernedOwner",
+            category: "Maintenance & Repair",
+            replies: 15,
+            views: 892,
+            lastPost: "3 hours ago",
+            isPinned: false,
+            isLocked: false,
+            tags: ["Help", "Engine", "Diagnosis"],
+            keywords: ["engine", "noise", "problem", "diagnosis", "help"]
+        },
+        {
+            id: 4,
+            title: "Honda CR-V vs Mazda CX-5 - Which Should I Buy?",
+            author: "SUVShopper",
+            category: "Buying & Selling",
+            replies: 42,
+            views: 2341,
+            lastPost: "4 hours ago",
+            isPinned: false,
+            isLocked: false,
+            tags: ["Honda", "Mazda", "Comparison"],
+            keywords: ["honda", "cr-v", "mazda", "cx-5", "comparison", "buy"]
+        },
+        {
+            id: 5,
+            title: "Best Car Insurance Rates in Ontario?",
+            author: "InsuranceSeeker",
+            category: "General Discussion",
+            replies: 56,
+            views: 3421,
+            lastPost: "5 hours ago",
+            isPinned: false,
+            isLocked: false,
+            tags: ["Insurance", "Ontario", "Advice"],
+            keywords: ["insurance", "rates", "ontario", "cheap", "affordable"]
+        },
+        {
+            id: 6,
+            title: "Detailing Tips for Removing Scratches",
+            author: "DetailPro",
+            category: "Modifications & Tuning",
+            replies: 28,
+            views: 1654,
+            lastPost: "6 hours ago",
+            isPinned: false,
+            isLocked: false,
+            tags: ["Detailing", "Tips", "Scratches"],
+            keywords: ["detailing", "scratch", "remove", "paint", "fix"]
+        },
+        {
+            id: 7,
+            title: "Reliable Mechanic in Vancouver - Recommendations?",
+            author: "VancouverDriver",
+            category: "Mechanic Reviews",
+            replies: 34,
+            views: 2123,
+            lastPost: "8 hours ago",
+            isPinned: false,
+            isLocked: false,
+            tags: ["Vancouver", "Mechanic", "Recommendations"],
+            keywords: ["mechanic", "vancouver", "reliable", "recommendation", "garage"]
+        },
+        {
+            id: 8,
+            title: "Turbocharger Upgrade - Worth It?",
+            author: "BoostLover",
+            category: "Modifications & Tuning",
+            replies: 67,
+            views: 4532,
+            lastPost: "10 hours ago",
+            isPinned: false,
+            isLocked: false,
+            tags: ["Turbo", "Performance", "Modification"],
+            keywords: ["turbo", "turbocharger", "upgrade", "performance", "boost"]
+        },
+        {
+            id: 9,
+            title: "Hybrid Battery Replacement Cost - What to Expect",
+            author: "HybridOwner",
+            category: "Maintenance & Repair",
+            replies: 45,
+            views: 3234,
+            lastPost: "12 hours ago",
+            isPinned: false,
+            isLocked: false,
+            tags: ["Hybrid", "Battery", "Cost"],
+            keywords: ["hybrid", "battery", "replacement", "cost", "price"]
+        },
+        {
+            id: 10,
+            title: "First Car for Teen Driver - Safety First",
+            author: "ParentDriver",
+            category: "Buying & Selling",
+            replies: 89,
+            views: 5643,
+            lastPost: "1 day ago",
+            isPinned: false,
+            isLocked: false,
+            tags: ["First Car", "Teen", "Safety"],
+            keywords: ["first car", "teen", "teenager", "safety", "beginner"]
+        }
     ],
     
     // Vehicle reviews

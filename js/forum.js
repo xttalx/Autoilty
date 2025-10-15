@@ -5,9 +5,38 @@ let threadsPerPage = 15;
 let filteredThreads = [];
 
 document.addEventListener('DOMContentLoaded', function() {
+    loadHotTopics();
     loadCategories();
     loadThreads();
 });
+
+function loadHotTopics() {
+    const grid = document.getElementById('hotTopicsGrid');
+    if (!grid) return;
+    
+    const hotTopics = window.forumData?.hotTopics || [];
+    
+    grid.innerHTML = hotTopics.map(topic => `
+        <a href="forum/thread.html?id=${topic.id}" class="hot-topic-card">
+            <div class="hot-topic-header">
+                <span class="hot-badge">🔥 HOT</span>
+                <span class="hot-views">👁️ ${formatNumber(topic.views)}</span>
+            </div>
+            <div class="hot-topic-title">${topic.title}</div>
+            <div class="hot-topic-meta">
+                <span class="hot-author">by ${topic.author}</span>
+                <span class="hot-category">${topic.category}</span>
+            </div>
+            <div class="hot-topic-stats">
+                <span>💬 ${topic.replies} replies</span>
+                <span>🕐 ${topic.lastPost}</span>
+            </div>
+            <div class="hot-topic-tags">
+                ${topic.tags.slice(0, 3).map(tag => `<span class="hot-tag">${tag}</span>`).join('')}
+            </div>
+        </a>
+    `).join('');
+}
 
 function loadCategories() {
     const grid = document.getElementById('categoriesGrid');

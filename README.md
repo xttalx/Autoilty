@@ -8,6 +8,8 @@ A clean, modern automotive enthusiast forum inspired by Lenovo.com's professiona
 
 ### Community Features
 - ✅ **Forum** - Discussion boards with categories, search, filtering
+- ✅ **🔥 Hot Topics** - Trending discussions prominently featured
+- ✅ **💬 AI Chat Assistant** - Smart chatbot for instant help and discussion discovery
 - ✅ **Q&A** - Ask questions, get expert answers, mark as solved
 - ✅ **Vehicle Reviews** - Read and write honest vehicle reviews
 - ✅ **Mechanic Reviews** - Community-driven mechanic ratings
@@ -92,27 +94,51 @@ window.addDiscussion({
 - Card-based layouts
 - Clear hierarchy
 
+## 🤖 NEW: AI Chat Assistant
+
+### Features
+- **Smart Keyword Matching** - Understands natural language queries
+- **Instant Answers** - Quick responses to common automotive questions
+- **Discussion Discovery** - Automatically finds relevant forum threads
+- **Auto-Redirect** - Directs users to specific discussions based on their questions
+- **Topic-Specific Help** - Specialized responses for:
+  - Oil changes & maintenance
+  - Winter tires (Canada-specific)
+  - Electric vehicles & range
+  - Buying advice & negotiation
+  - Mechanic recommendations
+
+### Example Queries
+- "Tell me about winter tires" → Links to winter tire discussion
+- "Best budget SUV" → Shows budget SUV comparison thread
+- "How to change oil" → Provides DIY guide links
+- "Show hot topics" → Displays trending discussions
+
+See `CHATBOT-FEATURE.md` for full documentation.
+
 ## 📁 File Structure
 
 ```
 autoilty/
-├── index.html          # Homepage
-├── forum.html          # Discussion forum
-├── qa.html            # Q&A section
-├── reviews.html       # Reviews
-├── guides.html        # Guides
-├── tools.html         # Tools hub
+├── index.html              # Homepage
+├── forum.html              # Discussion forum with hot topics & chatbot
+├── qa.html                 # Q&A section
+├── reviews.html            # Reviews
+├── guides.html             # Guides
+├── tools.html              # Tools hub
 ├── css/
-│   ├── main.css       # Core styles
-│   ├── forum.css      # Forum styles
-│   ├── qa.css         # Q&A styles
-│   └── reviews.css    # Reviews styles
+│   ├── main.css            # Core styles
+│   ├── forum.css           # Forum styles + chat widget + hot topics
+│   ├── qa.css              # Q&A styles
+│   └── reviews.css         # Reviews styles
 ├── js/
-│   ├── main.js        # Core JavaScript
-│   ├── forum-data.js  # Sample data
-│   ├── forum.js       # Forum logic
-│   └── qa.js          # Q&A logic
-└── README.md          # This file
+│   ├── main.js             # Core JavaScript
+│   ├── forum-data.js       # Sample data + hot topics + keywords
+│   ├── forum.js            # Forum logic + hot topics loader
+│   ├── chatbot.js          # NEW: AI chat assistant
+│   └── qa.js               # Q&A logic
+├── CHATBOT-FEATURE.md      # Chatbot documentation
+└── README.md               # This file
 ```
 
 ## 🚀 Next Steps

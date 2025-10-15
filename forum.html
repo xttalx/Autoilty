@@ -44,6 +44,19 @@
         </div>
     </div>
 
+    <!-- Hot Topics -->
+    <section class="hot-topics-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>🔥 Hot Topics</h2>
+                <p>Most popular discussions right now</p>
+            </div>
+            <div class="hot-topics-grid" id="hotTopicsGrid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
     <!-- Categories -->
     <section class="categories-section">
         <div class="container">
@@ -138,9 +151,48 @@
         </div>
     </footer>
 
+    <!-- Chat Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header">
+            <div class="chat-header-content">
+                <div class="chat-avatar">🤖</div>
+                <div>
+                    <div class="chat-title">Autoilty Assistant</div>
+                    <div class="chat-status">Online • Ask me anything</div>
+                </div>
+            </div>
+            <button class="chat-close-btn" onclick="toggleChat()">✕</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be populated by JavaScript -->
+        </div>
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="chatInput" 
+                placeholder="Ask about cars, maintenance, buying..." 
+                onkeypress="handleChatKeyPress(event)"
+            >
+            <button class="chat-send-btn" onclick="sendMessage()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M2 10L18 2L10 18L8 11L2 10Z" fill="currentColor"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Chat Toggle Button -->
+    <button class="chat-toggle-btn" id="chatToggleBtn" onclick="toggleChat()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C6.5 2 2 6.5 2 12C2 13.8 2.5 15.5 3.4 17L2 22L7 20.6C8.5 21.5 10.2 22 12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2Z" fill="currentColor"/>
+        </svg>
+        <span class="chat-badge">Ask me!</span>
+    </button>
+
     <script src="js/main.js"></script>
     <script src="js/forum-data.js"></script>
     <script src="js/forum.js"></script>
+    <script src="js/chatbot.js"></script>
 </body>
 </html>
 
