@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Automotive discussion forum for car enthusiasts. Join discussions about maintenance, repairs, buying advice, modifications, and more.">
+    <title>Auto Forum - Discussions & Community | Autoilty</title>
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9421517198875255" crossorigin="anonymous"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/forum.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="brand">AUTOILTY</a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="forum.html" class="nav-link active">Forum</a>
+                <a href="qa.html" class="nav-link">Q&A</a>
+                <a href="reviews.html" class="nav-link">Reviews</a>
+                <a href="guides.html" class="nav-link">Guides</a>
+                <a href="tools.html" class="nav-link">Tools</a>
+            </div>
+            <button class="btn-primary" onclick="showNewThreadModal()">+ New Thread</button>
+            <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1>Community Forum</h1>
+            <p>Join discussions with 50,000+ auto enthusiasts</p>
+            
+            <!-- Search -->
+            <div class="forum-search">
+                <input type="text" placeholder="Search discussions..." id="forumSearch" onkeyup="searchForum()">
+                <button class="btn-primary" onclick="searchForum()">Search</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories -->
+    <section class="categories-section">
+        <div class="container">
+            <h2>Discussion Categories</h2>
+            <div class="categories-grid" id="categoriesGrid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- AdSense -->
+    <div class="ad-container">
+        <div class="container">
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9421517198875255" data-ad-slot="2345678901" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
+
+    <!-- Threads List -->
+    <section class="threads-section">
+        <div class="container">
+            <div class="threads-header">
+                <h2>Recent Discussions</h2>
+                <div class="threads-filters">
+                    <select id="categoryFilter" onchange="filterThreads()">
+                        <option value="">All Categories</option>
+                        <option value="general">General</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="buying">Buying & Selling</option>
+                        <option value="reviews">Reviews</option>
+                    </select>
+                    <select id="sortBy" onchange="sortThreads()">
+                        <option value="recent">Most Recent</option>
+                        <option value="popular">Most Popular</option>
+                        <option value="replies">Most Replies</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="threads-list" id="threadsList">
+                <!-- Populated by JavaScript -->
+            </div>
+            
+            <div class="pagination" id="pagination">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-brand">AUTOILTY</div>
+                    <p class="footer-text">Canada's premier automotive community.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="forum.html">Forum</a></li>
+                        <li><a href="qa.html">Q&A</a></li>
+                        <li><a href="reviews.html">Reviews</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="guides.html">Guides</a></li>
+                        <li><a href="tools.html">Tools</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Autoilty.com. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/forum-data.js"></script>
+    <script src="js/forum.js"></script>
+</body>
+</html>
+

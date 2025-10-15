@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Autoilty.com - Canada's largest auto enthusiast community. Join discussions, share knowledge, read reviews, and connect with fellow car lovers.">
+    <meta name="keywords" content="auto forum, car enthusiasts, automotive community, vehicle discussions, mechanic advice, car reviews Canada">
+    <title>Autoilty - Canada's Premier Auto Enthusiast Community</title>
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9421517198875255"
+     crossorigin="anonymous"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="brand">
+                <span class="brand-name">AUTOILTY</span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">Home</a>
+                <a href="forum.html" class="nav-link">Forum</a>
+                <a href="qa.html" class="nav-link">Q&A</a>
+                <a href="reviews.html" class="nav-link">Reviews</a>
+                <a href="guides.html" class="nav-link">Guides</a>
+                <a href="tools.html" class="nav-link">Tools</a>
+            </div>
+            
+            <button class="btn-primary">Join Community</button>
+            <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Canada's Premier Auto<br>Enthusiast Community</h1>
+                <p class="hero-subtitle">Join 50,000+ car enthusiasts sharing knowledge, experiences, and passion for automobiles</p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">50K+</div>
+                        <div class="stat-label">Members</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">125K+</div>
+                        <div class="stat-label">Discussions</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">15K+</div>
+                        <div class="stat-label">Reviews</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">Daily</div>
+                        <div class="stat-label">Activity</div>
+                    </div>
+                </div>
+                <div class="hero-cta">
+                    <a href="forum.html" class="btn-hero-primary">Explore Forum</a>
+                    <a href="qa.html" class="btn-hero-secondary">Ask a Question</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Access -->
+    <section class="quick-access">
+        <div class="container">
+            <div class="quick-grid">
+                <a href="forum.html?category=general" class="quick-card">
+                    <div class="quick-icon">💬</div>
+                    <h3>General Discussion</h3>
+                    <p>Talk about anything automotive</p>
+                    <span class="quick-count">15,243 topics</span>
+                </a>
+                
+                <a href="forum.html?category=maintenance" class="quick-card">
+                    <div class="quick-icon">🔧</div>
+                    <h3>Maintenance & Repair</h3>
+                    <p>Get help with repairs and maintenance</p>
+                    <span class="quick-count">22,156 topics</span>
+                </a>
+                
+                <a href="forum.html?category=reviews" class="quick-card">
+                    <div class="quick-icon">⭐</div>
+                    <h3>Vehicle Reviews</h3>
+                    <p>Read and share honest reviews</p>
+                    <span class="quick-count">8,934 reviews</span>
+                </a>
+                
+                <a href="forum.html?category=buying" class="quick-card">
+                    <div class="quick-icon">🚗</div>
+                    <h3>Buying & Selling</h3>
+                    <p>Advice on purchasing vehicles</p>
+                    <span class="quick-count">12,445 topics</span>
+                </a>
+                
+                <a href="qa.html" class="quick-card">
+                    <div class="quick-icon">❓</div>
+                    <h3>Ask the Community</h3>
+                    <p>Get expert answers fast</p>
+                    <span class="quick-count">18,721 questions</span>
+                </a>
+                
+                <a href="tools.html" class="quick-card">
+                    <div class="quick-icon">🛠️</div>
+                    <h3>Tools & Calculators</h3>
+                    <p>Financing, comparison tools</p>
+                    <span class="quick-count">6 tools</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- AdSense -->
+    <section class="ad-container">
+        <div class="container">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-9421517198875255"
+                 data-ad-slot="1234567890"
+                 data-ad-format="horizontal"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+    </section>
+
+    <!-- Trending Discussions -->
+    <section class="trending">
+        <div class="container">
+            <div class="section-header">
+                <h2>🔥 Trending This Week</h2>
+                <a href="forum.html" class="link-primary">View All →</a>
+            </div>
+            
+            <div class="discussion-list" id="trendingDiscussions">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Content -->
+    <section class="featured">
+        <div class="container">
+            <div class="content-grid">
+                <div class="content-main">
+                    <h2>Latest Q&A</h2>
+                    <div class="qa-list" id="latestQA">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <aside class="sidebar">
+                    <div class="sidebar-card">
+                        <h3>🏆 Top Contributors</h3>
+                        <div class="contributors-list" id="topContributors">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-card">
+                        <h3>📊 Popular Topics</h3>
+                        <div class="tags-cloud">
+                            <a href="#" class="tag">Winter Tires</a>
+                            <a href="#" class="tag">Oil Change</a>
+                            <a href="#" class="tag">Toyota</a>
+                            <a href="#" class="tag">Brakes</a>
+                            <a href="#" class="tag">Engine</a>
+                            <a href="#" class="tag">Electric Cars</a>
+                            <a href="#" class="tag">Honda</a>
+                            <a href="#" class="tag">Transmission</a>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section class="tools-section">
+        <div class="container">
+            <h2 class="section-title">Automotive Tools & Resources</h2>
+            <div class="tools-grid">
+                <a href="tools/financing.html" class="tool-card">
+                    <div class="tool-icon">💰</div>
+                    <h3>Financing Calculator</h3>
+                    <p>Calculate monthly payments and total costs</p>
+                </a>
+                
+                <a href="tools/comparison.html" class="tool-card">
+                    <div class="tool-icon">📊</div>
+                    <h3>Vehicle Comparison</h3>
+                    <p>Compare specs side-by-side</p>
+                </a>
+                
+                <a href="tools/mechanic-finder.html" class="tool-card">
+                    <div class="tool-icon">🔍</div>
+                    <h3>Mechanic Finder</h3>
+                    <p>Find trusted mechanics near you</p>
+                </a>
+                
+                <a href="guides.html" class="tool-card">
+                    <div class="tool-icon">📚</div>
+                    <h3>Maintenance Guides</h3>
+                    <p>Step-by-step repair guides</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-brand">AUTOILTY</div>
+                    <p class="footer-text">Canada's premier automotive community connecting enthusiasts, sharing knowledge, and building the future of car culture.</p>
+                </div>
+                
+                <div class="footer-col">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="forum.html">Forum</a></li>
+                        <li><a href="qa.html">Q&A</a></li>
+                        <li><a href="reviews.html">Reviews</a></li>
+                        <li><a href="guides.html">Guides</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h4>Tools</h4>
+                    <ul>
+                        <li><a href="tools/financing.html">Financing Calculator</a></li>
+                        <li><a href="tools/comparison.html">Vehicle Comparison</a></li>
+                        <li><a href="tools/mechanic-finder.html">Mechanic Finder</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Autoilty.com. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/forum-data.js"></script>
+</body>
+</html>
+
