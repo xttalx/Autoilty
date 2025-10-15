@@ -472,6 +472,26 @@ a {
     color: white;
 }
 
+/* AdSense Styles */
+.ad-container {
+    background: var(--bg-secondary);
+    padding: 48px 0;
+    margin: 64px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.ad-container .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90px;
+}
+
+.ad-container ins {
+    background: transparent;
+}
+
 /* Tools Section */
 .tools-section {
     padding: 80px 0;
