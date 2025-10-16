@@ -1,0 +1,410 @@
+{
+  "site_name": "Autoilty - Canada's Premier Auto Directory",
+  "base_url": "https://autoilty.com",
+  "version": "2.0.0",
+  "features": [
+    "AI Chat Widget",
+    "Topic-Specific Pages",
+    "User Authentication",
+    "Bilingual Support (EN/FR)",
+    "Real-time Chat",
+    "Forum Integration"
+  ],
+  "categories": {
+    "general_discussion": {
+      "id": "general",
+      "name": "General Discussion",
+      "name_fr": "Discussion Générale",
+      "slug": "general-discussion",
+      "icon": "💬",
+      "subcategories": [
+        {
+          "id": "news",
+          "name": "Automotive News",
+          "name_fr": "Actualités Automobiles",
+          "slug": "automotive-news"
+        },
+        {
+          "id": "lifestyle",
+          "name": "Car Lifestyle",
+          "name_fr": "Style de Vie Automobile",
+          "slug": "car-lifestyle"
+        },
+        {
+          "id": "tips",
+          "name": "Tips & Tricks",
+          "name_fr": "Trucs et Astuces",
+          "slug": "tips-tricks"
+        }
+      ]
+    },
+    "maintenance_repair": {
+      "id": "maintenance",
+      "name": "Maintenance & Repair",
+      "name_fr": "Entretien et Réparation",
+      "slug": "maintenance-repair",
+      "icon": "🔧",
+      "subcategories": [
+        {
+          "id": "brakes",
+          "name": "Brakes & Suspension",
+          "name_fr": "Freins et Suspension",
+          "slug": "brakes-suspension"
+        },
+        {
+          "id": "engine",
+          "name": "Engine & Transmission",
+          "name_fr": "Moteur et Transmission",
+          "slug": "engine-transmission"
+        },
+        {
+          "id": "electrical",
+          "name": "Electrical Systems",
+          "name_fr": "Systèmes Électriques",
+          "slug": "electrical-systems"
+        },
+        {
+          "id": "bodywork",
+          "name": "Body & Paint",
+          "name_fr": "Carrosserie et Peinture",
+          "slug": "body-paint"
+        },
+        {
+          "id": "diy",
+          "name": "DIY Tutorials",
+          "name_fr": "Tutoriels Bricolage",
+          "slug": "diy-tutorials"
+        }
+      ]
+    },
+    "buying_selling": {
+      "id": "buying",
+      "name": "Buying & Selling",
+      "name_fr": "Achat et Vente",
+      "slug": "buying-selling",
+      "icon": "🚗",
+      "subcategories": [
+        {
+          "id": "new_cars",
+          "name": "New Cars",
+          "name_fr": "Voitures Neuves",
+          "slug": "new-cars"
+        },
+        {
+          "id": "used_cars",
+          "name": "Used Cars",
+          "name_fr": "Voitures d'Occasion",
+          "slug": "used-cars"
+        },
+        {
+          "id": "financing",
+          "name": "Financing & Insurance",
+          "name_fr": "Financement et Assurance",
+          "slug": "financing-insurance"
+        },
+        {
+          "id": "marketplace",
+          "name": "Parts Marketplace",
+          "name_fr": "Marché de Pièces",
+          "slug": "parts-marketplace"
+        },
+        {
+          "id": "trade",
+          "name": "Trade-In Tips",
+          "name_fr": "Conseils d'Échange",
+          "slug": "trade-in-tips"
+        }
+      ]
+    },
+    "modifications": {
+      "id": "mods",
+      "name": "Modifications & Performance",
+      "name_fr": "Modifications et Performance",
+      "slug": "modifications-performance",
+      "icon": "⚡",
+      "subcategories": [
+        {
+          "id": "performance",
+          "name": "Performance Upgrades",
+          "name_fr": "Améliorations de Performance",
+          "slug": "performance-upgrades"
+        },
+        {
+          "id": "aesthetics",
+          "name": "Aesthetic Mods",
+          "name_fr": "Modifications Esthétiques",
+          "slug": "aesthetic-mods"
+        },
+        {
+          "id": "audio",
+          "name": "Audio & Electronics",
+          "name_fr": "Audio et Électronique",
+          "slug": "audio-electronics"
+        },
+        {
+          "id": "wheels",
+          "name": "Wheels & Tires",
+          "name_fr": "Roues et Pneus",
+          "slug": "wheels-tires"
+        }
+      ]
+    },
+    "events_meetups": {
+      "id": "events",
+      "name": "Events & Meetups",
+      "name_fr": "Événements et Rencontres",
+      "slug": "events-meetups",
+      "icon": "📅",
+      "subcategories": [
+        {
+          "id": "car_shows",
+          "name": "Car Shows",
+          "name_fr": "Salons de l'Auto",
+          "slug": "car-shows"
+        },
+        {
+          "id": "local_meets",
+          "name": "Local Meetups",
+          "name_fr": "Rencontres Locales",
+          "slug": "local-meetups"
+        },
+        {
+          "id": "track_days",
+          "name": "Track Days",
+          "name_fr": "Journées sur Circuit",
+          "slug": "track-days"
+        },
+        {
+          "id": "cruises",
+          "name": "Car Cruises",
+          "name_fr": "Croisières Automobiles",
+          "slug": "car-cruises"
+        }
+      ]
+    },
+    "brand_specific": {
+      "id": "brands",
+      "name": "Brand-Specific Forums",
+      "name_fr": "Forums Spécifiques aux Marques",
+      "slug": "brand-specific",
+      "icon": "🏷️",
+      "subcategories": [
+        {
+          "id": "toyota",
+          "name": "Toyota & Lexus",
+          "slug": "toyota-lexus",
+          "logo": "toyota"
+        },
+        {
+          "id": "honda",
+          "name": "Honda & Acura",
+          "slug": "honda-acura",
+          "logo": "honda"
+        },
+        {
+          "id": "ford",
+          "name": "Ford & Lincoln",
+          "slug": "ford-lincoln",
+          "logo": "ford"
+        },
+        {
+          "id": "gm",
+          "name": "GM (Chevy, GMC, Cadillac)",
+          "slug": "gm-brands",
+          "logo": "gm"
+        },
+        {
+          "id": "mazda",
+          "name": "Mazda",
+          "slug": "mazda",
+          "logo": "mazda"
+        },
+        {
+          "id": "nissan",
+          "name": "Nissan & Infiniti",
+          "slug": "nissan-infiniti",
+          "logo": "nissan"
+        },
+        {
+          "id": "tesla",
+          "name": "Tesla & Electric Vehicles",
+          "slug": "tesla-ev",
+          "logo": "tesla"
+        },
+        {
+          "id": "european",
+          "name": "European Brands",
+          "slug": "european-brands",
+          "logo": "european"
+        }
+      ]
+    },
+    "regional": {
+      "id": "regional",
+      "name": "Regional Forums",
+      "name_fr": "Forums Régionaux",
+      "slug": "regional",
+      "icon": "🗺️",
+      "subcategories": [
+        {
+          "id": "ontario",
+          "name": "Ontario",
+          "slug": "ontario",
+          "provinces": ["ON"]
+        },
+        {
+          "id": "quebec",
+          "name": "Quebec",
+          "name_fr": "Québec",
+          "slug": "quebec",
+          "provinces": ["QC"]
+        },
+        {
+          "id": "bc",
+          "name": "British Columbia",
+          "name_fr": "Colombie-Britannique",
+          "slug": "british-columbia",
+          "provinces": ["BC"]
+        },
+        {
+          "id": "alberta",
+          "name": "Alberta",
+          "slug": "alberta",
+          "provinces": ["AB"]
+        },
+        {
+          "id": "prairies",
+          "name": "Manitoba & Saskatchewan",
+          "slug": "prairies",
+          "provinces": ["MB", "SK"]
+        },
+        {
+          "id": "atlantic",
+          "name": "Atlantic Canada",
+          "name_fr": "Canada Atlantique",
+          "slug": "atlantic-canada",
+          "provinces": ["NS", "NB", "PE", "NL"]
+        }
+      ]
+    },
+    "winter_driving": {
+      "id": "winter",
+      "name": "Winter Driving",
+      "name_fr": "Conduite Hivernale",
+      "slug": "winter-driving",
+      "icon": "❄️",
+      "subcategories": [
+        {
+          "id": "winter_tires",
+          "name": "Winter Tires",
+          "name_fr": "Pneus d'Hiver",
+          "slug": "winter-tires"
+        },
+        {
+          "id": "winter_prep",
+          "name": "Winter Preparation",
+          "name_fr": "Préparation Hivernale",
+          "slug": "winter-preparation"
+        },
+        {
+          "id": "driving_tips",
+          "name": "Winter Driving Tips",
+          "name_fr": "Conseils de Conduite Hivernale",
+          "slug": "winter-driving-tips"
+        }
+      ]
+    },
+    "off_topic": {
+      "id": "offtopic",
+      "name": "Off-Topic",
+      "name_fr": "Hors-Sujet",
+      "slug": "off-topic",
+      "icon": "🗨️",
+      "subcategories": [
+        {
+          "id": "lounge",
+          "name": "Community Lounge",
+          "name_fr": "Salon Communautaire",
+          "slug": "community-lounge"
+        },
+        {
+          "id": "gaming",
+          "name": "Gaming & Simulators",
+          "name_fr": "Jeux et Simulateurs",
+          "slug": "gaming-simulators"
+        },
+        {
+          "id": "marketplace_general",
+          "name": "General Marketplace",
+          "name_fr": "Marché Général",
+          "slug": "general-marketplace"
+        }
+      ]
+    }
+  },
+  "ai_knowledge_base": {
+    "common_issues": [
+      "Oil change intervals",
+      "Winter tire installation",
+      "Battery replacement",
+      "Brake pad replacement",
+      "Check engine light codes",
+      "Rust prevention and repair",
+      "Emissions testing requirements",
+      "Vehicle recalls",
+      "Insurance rates by province",
+      "Used car inspection checklist"
+    ],
+    "provincial_regulations": {
+      "ON": {
+        "emissions_test": "Drive Clean program (currently suspended)",
+        "winter_tires": "Recommended but not mandatory",
+        "right_on_red": "Permitted unless signed"
+      },
+      "QC": {
+        "emissions_test": "Not required",
+        "winter_tires": "Mandatory Dec 1 - Mar 15",
+        "right_on_red": "Prohibited on island of Montreal"
+      },
+      "BC": {
+        "emissions_test": "AirCare (some regions)",
+        "winter_tires": "Mandatory on highways Oct 1 - Mar 31",
+        "right_on_red": "Permitted unless signed"
+      },
+      "AB": {
+        "emissions_test": "Not required",
+        "winter_tires": "Not mandatory",
+        "right_on_red": "Permitted unless signed"
+      }
+    }
+  },
+  "tech_stack": {
+    "frontend": {
+      "framework": "React 18",
+      "styling": "Tailwind CSS",
+      "routing": "React Router v6",
+      "state": "Zustand",
+      "animation": "Framer Motion",
+      "i18n": "react-i18next"
+    },
+    "backend": {
+      "runtime": "Node.js 18",
+      "framework": "Express.js",
+      "websockets": "Socket.io",
+      "auth": "JWT + Passport.js",
+      "database": "MongoDB + Mongoose"
+    },
+    "ai": {
+      "provider": "OpenAI API (GPT-4)",
+      "fallback": "Local knowledge base",
+      "context_memory": "Redis"
+    },
+    "deployment": {
+      "frontend": "Vercel / Netlify",
+      "backend": "Railway / Render",
+      "database": "MongoDB Atlas",
+      "cdn": "Cloudflare"
+    }
+  }
+}
+
