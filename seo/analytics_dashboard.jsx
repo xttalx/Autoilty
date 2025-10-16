@@ -241,7 +241,7 @@ const SEODashboard = () => {
                     <div className="insight-card success">
                         <span className="insight-icon">📈</span>
                         <h3>Traffic Milestone</h3>
-                        <p>Congratulations! You've reached 300K+ monthly organic visitors - 3 months ahead of target.</p>
+                        <p>Congratulations! You've reached 300K+ monthly organic visitors - 3 months ahead of target for Canada's top auto directory.</p>
                     </div>
                 </div>
             </section>

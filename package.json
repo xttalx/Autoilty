@@ -1,7 +1,7 @@
 {
   "name": "autoilty",
   "version": "1.0.0",
-  "description": "A clean, modern automotive enthusiast forum inspired by Lenovo.com's professional design.",
+  "description": "Canada's premier auto directory and community platform with forums, reviews, guides, and mechanic finder.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

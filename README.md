@@ -1,8 +1,8 @@
-# AUTOILTY - Auto Enthusiast Community Forum
+# AUTOILTY - Auto Directory
 
-## 🚀 Fully Operational & Scalable Auto Community Website
+## 🚀 Canada's Premier Automotive Directory & Community
 
-A clean, modern automotive enthusiast forum inspired by Lenovo.com's professional design.
+A comprehensive automotive directory and community platform featuring forums, reviews, guides, and tools. Inspired by Lenovo.com's clean, professional design.
 
 ## ✅ Features
 
@@ -171,5 +171,5 @@ Everything is self-contained and fully operational. Just deploy and use!
 
 ---
 
-**Built for the Canadian automotive community** 🚗💨
+**Canada's most comprehensive automotive directory and community** 🚗💨
 
