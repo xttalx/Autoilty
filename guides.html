@@ -10,6 +10,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/forum-chat.css">
 </head>
 <body>
     <nav class="navbar">
@@ -96,7 +97,31 @@
         </div>
     </footer>
 
+    <!-- Guides Chat Widget -->
+    <div class="community-chat-widget" id="communityChatWidget">
+        <div class="chat-widget-header" onclick="toggleCommunityChat()">
+            <div class="chat-widget-title">
+                <span>📚</span>
+                <span>Ask About Guides</span>
+            </div>
+            <button class="chat-toggle-btn" onclick="toggleCommunityChat(); event.stopPropagation();">−</button>
+        </div>
+        <div id="community-chat-messages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="community-chat-input" placeholder="Ask about maintenance or repairs...">
+            <button id="community-send-btn">📨</button>
+        </div>
+    </div>
+
     <script src="js/main.js"></script>
+    <script src="js/forum-chat.js"></script>
+    
+    <script>
+    function toggleCommunityChat() {
+        const widget = document.getElementById('communityChatWidget');
+        widget.classList.toggle('minimized');
+    }
+    </script>
 </body>
 </html>
 
