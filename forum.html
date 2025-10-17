@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Automotive discussion forum for car enthusiasts. Join discussions about maintenance, repairs, buying advice, modifications, and more.">
-    <title>Auto Forum - Discussions & Community | Autoilty</title>
-    
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9421517198875255" crossorigin="anonymous"></script>
+    <meta name="description" content="Community forum for car enthusiasts. Create threads, ask questions, share photos, and discuss everything automotive.">
+    <title>Community Forum - Create Threads & Discuss | Autoilty</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
@@ -14,7 +12,6 @@
     <link rel="stylesheet" href="css/forum-chat.css">
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
             <a href="index.html" class="brand">AUTOILTY</a>
@@ -26,137 +23,102 @@
                 <a href="guides.html" class="nav-link">Guides</a>
                 <a href="tools.html" class="nav-link">Tools</a>
             </div>
-            <button class="btn-primary" onclick="showNewThreadModal()">+ New Thread</button>
-            <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
+            <button class="btn-primary" onclick="showAuthModal()" id="authBtn">Sign Up / Login</button>
+            <button class="btn-primary" onclick="showProfile()" id="profileBtn" style="display:none;">My Profile</button>
         </div>
     </nav>
 
-    <!-- Page Header -->
     <div class="page-header">
         <div class="container">
-            <h1>Community Forum</h1>
-            <p>Join discussions with 50,000+ auto enthusiasts</p>
-            
-            <!-- Search -->
-            <div class="forum-search">
-                <input type="text" placeholder="Search discussions..." id="forumSearch" onkeyup="searchForum()">
-                <button class="btn-primary" onclick="searchForum()">Search</button>
-            </div>
+            <h1>🗣️ Community Forum</h1>
+            <p>Join 50,000+ auto enthusiasts in discussions</p>
+            <button class="btn-hero" onclick="showThreadModal()" style="background:#fff;color:#E2231A;padding:14px 32px;border:none;border-radius:8px;font-weight:600;font-size:16px;cursor:pointer;margin-top:20px;">
+                ✏️ Create New Thread
+            </button>
         </div>
     </div>
 
-    <!-- Hot Topics -->
-    <section class="hot-topics-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>🔥 Hot Topics</h2>
-                <p>Most popular discussions right now</p>
-            </div>
-            <div class="hot-topics-grid" id="hotTopicsGrid">
-                <!-- Populated by JavaScript -->
+    <div class="container" style="padding:48px 0;">
+        <!-- Categories Filter -->
+        <div style="background:#fff;padding:24px;border-radius:12px;margin-bottom:32px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+                <select id="categoryFilter" onchange="filterThreads()" style="padding:12px;border:2px solid #e0e0e0;border-radius:8px;">
+                    <option value="">All Categories</option>
+                    <option value="general">General Discussion</option>
+                    <option value="maintenance">Maintenance & Repair</option>
+                    <option value="buying">Buying & Selling</option>
+                    <option value="mods">Modifications</option>
+                    <option value="events">Events & Meetups</option>
+                    <option value="regional">Regional</option>
+                </select>
+                <select id="sortFilter" onchange="filterThreads()" style="padding:12px;border:2px solid #e0e0e0;border-radius:8px;">
+                    <option value="recent">Most Recent</option>
+                    <option value="popular">Most Popular</option>
+                    <option value="replies">Most Replies</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="Search threads..." onkeyup="filterThreads()" style="padding:12px;border:2px solid #e0e0e0;border-radius:8px;">
             </div>
         </div>
-    </section>
 
-    <!-- Categories -->
-    <section class="categories-section">
-        <div class="container">
-            <h2>Discussion Categories</h2>
-            <div class="categories-grid" id="categoriesGrid">
-                <!-- Populated by JavaScript -->
-            </div>
-        </div>
-    </section>
+        <!-- Threads List -->
+        <div id="threadsContainer" style="display:grid;gap:20px;"></div>
+    </div>
 
-    <!-- AdSense -->
-    <div class="ad-container">
-        <div class="container">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9421517198875255" data-ad-slot="2345678901" data-ad-format="auto" data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    <!-- Auth Modal -->
+    <div id="authModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:400px;width:90%;">
+            <h2 style="margin-bottom:24px;">Sign Up / Login</h2>
+            <input type="text" id="usernameInput" placeholder="Username" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="email" id="emailInput" placeholder="Email" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <button onclick="handleAuth()" style="width:100%;padding:14px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Continue</button>
+            <button onclick="closeAuthModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
         </div>
     </div>
 
-    <!-- Live Thread Chat -->
-    <section class="threads-section">
-        <div class="container">
-            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 32px;">
-                <div>
-                    <div class="threads-header">
-                        <h2>Recent Discussions</h2>
-                        <div class="threads-filters">
-                            <select id="categoryFilter" onchange="filterThreads()">
-                                <option value="">All Categories</option>
-                                <option value="general">General</option>
-                                <option value="maintenance">Maintenance</option>
-                                <option value="buying">Buying & Selling</option>
-                                <option value="reviews">Reviews</option>
-                            </select>
-                            <select id="sortBy" onchange="sortThreads()">
-                                <option value="recent">Most Recent</option>
-                                <option value="popular">Most Popular</option>
-                                <option value="replies">Most Replies</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="threads-list" id="threadsList">
-                        <!-- Populated by JavaScript -->
-                    </div>
-
-                    <!-- LIVE THREAD CHAT -->
-                    <div class="thread-chat-section">
-                        <div class="thread-chat-header">
-                            <h3>💬 Live Discussion</h3>
-                            <div class="online-count">
-                                <span class="online-indicator"></span>
-                                <span>12 online now</span>
-                            </div>
-                        </div>
-                        <div id="thread-messages"></div>
-                        <div class="message-input-container">
-                            <textarea id="thread-message-input" placeholder="Join the conversation..." rows="2"></textarea>
-                            <button id="thread-send-btn">Send 📨</button>
-                        </div>
-                    </div>
-                    
-                    <div class="pagination" id="pagination">
-                        <!-- Populated by JavaScript -->
-                    </div>
-                </div>
-
-                <!-- ACTIVE USERS SIDEBAR -->
-                <aside>
-                    <div class="active-users-sidebar">
-                        <h3>👥 Active Users</h3>
-                        <div id="active-users-list"></div>
-                    </div>
-                </aside>
-            </div>
-        </div>
-    </section>
-    
-    <!-- AdSense Footer Ad -->
-    <div class="ad-container">
-        <div class="container">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9421517198875255" data-ad-slot="2345678902" data-ad-format="auto" data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    <!-- Create Thread Modal -->
+    <div id="threadModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:700px;width:90%;margin:40px auto;">
+            <h2 style="margin-bottom:24px;">Create New Thread</h2>
+            <input type="text" id="threadTitle" placeholder="Thread Title" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <select id="threadCategory" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+                <option value="general">General Discussion</option>
+                <option value="maintenance">Maintenance & Repair</option>
+                <option value="buying">Buying & Selling</option>
+                <option value="mods">Modifications & Performance</option>
+                <option value="events">Events & Meetups</option>
+                <option value="regional">Regional</option>
+            </select>
+            <textarea id="threadContent" placeholder="What's your question or topic?" rows="8" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;resize:vertical;"></textarea>
+            <input type="file" id="threadImage" accept="image/*" style="width:100%;margin-bottom:16px;">
+            <div style="font-size:12px;color:#666;margin-bottom:16px;">✓ Optional: Add an image to your thread</div>
+            <button onclick="submitThread()" style="width:100%;padding:14px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Post Thread</button>
+            <button onclick="closeThreadModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
         </div>
     </div>
 
-    <!-- Footer -->
+    <!-- Profile Modal -->
+    <div id="profileModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:800px;width:90%;margin:40px auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                <h2 style="margin:0;">My Profile</h2>
+                <button onclick="logout()" style="padding:8px 16px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;">Logout</button>
+            </div>
+            <div id="userInfo" style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:24px;"></div>
+            <h3 style="margin-bottom:16px;">My Threads</h3>
+            <div id="myThreads" style="display:grid;gap:16px;"></div>
+            <button onclick="closeProfile()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-top:24px;">Close</button>
+        </div>
+    </div>
+
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-col">
-                    <div class="footer-brand">AUTOILTY</div>
-                    <p class="footer-text">Canada's premier automotive community.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Community</h4>
+                    <h4>Forum Categories</h4>
                     <ul>
-                        <li><a href="forum.html">Forum</a></li>
-                        <li><a href="qa.html">Q&A</a></li>
-                        <li><a href="reviews.html">Reviews</a></li>
+                        <li><a href="categories/general-discussion.html">General Discussion</a></li>
+                        <li><a href="categories/maintenance-repair.html">Maintenance</a></li>
+                        <li><a href="categories/buying-selling.html">Buying & Selling</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
@@ -164,10 +126,11 @@
                     <ul>
                         <li><a href="guides.html">Guides</a></li>
                         <li><a href="tools.html">Tools</a></li>
+                        <li><a href="qa.html">Q&A</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
-                    <h4>Company</h4>
+                    <h4>Community</h4>
                     <ul>
                         <li><a href="about.html">About</a></li>
                         <li><a href="contact.html">Contact</a></li>
@@ -175,85 +138,28 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Autoilty.com. All rights reserved.</p>
+                <p>&copy; 2025 Autoilty. All rights reserved.</p>
             </div>
         </div>
     </footer>
-
-    <!-- Chat Widget -->
-    <div class="chat-widget" id="chatWidget">
-        <div class="chat-header">
-            <div class="chat-header-content">
-                <div class="chat-avatar">🤖</div>
-                <div>
-                    <div class="chat-title">Autoilty Assistant</div>
-                    <div class="chat-status">Online • Ask me anything</div>
-                </div>
-            </div>
-            <button class="chat-close-btn" onclick="toggleChat()">✕</button>
-        </div>
-        <div class="chat-messages" id="chatMessages">
-            <!-- Messages will be populated by JavaScript -->
-        </div>
-        <div class="chat-input-container">
-            <input 
-                type="text" 
-                id="chatInput" 
-                placeholder="Ask about cars, maintenance, buying..." 
-                onkeypress="handleChatKeyPress(event)"
-            >
-            <button class="chat-send-btn" onclick="sendMessage()">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M2 10L18 2L10 18L8 11L2 10Z" fill="currentColor"/>
-                </svg>
-            </button>
-        </div>
-    </div>
-
-    <!-- Chat Toggle Button -->
-    <button class="chat-toggle-btn" id="chatToggleBtn" onclick="toggleChat()">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2C6.5 2 2 6.5 2 12C2 13.8 2.5 15.5 3.4 17L2 22L7 20.6C8.5 21.5 10.2 22 12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2Z" fill="currentColor"/>
-        </svg>
-        <span class="chat-badge">Ask me!</span>
-    </button>
 
     <!-- Community Chat Widget -->
     <div class="community-chat-widget" id="communityChatWidget">
         <div class="chat-widget-header" onclick="toggleCommunityChat()">
             <div class="chat-widget-title">
-                <span>👥</span>
-                <span>Community Chat</span>
+                <span>💬</span>
+                <span>Live Community Chat</span>
             </div>
             <button class="chat-toggle-btn" onclick="toggleCommunityChat(); event.stopPropagation();">−</button>
         </div>
         <div id="community-chat-messages"></div>
         <div class="chat-input-area">
-            <input type="text" id="community-chat-input" placeholder="Message the community...">
+            <input type="text" id="community-chat-input" placeholder="Chat with the community...">
             <button id="community-send-btn">📨</button>
         </div>
     </div>
 
-    <!-- Private Message Modal -->
-    <div class="conversation-modal" id="conversation-modal">
-        <div class="conversation-container">
-            <div class="conversation-header">
-                <h3 id="conversation-title">Conversation</h3>
-                <button class="close-conversation" onclick="closeConversation()">×</button>
-            </div>
-            <div id="conversation-messages"></div>
-            <div class="pm-input-area">
-                <input type="hidden" id="pm-conversation-id">
-                <input type="text" id="pm-message-input" placeholder="Type a message...">
-                <button id="pm-send-btn">Send</button>
-            </div>
-        </div>
-    </div>
-
     <script src="js/main.js"></script>
-    <script src="js/forum-data.js"></script>
-    <script src="js/forum.js"></script>
-    <script src="js/chatbot.js"></script>
     <script src="js/forum-chat.js"></script>
     
     <script>
@@ -262,18 +168,287 @@
         widget.classList.toggle('minimized');
     }
 
-    function closeConversation() {
-        const modal = document.getElementById('conversation-modal');
-        modal.style.display = 'none';
-    }
-
-    // Click outside modal to close
-    document.getElementById('conversation-modal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeConversation();
+    // User Management
+    let currentUser = JSON.parse(localStorage.getItem('autoilty_user'));
+    
+    function updateAuthButton() {
+        if (currentUser) {
+            document.getElementById('authBtn').style.display = 'none';
+            document.getElementById('profileBtn').style.display = 'block';
+            document.getElementById('profileBtn').textContent = currentUser.username;
+        } else {
+            document.getElementById('authBtn').style.display = 'block';
+            document.getElementById('profileBtn').style.display = 'none';
         }
-    });
+    }
+    
+    function showAuthModal() {
+        document.getElementById('authModal').style.display = 'flex';
+    }
+    
+    function closeAuthModal() {
+        document.getElementById('authModal').style.display = 'none';
+    }
+    
+    function handleAuth() {
+        const username = document.getElementById('usernameInput').value.trim();
+        const email = document.getElementById('emailInput').value.trim();
+        
+        if (!username || !email) {
+            alert('Please enter both username and email');
+            return;
+        }
+        
+        currentUser = {
+            id: 'user_' + Date.now(),
+            username: username,
+            email: email,
+            joined: new Date().toISOString()
+        };
+        
+        localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
+        closeAuthModal();
+        updateAuthButton();
+        alert('Welcome, ' + username + '!');
+    }
+    
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('autoilty_user');
+            currentUser = null;
+            updateAuthButton();
+            closeProfile();
+            loadThreads();
+        }
+    }
+    
+    // Thread Management
+    function showThreadModal() {
+        if (!currentUser) {
+            alert('Please sign up or login to create a thread');
+            showAuthModal();
+            return;
+        }
+        document.getElementById('threadModal').style.display = 'flex';
+    }
+    
+    function closeThreadModal() {
+        document.getElementById('threadModal').style.display = 'none';
+    }
+    
+    function submitThread() {
+        if (!currentUser) {
+            alert('Please login first');
+            return;
+        }
+        
+        const title = document.getElementById('threadTitle').value.trim();
+        const category = document.getElementById('threadCategory').value;
+        const content = document.getElementById('threadContent').value.trim();
+        const imageFile = document.getElementById('threadImage').files[0];
+        
+        if (!title || !content) {
+            alert('Please fill in title and content');
+            return;
+        }
+        
+        const thread = {
+            id: 'thread_' + Date.now(),
+            userId: currentUser.id,
+            username: currentUser.username,
+            title: title,
+            category: category,
+            content: content,
+            image: null,
+            created: new Date().toISOString(),
+            views: 0,
+            replies: 0,
+            likes: 0
+        };
+        
+        // Handle image
+        if (imageFile) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                thread.image = e.target.result;
+                saveAndCloseThread(thread);
+            };
+            reader.readAsDataURL(imageFile);
+        } else {
+            saveAndCloseThread(thread);
+        }
+    }
+    
+    function saveAndCloseThread(thread) {
+        let threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+        threads.unshift(thread);
+        localStorage.setItem('autoilty_threads', JSON.stringify(threads));
+        
+        closeThreadModal();
+        document.getElementById('threadTitle').value = '';
+        document.getElementById('threadContent').value = '';
+        document.getElementById('threadImage').value = '';
+        
+        alert('Thread posted successfully!');
+        loadThreads();
+    }
+    
+    function loadThreads() {
+        let threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+        
+        // Add sample threads if empty
+        if (threads.length === 0) {
+            threads = [
+                {id:'1',userId:'sample',username:'CarGuru2024',title:'Best winter tires for Ontario winters?',category:'maintenance',content:'Looking for recommendations for good winter tires. Budget around $800-1000 for a set.',image:null,created:new Date(Date.now()-3600000).toISOString(),views:234,replies:45,likes:23},
+                {id:'2',userId:'sample',username:'TechMike',title:'2024 Honda Civic vs Toyota Corolla - Which to buy?',category:'buying',content:'Torn between these two. Both seem great but need help deciding. Daily commuter, 30k km/year.',image:null,created:new Date(Date.now()-7200000).toISOString(),views:567,replies:89,likes:67},
+                {id:'3',userId:'sample',username:'ModEnthusiast',title:'Installed cold air intake - Before/After dyno results',category:'mods',content:'Just installed a cold air intake on my Mustang GT. Gained 15hp! Here are the dyno charts.',image:null,created:new Date(Date.now()-10800000).toISOString(),views:892,replies:124,likes:156}
+            ];
+        }
+        
+        renderThreads(threads);
+    }
+    
+    function renderThreads(threads) {
+        const container = document.getElementById('threadsContainer');
+        container.innerHTML = '';
+        
+        threads.forEach(thread => {
+            const card = document.createElement('div');
+            card.style.cssText = 'background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.08);transition:transform 0.3s;cursor:pointer;';
+            card.onmouseover = () => card.style.transform = 'translateY(-2px)';
+            card.onmouseout = () => card.style.transform = 'translateY(0)';
+            
+            const categoryColors = {
+                general: '#3498db',
+                maintenance: '#e67e22',
+                buying: '#27ae60',
+                mods: '#9b59b6',
+                events: '#f39c12',
+                regional: '#1abc9c'
+            };
+            
+            card.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+                    <h3 style="margin:0;font-size:20px;color:#1a1a1a;">${thread.title}</h3>
+                    <span style="background:${categoryColors[thread.category]};color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;white-space:nowrap;margin-left:16px;">${thread.category}</span>
+                </div>
+                <p style="color:#666;margin-bottom:16px;line-height:1.6;">${thread.content.substring(0,200)}${thread.content.length > 200 ? '...' : ''}</p>
+                ${thread.image ? `<img src="${thread.image}" style="width:100%;max-height:300px;object-fit:cover;border-radius:8px;margin-bottom:16px;">` : ''}
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid #f0f0f0;">
+                    <div style="display:flex;gap:16px;">
+                        <span style="color:#999;font-size:14px;">👤 ${thread.username}</span>
+                        <span style="color:#999;font-size:14px;">👁️ ${thread.views} views</span>
+                        <span style="color:#999;font-size:14px;">💬 ${thread.replies} replies</span>
+                        <span style="color:#999;font-size:14px;">⭐ ${thread.likes} likes</span>
+                    </div>
+                    <span style="color:#999;font-size:14px;">${formatTime(thread.created)}</span>
+                </div>
+                ${thread.userId === currentUser?.id ? `
+                    <div style="margin-top:16px;display:flex;gap:8px;">
+                        <button onclick="event.stopPropagation();editThread('${thread.id}')" style="flex:1;padding:10px;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Edit</button>
+                        <button onclick="event.stopPropagation();deleteThread('${thread.id}')" style="flex:1;padding:10px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Delete</button>
+                    </div>
+                ` : ''}
+            `;
+            
+            container.appendChild(card);
+        });
+    }
+    
+    function formatTime(timestamp) {
+        const diff = Date.now() - new Date(timestamp).getTime();
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (hours < 1) return 'Just now';
+        if (hours < 24) return `${hours}h ago`;
+        return `${days}d ago`;
+    }
+    
+    function filterThreads() {
+        let threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+        const category = document.getElementById('categoryFilter').value;
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const sort = document.getElementById('sortFilter').value;
+        
+        if (category) {
+            threads = threads.filter(t => t.category === category);
+        }
+        
+        if (search) {
+            threads = threads.filter(t => 
+                t.title.toLowerCase().includes(search) || 
+                t.content.toLowerCase().includes(search)
+            );
+        }
+        
+        // Sort
+        if (sort === 'popular') {
+            threads.sort((a, b) => (b.views + b.likes) - (a.views + a.likes));
+        } else if (sort === 'replies') {
+            threads.sort((a, b) => b.replies - a.replies);
+        }
+        
+        renderThreads(threads);
+    }
+    
+    function deleteThread(id) {
+        if (confirm('Delete this thread?')) {
+            let threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+            threads = threads.filter(t => t.id !== id);
+            localStorage.setItem('autoilty_threads', JSON.stringify(threads));
+            loadThreads();
+        }
+    }
+    
+    function editThread(id) {
+        alert('Edit functionality coming soon!');
+    }
+    
+    // Profile
+    function showProfile() {
+        if (!currentUser) return;
+        
+        document.getElementById('userInfo').innerHTML = `
+            <h4 style="margin-bottom:12px;">${currentUser.username}</h4>
+            <p style="color:#666;">${currentUser.email}</p>
+            <p style="color:#999;font-size:14px;margin-top:8px;">Member since ${new Date(currentUser.joined).toLocaleDateString()}</p>
+        `;
+        
+        const threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]')
+            .filter(t => t.userId === currentUser.id);
+        
+        const myThreadsDiv = document.getElementById('myThreads');
+        myThreadsDiv.innerHTML = threads.length === 0 ? 
+            '<p style="color:#999;">You haven\'t created any threads yet.</p>' :
+            threads.map(t => `
+                <div style="background:#f8f9fa;padding:16px;border-radius:8px;">
+                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+                        <strong>${t.title}</strong>
+                        <div style="display:flex;gap:8px;">
+                            <button onclick="editThread('${t.id}')" style="padding:6px 12px;background:#3498db;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Edit</button>
+                            <button onclick="deleteThread('${t.id}')" style="padding:6px 12px;background:#e74c3c;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Delete</button>
+                        </div>
+                    </div>
+                    <p style="color:#666;font-size:14px;margin-bottom:8px;">${t.content.substring(0,100)}...</p>
+                    <div style="display:flex;gap:12px;font-size:13px;color:#999;">
+                        <span>👁️ ${t.views} views</span>
+                        <span>💬 ${t.replies} replies</span>
+                        <span>⭐ ${t.likes} likes</span>
+                    </div>
+                </div>
+            `).join('');
+        
+        document.getElementById('profileModal').style.display = 'flex';
+    }
+    
+    function closeProfile() {
+        document.getElementById('profileModal').style.display = 'none';
+    }
+    
+    // Initialize
+    updateAuthButton();
+    loadThreads();
     </script>
 </body>
 </html>
-
