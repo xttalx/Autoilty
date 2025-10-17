@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/forum.css">
     <link rel="stylesheet" href="../css/backlinks.css">
-    <link rel="stylesheet" href="../css/forum-chat.css">
 </head>
 <body>
     <nav class="navbar">
@@ -151,31 +150,8 @@
         </div>
     </footer>
 
-    <!-- Community Chat Widget -->
-    <div class="community-chat-widget" id="communityChatWidget">
-        <div class="chat-widget-header" onclick="toggleCommunityChat()">
-            <div class="chat-widget-title">
-                <span>💬</span>
-                <span>Ask About Listings</span>
-            </div>
-            <button class="chat-toggle-btn" onclick="toggleCommunityChat(); event.stopPropagation();">−</button>
-        </div>
-        <div id="community-chat-messages"></div>
-        <div class="chat-input-area">
-            <input type="text" id="community-chat-input" placeholder="Ask about buying/selling...">
-            <button id="community-send-btn">📨</button>
-        </div>
-    </div>
-
     <script src="../js/main.js"></script>
     <script src="../js/backlinks.js"></script>
-    <script src="../js/forum-chat.js"></script>
-    
-    <script>
-    function toggleCommunityChat() {
-        const widget = document.getElementById('communityChatWidget');
-        widget.classList.toggle('minimized');
-    }
 
     // User Management
     let currentUser = JSON.parse(localStorage.getItem('autoilty_user'));
