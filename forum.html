@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/forum.css">
+    <link rel="stylesheet" href="css/forum-chat.css">
 </head>
 <body>
     <!-- Navigation -->
@@ -75,33 +76,61 @@
         </div>
     </div>
 
-    <!-- Threads List -->
+    <!-- Live Thread Chat -->
     <section class="threads-section">
         <div class="container">
-            <div class="threads-header">
-                <h2>Recent Discussions</h2>
-                <div class="threads-filters">
-                    <select id="categoryFilter" onchange="filterThreads()">
-                        <option value="">All Categories</option>
-                        <option value="general">General</option>
-                        <option value="maintenance">Maintenance</option>
-                        <option value="buying">Buying & Selling</option>
-                        <option value="reviews">Reviews</option>
-                    </select>
-                    <select id="sortBy" onchange="sortThreads()">
-                        <option value="recent">Most Recent</option>
-                        <option value="popular">Most Popular</option>
-                        <option value="replies">Most Replies</option>
-                    </select>
+            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 32px;">
+                <div>
+                    <div class="threads-header">
+                        <h2>Recent Discussions</h2>
+                        <div class="threads-filters">
+                            <select id="categoryFilter" onchange="filterThreads()">
+                                <option value="">All Categories</option>
+                                <option value="general">General</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="buying">Buying & Selling</option>
+                                <option value="reviews">Reviews</option>
+                            </select>
+                            <select id="sortBy" onchange="sortThreads()">
+                                <option value="recent">Most Recent</option>
+                                <option value="popular">Most Popular</option>
+                                <option value="replies">Most Replies</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="threads-list" id="threadsList">
+                        <!-- Populated by JavaScript -->
+                    </div>
+
+                    <!-- LIVE THREAD CHAT -->
+                    <div class="thread-chat-section">
+                        <div class="thread-chat-header">
+                            <h3>💬 Live Discussion</h3>
+                            <div class="online-count">
+                                <span class="online-indicator"></span>
+                                <span>12 online now</span>
+                            </div>
+                        </div>
+                        <div id="thread-messages"></div>
+                        <div class="message-input-container">
+                            <textarea id="thread-message-input" placeholder="Join the conversation..." rows="2"></textarea>
+                            <button id="thread-send-btn">Send 📨</button>
+                        </div>
+                    </div>
+                    
+                    <div class="pagination" id="pagination">
+                        <!-- Populated by JavaScript -->
+                    </div>
                 </div>
-            </div>
-            
-            <div class="threads-list" id="threadsList">
-                <!-- Populated by JavaScript -->
-            </div>
-            
-            <div class="pagination" id="pagination">
-                <!-- Populated by JavaScript -->
+
+                <!-- ACTIVE USERS SIDEBAR -->
+                <aside>
+                    <div class="active-users-sidebar">
+                        <h3>👥 Active Users</h3>
+                        <div id="active-users-list"></div>
+                    </div>
+                </aside>
             </div>
         </div>
     </section>
@@ -189,10 +218,62 @@
         <span class="chat-badge">Ask me!</span>
     </button>
 
+    <!-- Community Chat Widget -->
+    <div class="community-chat-widget" id="communityChatWidget">
+        <div class="chat-widget-header" onclick="toggleCommunityChat()">
+            <div class="chat-widget-title">
+                <span>👥</span>
+                <span>Community Chat</span>
+            </div>
+            <button class="chat-toggle-btn" onclick="toggleCommunityChat(); event.stopPropagation();">−</button>
+        </div>
+        <div id="community-chat-messages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="community-chat-input" placeholder="Message the community...">
+            <button id="community-send-btn">📨</button>
+        </div>
+    </div>
+
+    <!-- Private Message Modal -->
+    <div class="conversation-modal" id="conversation-modal">
+        <div class="conversation-container">
+            <div class="conversation-header">
+                <h3 id="conversation-title">Conversation</h3>
+                <button class="close-conversation" onclick="closeConversation()">×</button>
+            </div>
+            <div id="conversation-messages"></div>
+            <div class="pm-input-area">
+                <input type="hidden" id="pm-conversation-id">
+                <input type="text" id="pm-message-input" placeholder="Type a message...">
+                <button id="pm-send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/main.js"></script>
     <script src="js/forum-data.js"></script>
     <script src="js/forum.js"></script>
     <script src="js/chatbot.js"></script>
+    <script src="js/forum-chat.js"></script>
+    
+    <script>
+    function toggleCommunityChat() {
+        const widget = document.getElementById('communityChatWidget');
+        widget.classList.toggle('minimized');
+    }
+
+    function closeConversation() {
+        const modal = document.getElementById('conversation-modal');
+        modal.style.display = 'none';
+    }
+
+    // Click outside modal to close
+    document.getElementById('conversation-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeConversation();
+        }
+    });
+    </script>
 </body>
 </html>
 
