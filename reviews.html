@@ -120,6 +120,31 @@
             <div class="review-card"><h3>Honest Mechanics</h3><p>Vancouver, BC</p><div class="rating">⭐⭐⭐⭐⭐ 4.9/5</div><p>203 reviews</p></div>
         `;
     </script>
+
+    <!-- Community Chat Widget -->
+    <div class="community-chat-widget" id="communityChatWidget">
+        <div class="chat-widget-header" onclick="toggleCommunityChat()">
+            <div class="chat-widget-title">
+                <span>💬</span>
+                <span>Ask About Reviews</span>
+            </div>
+            <button class="chat-toggle-btn" onclick="toggleCommunityChat(); event.stopPropagation();">−</button>
+        </div>
+        <div id="community-chat-messages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="community-chat-input" placeholder="Ask about vehicle reviews...">
+            <button id="community-send-btn">📨</button>
+        </div>
+    </div>
+
+    <script src="js/forum-chat.js"></script>
+    
+    <script>
+    function toggleCommunityChat() {
+        const widget = document.getElementById('communityChatWidget');
+        widget.classList.toggle('minimized');
+    }
+    </script>
 </body>
 </html>
 
