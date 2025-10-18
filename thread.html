@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thread Discussion | Autoilty</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/forum.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="brand">AUTOILTY</a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="forum.html" class="nav-link active">Forum</a>
+                <a href="qa.html" class="nav-link">Q&A</a>
+                <a href="guides.html" class="nav-link">Guides</a>
+                <a href="tools.html" class="nav-link">Tools</a>
+            </div>
+            <button class="btn-primary" onclick="showAuthModal()" id="authBtn">Sign Up / Login</button>
+            <button class="btn-primary" onclick="showProfile()" id="profileBtn" style="display:none;">My Profile</button>
+        </div>
+    </nav>
+
+    <div class="container" style="padding:48px 0;max-width:900px;">
+        <a href="forum.html" style="display:inline-block;margin-bottom:24px;color:#E2231A;text-decoration:none;font-weight:600;">← Back to Forum</a>
+        
+        <!-- Thread Content -->
+        <div id="threadContent" style="background:#fff;border-radius:12px;padding:32px;margin-bottom:32px;box-shadow:0 2px 8px rgba(0,0,0,0.08);"></div>
+
+        <!-- Replies Section -->
+        <h2 style="margin-bottom:24px;">Replies (<span id="replyCount">0</span>)</h2>
+        <div id="repliesContainer" style="display:grid;gap:20px;margin-bottom:32px;"></div>
+
+        <!-- Reply Form -->
+        <div style="background:#fff;border-radius:12px;padding:32px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+            <h3 style="margin-bottom:20px;">Post a Reply</h3>
+            <textarea id="replyContent" placeholder="Write your reply..." rows="6" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;resize:vertical;margin-bottom:16px;"></textarea>
+            <input type="file" id="replyImage" accept="image/*" style="width:100%;margin-bottom:16px;">
+            <button onclick="postReply()" style="width:100%;padding:14px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Post Reply</button>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:400px;width:90%;">
+            <h2 style="margin-bottom:24px;">Sign Up / Login</h2>
+            <input type="text" id="usernameInput" placeholder="Username" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="email" id="emailInput" placeholder="Email" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <button onclick="handleAuth()" style="width:100%;padding:14px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Continue</button>
+            <button onclick="closeAuthModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:800px;width:90%;margin:40px auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                <h2 style="margin:0;">My Profile</h2>
+                <button onclick="logout()" style="padding:8px 16px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;">Logout</button>
+            </div>
+            <div id="userInfo" style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:24px;"></div>
+            
+            <h3 style="margin-bottom:16px;">My Threads</h3>
+            <div id="myThreads" style="display:grid;gap:16px;margin-bottom:32px;"></div>
+            
+            <h3 style="margin-bottom:16px;">My Replies</h3>
+            <div id="myReplies" style="display:grid;gap:16px;"></div>
+            
+            <button onclick="closeProfile()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-top:24px;">Close</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="forum.html">Forum</a></li>
+                        <li><a href="qa.html">Q&A</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="guides.html">Guides</a></li>
+                        <li><a href="tools.html">Tools</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Autoilty. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+    // User Management
+    let currentUser = JSON.parse(localStorage.getItem('autoilty_user'));
+    
+    function updateAuthButton() {
+        if (currentUser) {
+            document.getElementById('authBtn').style.display = 'none';
+            document.getElementById('profileBtn').style.display = 'block';
+            document.getElementById('profileBtn').textContent = currentUser.username;
+        } else {
+            document.getElementById('authBtn').style.display = 'block';
+            document.getElementById('profileBtn').style.display = 'none';
+        }
+    }
+    
+    function showAuthModal() {
+        document.getElementById('authModal').style.display = 'flex';
+    }
+    
+    function closeAuthModal() {
+        document.getElementById('authModal').style.display = 'none';
+    }
+    
+    function handleAuth() {
+        const username = document.getElementById('usernameInput').value.trim();
+        const email = document.getElementById('emailInput').value.trim();
+        
+        if (!username || !email) {
+            alert('Please enter both username and email');
+            return;
+        }
+        
+        currentUser = {
+            id: 'user_' + Date.now(),
+            username: username,
+            email: email,
+            joined: new Date().toISOString()
+        };
+        
+        localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
+        closeAuthModal();
+        updateAuthButton();
+        alert('Welcome, ' + username + '!');
+    }
+    
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('autoilty_user');
+            currentUser = null;
+            updateAuthButton();
+            closeProfile();
+        }
+    }
+
+    // Get thread ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const threadId = urlParams.get('id');
+    
+    // Load Thread
+    function loadThread() {
+        if (!threadId) {
+            window.location.href = 'forum.html';
+            return;
+        }
+        
+        const threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+        const thread = threads.find(t => t.id === threadId);
+        
+        if (!thread) {
+            alert('Thread not found');
+            window.location.href = 'forum.html';
+            return;
+        }
+        
+        // Update views
+        thread.views++;
+        localStorage.setItem('autoilty_threads', JSON.stringify(threads));
+        
+        const categoryColors = {
+            general: '#3498db',
+            maintenance: '#e67e22',
+            buying: '#27ae60',
+            mods: '#9b59b6',
+            events: '#f39c12',
+            regional: '#1abc9c'
+        };
+        
+        document.getElementById('threadContent').innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px;">
+                <h1 style="margin:0;font-size:28px;">${thread.title}</h1>
+                <span style="background:${categoryColors[thread.category]};color:#fff;padding:6px 16px;border-radius:12px;font-size:14px;font-weight:600;white-space:nowrap;margin-left:16px;">${thread.category}</span>
+            </div>
+            <div style="display:flex;gap:16px;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #f0f0f0;">
+                <span style="color:#666;font-size:14px;">👤 ${thread.username}</span>
+                <span style="color:#666;font-size:14px;">📅 ${formatTime(thread.created)}</span>
+                <span style="color:#666;font-size:14px;">👁️ ${thread.views} views</span>
+            </div>
+            <div style="line-height:1.8;color:#333;font-size:16px;margin-bottom:24px;">${thread.content}</div>
+            ${thread.image ? `<img src="${thread.image}" style="width:100%;max-height:500px;object-fit:cover;border-radius:8px;margin-bottom:16px;">` : ''}
+        `;
+        
+        loadReplies();
+    }
+    
+    // Load Replies
+    function loadReplies() {
+        const replies = JSON.parse(localStorage.getItem('autoilty_replies') || '[]')
+            .filter(r => r.threadId === threadId)
+            .sort((a, b) => new Date(a.created) - new Date(b.created));
+        
+        document.getElementById('replyCount').textContent = replies.length;
+        
+        const container = document.getElementById('repliesContainer');
+        
+        if (replies.length === 0) {
+            container.innerHTML = '<p style="color:#999;text-align:center;padding:40px;">No replies yet. Be the first to reply!</p>';
+            return;
+        }
+        
+        container.innerHTML = replies.map(reply => `
+            <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0;">
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <span style="font-weight:600;color:#1a1a1a;">👤 ${reply.username}</span>
+                        <span style="color:#999;font-size:14px;">${formatTime(reply.created)}</span>
+                    </div>
+                    ${reply.userId === currentUser?.id ? `
+                        <button onclick="deleteReply('${reply.id}')" style="padding:6px 12px;background:#e74c3c;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Delete</button>
+                    ` : ''}
+                </div>
+                <div style="line-height:1.6;color:#333;margin-bottom:12px;">${reply.content}</div>
+                ${reply.image ? `<img src="${reply.image}" style="width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-top:12px;">` : ''}
+            </div>
+        `).join('');
+    }
+    
+    // Post Reply
+    function postReply() {
+        if (!currentUser) {
+            alert('Please sign up or login to post a reply');
+            showAuthModal();
+            return;
+        }
+        
+        const content = document.getElementById('replyContent').value.trim();
+        const imageFile = document.getElementById('replyImage').files[0];
+        
+        if (!content) {
+            alert('Please write a reply');
+            return;
+        }
+        
+        const reply = {
+            id: 'reply_' + Date.now(),
+            threadId: threadId,
+            userId: currentUser.id,
+            username: currentUser.username,
+            content: content,
+            image: null,
+            created: new Date().toISOString()
+        };
+        
+        if (imageFile) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                reply.image = e.target.result;
+                saveReply(reply);
+            };
+            reader.readAsDataURL(imageFile);
+        } else {
+            saveReply(reply);
+        }
+    }
+    
+    function saveReply(reply) {
+        let replies = JSON.parse(localStorage.getItem('autoilty_replies') || '[]');
+        replies.push(reply);
+        localStorage.setItem('autoilty_replies', JSON.stringify(replies));
+        
+        // Update thread reply count
+        let threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+        const thread = threads.find(t => t.id === threadId);
+        if (thread) {
+            thread.replies++;
+            localStorage.setItem('autoilty_threads', JSON.stringify(threads));
+        }
+        
+        document.getElementById('replyContent').value = '';
+        document.getElementById('replyImage').value = '';
+        
+        alert('Reply posted!');
+        loadReplies();
+    }
+    
+    function deleteReply(replyId) {
+        if (confirm('Delete this reply?')) {
+            let replies = JSON.parse(localStorage.getItem('autoilty_replies') || '[]');
+            replies = replies.filter(r => r.id !== replyId);
+            localStorage.setItem('autoilty_replies', JSON.stringify(replies));
+            
+            // Update thread reply count
+            let threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+            const thread = threads.find(t => t.id === threadId);
+            if (thread && thread.replies > 0) {
+                thread.replies--;
+                localStorage.setItem('autoilty_threads', JSON.stringify(threads));
+            }
+            
+            loadReplies();
+        }
+    }
+    
+    function formatTime(timestamp) {
+        const diff = Date.now() - new Date(timestamp).getTime();
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (hours < 1) return 'Just now';
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        return new Date(timestamp).toLocaleDateString();
+    }
+    
+    // Profile
+    function showProfile() {
+        if (!currentUser) return;
+        
+        document.getElementById('userInfo').innerHTML = `
+            <h4 style="margin-bottom:12px;">${currentUser.username}</h4>
+            <p style="color:#666;">${currentUser.email}</p>
+            <p style="color:#999;font-size:14px;margin-top:8px;">Member since ${new Date(currentUser.joined).toLocaleDateString()}</p>
+        `;
+        
+        // My Threads
+        const threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]')
+            .filter(t => t.userId === currentUser.id);
+        
+        const myThreadsDiv = document.getElementById('myThreads');
+        myThreadsDiv.innerHTML = threads.length === 0 ? 
+            '<p style="color:#999;">You haven\'t created any threads yet.</p>' :
+            threads.map(t => `
+                <div style="background:#f8f9fa;padding:16px;border-radius:8px;">
+                    <a href="thread.html?id=${t.id}" style="font-weight:600;color:#E2231A;text-decoration:none;">${t.title}</a>
+                    <div style="display:flex;gap:12px;font-size:13px;color:#999;margin-top:8px;">
+                        <span>👁️ ${t.views} views</span>
+                        <span>💬 ${t.replies} replies</span>
+                    </div>
+                </div>
+            `).join('');
+        
+        // My Replies
+        const replies = JSON.parse(localStorage.getItem('autoilty_replies') || '[]')
+            .filter(r => r.userId === currentUser.id);
+        
+        const myRepliesDiv = document.getElementById('myReplies');
+        myRepliesDiv.innerHTML = replies.length === 0 ?
+            '<p style="color:#999;">You haven\'t posted any replies yet.</p>' :
+            replies.map(r => {
+                const thread = JSON.parse(localStorage.getItem('autoilty_threads') || '[]').find(t => t.id === r.threadId);
+                return `
+                    <div style="background:#f8f9fa;padding:16px;border-radius:8px;">
+                        <div style="font-size:12px;color:#999;margin-bottom:8px;">Reply in: <a href="thread.html?id=${r.threadId}" style="color:#E2231A;">${thread?.title || 'Thread'}</a></div>
+                        <p style="color:#666;font-size:14px;">${r.content.substring(0,100)}${r.content.length > 100 ? '...' : ''}</p>
+                        <div style="font-size:12px;color:#999;margin-top:8px;">${formatTime(r.created)}</div>
+                    </div>
+                `;
+            }).join('');
+        
+        document.getElementById('profileModal').style.display = 'flex';
+    }
+    
+    function closeProfile() {
+        document.getElementById('profileModal').style.display = 'none';
+    }
+    
+    // Initialize
+    updateAuthButton();
+    loadThread();
+    </script>
+</body>
+</html>

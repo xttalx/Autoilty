@@ -81,19 +81,19 @@
             <select id="threadCategory" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
                 <option value="general">General Discussion</option>
                 <option value="maintenance">Maintenance & Repair</option>
-                <option value="buying">Buying & Selling</option>
+                        <option value="buying">Buying & Selling</option>
                 <option value="mods">Modifications & Performance</option>
                 <option value="events">Events & Meetups</option>
                 <option value="regional">Regional</option>
-            </select>
+                    </select>
             <textarea id="threadContent" placeholder="What's your question or topic?" rows="8" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;resize:vertical;"></textarea>
             <input type="file" id="threadImage" accept="image/*" style="width:100%;margin-bottom:16px;">
             <div style="font-size:12px;color:#666;margin-bottom:16px;">✓ Optional: Add an image to your thread</div>
             <button onclick="submitThread()" style="width:100%;padding:14px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Post Thread</button>
             <button onclick="closeThreadModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
-        </div>
-    </div>
-
+                </div>
+            </div>
+            
     <!-- Profile Modal -->
     <div id="profileModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
         <div style="background:#fff;padding:40px;border-radius:16px;max-width:800px;width:90%;margin:40px auto;">
@@ -102,8 +102,13 @@
                 <button onclick="logout()" style="padding:8px 16px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;">Logout</button>
             </div>
             <div id="userInfo" style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:24px;"></div>
+            
             <h3 style="margin-bottom:16px;">My Threads</h3>
-            <div id="myThreads" style="display:grid;gap:16px;"></div>
+            <div id="myThreads" style="display:grid;gap:16px;margin-bottom:32px;"></div>
+            
+            <h3 style="margin-bottom:16px;">My Replies</h3>
+            <div id="myReplies" style="display:grid;gap:16px;"></div>
+            
             <button onclick="closeProfile()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-top:24px;">Close</button>
         </div>
     </div>
@@ -292,6 +297,7 @@
             card.style.cssText = 'background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.08);transition:transform 0.3s;cursor:pointer;';
             card.onmouseover = () => card.style.transform = 'translateY(-2px)';
             card.onmouseout = () => card.style.transform = 'translateY(0)';
+            card.onclick = () => window.location.href = `thread.html?id=${thread.id}`;
             
             const categoryColors = {
                 general: '#3498db',
@@ -399,7 +405,7 @@
             threads.map(t => `
                 <div style="background:#f8f9fa;padding:16px;border-radius:8px;">
                     <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
-                        <strong>${t.title}</strong>
+                        <a href="thread.html?id=${t.id}" style="font-weight:600;color:#E2231A;text-decoration:none;">${t.title}</a>
                         <div style="display:flex;gap:8px;">
                             <button onclick="editThread('${t.id}')" style="padding:6px 12px;background:#3498db;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Edit</button>
                             <button onclick="deleteThread('${t.id}')" style="padding:6px 12px;background:#e74c3c;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Delete</button>
@@ -413,6 +419,26 @@
                     </div>
                 </div>
             `).join('');
+        
+        // My Replies
+        const replies = JSON.parse(localStorage.getItem('autoilty_replies') || '[]')
+            .filter(r => r.userId === currentUser.id);
+        
+        const allThreads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+        
+        const myRepliesDiv = document.getElementById('myReplies');
+        myRepliesDiv.innerHTML = replies.length === 0 ?
+            '<p style="color:#999;">You haven\'t posted any replies yet.</p>' :
+            replies.map(r => {
+                const thread = allThreads.find(t => t.id === r.threadId);
+                return `
+                    <div style="background:#f8f9fa;padding:16px;border-radius:8px;">
+                        <div style="font-size:12px;color:#999;margin-bottom:8px;">Reply in: <a href="thread.html?id=${r.threadId}" style="color:#E2231A;">${thread?.title || 'Thread'}</a></div>
+                        <p style="color:#666;font-size:14px;">${r.content.substring(0,100)}${r.content.length > 100 ? '...' : ''}</p>
+                        <div style="font-size:12px;color:#999;margin-top:8px;">${formatTime(r.created)}</div>
+                    </div>
+                `;
+            }).join('');
         
         document.getElementById('profileModal').style.display = 'flex';
     }
