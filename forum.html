@@ -60,6 +60,11 @@
 
         <!-- Threads List -->
         <div id="threadsContainer" style="display:grid;gap:20px;"></div>
+        
+        <div id="noThreads" style="display:none;text-align:center;padding:60px 20px;background:#f8f9fa;border-radius:12px;">
+            <h3 style="color:#666;margin-bottom:12px;">No threads yet</h3>
+            <p style="color:#999;">Be the first to start a discussion!</p>
+        </div>
     </div>
 
     <!-- Auth Modal -->
@@ -81,19 +86,19 @@
             <select id="threadCategory" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
                 <option value="general">General Discussion</option>
                 <option value="maintenance">Maintenance & Repair</option>
-                        <option value="buying">Buying & Selling</option>
+                <option value="buying">Buying & Selling</option>
                 <option value="mods">Modifications & Performance</option>
                 <option value="events">Events & Meetups</option>
                 <option value="regional">Regional</option>
-                    </select>
+            </select>
             <textarea id="threadContent" placeholder="What's your question or topic?" rows="8" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;resize:vertical;"></textarea>
             <input type="file" id="threadImage" accept="image/*" style="width:100%;margin-bottom:16px;">
             <div style="font-size:12px;color:#666;margin-bottom:16px;">✓ Optional: Add an image to your thread</div>
             <button onclick="submitThread()" style="width:100%;padding:14px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Post Thread</button>
             <button onclick="closeThreadModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
-                </div>
-            </div>
-            
+        </div>
+    </div>
+
     <!-- Profile Modal -->
     <div id="profileModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
         <div style="background:#fff;padding:40px;border-radius:16px;max-width:800px;width:90%;margin:40px auto;">
@@ -189,7 +194,7 @@
         localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
         closeAuthModal();
         updateAuthButton();
-        alert('Welcome, ' + username + '!');
+        alert('Welcome, ' + username + '! You can now create threads.');
     }
     
     function logout() {
@@ -279,9 +284,9 @@
         // Add sample threads if empty
         if (threads.length === 0) {
             threads = [
-                {id:'1',userId:'sample',username:'CarGuru2024',title:'Best winter tires for Ontario winters?',category:'maintenance',content:'Looking for recommendations for good winter tires. Budget around $800-1000 for a set.',image:null,created:new Date(Date.now()-3600000).toISOString(),views:234,replies:45,likes:23},
-                {id:'2',userId:'sample',username:'TechMike',title:'2024 Honda Civic vs Toyota Corolla - Which to buy?',category:'buying',content:'Torn between these two. Both seem great but need help deciding. Daily commuter, 30k km/year.',image:null,created:new Date(Date.now()-7200000).toISOString(),views:567,replies:89,likes:67},
-                {id:'3',userId:'sample',username:'ModEnthusiast',title:'Installed cold air intake - Before/After dyno results',category:'mods',content:'Just installed a cold air intake on my Mustang GT. Gained 15hp! Here are the dyno charts.',image:null,created:new Date(Date.now()-10800000).toISOString(),views:892,replies:124,likes:156}
+                {id:'sample1',userId:'sample',username:'CarGuru2024',title:'Best winter tires for Ontario winters?',category:'maintenance',content:'Looking for recommendations for good winter tires. Budget around $800-1000 for a set.',image:null,created:new Date(Date.now()-3600000).toISOString(),views:234,replies:45,likes:23},
+                {id:'sample2',userId:'sample',username:'TechMike',title:'2024 Honda Civic vs Toyota Corolla - Which to buy?',category:'buying',content:'Torn between these two. Both seem great but need help deciding. Daily commuter, 30k km/year.',image:null,created:new Date(Date.now()-7200000).toISOString(),views:567,replies:89,likes:67},
+                {id:'sample3',userId:'sample',username:'ModEnthusiast',title:'Installed cold air intake - Before/After dyno results',category:'mods',content:'Just installed a cold air intake on my Mustang GT. Gained 15hp! Here are the dyno charts.',image:null,created:new Date(Date.now()-10800000).toISOString(),views:892,replies:124,likes:156}
             ];
         }
         
@@ -290,6 +295,16 @@
     
     function renderThreads(threads) {
         const container = document.getElementById('threadsContainer');
+        const noThreads = document.getElementById('noThreads');
+        
+        if (threads.length === 0) {
+            container.style.display = 'none';
+            noThreads.style.display = 'block';
+            return;
+        }
+        
+        container.style.display = 'grid';
+        noThreads.style.display = 'none';
         container.innerHTML = '';
         
         threads.forEach(thread => {
@@ -343,7 +358,8 @@
         
         if (hours < 1) return 'Just now';
         if (hours < 24) return `${hours}h ago`;
-        return `${days}d ago`;
+        if (days < 7) return `${days}d ago`;
+        return new Date(timestamp).toLocaleDateString();
     }
     
     function filterThreads() {
