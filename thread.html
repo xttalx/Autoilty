@@ -55,6 +55,23 @@
         </div>
     </div>
 
+    <!-- Email Confirmation Modal -->
+    <div id="emailConfirmModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10001;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:500px;width:90%;text-align:center;">
+            <div style="font-size:64px;margin-bottom:20px;">📧</div>
+            <h2 style="margin-bottom:16px;">Verify Your Email</h2>
+            <p style="color:#666;margin-bottom:24px;">We've sent a confirmation email to:</p>
+            <p style="font-weight:600;color:#E2231A;margin-bottom:24px;" id="confirmEmail"></p>
+            <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:24px;">
+                <p style="font-size:14px;color:#666;margin-bottom:12px;">Your confirmation code:</p>
+                <p style="font-size:24px;font-weight:700;color:#E2231A;letter-spacing:4px;" id="confirmCode"></p>
+            </div>
+            <p style="font-size:14px;color:#999;margin-bottom:24px;">Click the button below to simulate email confirmation</p>
+            <button onclick="confirmEmail()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;font-size:16px;">✓ Confirm Email</button>
+            <p style="font-size:12px;color:#999;margin-top:16px;">In production, you would click a link in your email to confirm</p>
+        </div>
+    </div>
+
     <!-- Profile Modal -->
     <div id="profileModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
         <div style="background:#fff;padding:40px;border-radius:16px;max-width:800px;width:90%;margin:40px auto;">
@@ -131,17 +148,53 @@
             return;
         }
         
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+        
+        // Check if user already exists with confirmed email
+        const existingUser = JSON.parse(localStorage.getItem('autoilty_user'));
+        if (existingUser && existingUser.email === email && existingUser.confirmed) {
+            currentUser = existingUser;
+            localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
+            closeAuthModal();
+            updateAuthButton();
+            alert('Welcome back, ' + currentUser.username + '!');
+            return;
+        }
+        
+        // Create new unconfirmed user
         currentUser = {
             id: 'user_' + Date.now(),
             username: username,
             email: email,
-            joined: new Date().toISOString()
+            joined: new Date().toISOString(),
+            confirmed: false,
+            confirmationCode: Math.random().toString(36).substring(2, 10).toUpperCase()
         };
         
         localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
         closeAuthModal();
+        
+        // Show email confirmation modal
+        showEmailConfirmation();
+    }
+    
+    function showEmailConfirmation() {
+        document.getElementById('confirmEmail').textContent = currentUser.email;
+        document.getElementById('confirmCode').textContent = currentUser.confirmationCode;
+        document.getElementById('emailConfirmModal').style.display = 'flex';
+    }
+    
+    function confirmEmail() {
+        currentUser.confirmed = true;
+        localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
+        document.getElementById('emailConfirmModal').style.display = 'none';
         updateAuthButton();
-        alert('Welcome, ' + username + '!');
+        alert('✓ Email confirmed! Welcome, ' + currentUser.username + '! You can now post replies.');
     }
     
     function logout() {
@@ -243,6 +296,12 @@
             return;
         }
         
+        if (!currentUser.confirmed) {
+            alert('⚠️ Please confirm your email before posting replies.\n\nCheck your email for the confirmation link.');
+            showEmailConfirmation();
+            return;
+        }
+        
         const content = document.getElementById('replyContent').value.trim();
         const imageFile = document.getElementById('replyImage').files[0];
         
@@ -326,10 +385,17 @@
     function showProfile() {
         if (!currentUser) return;
         
+        const confirmStatus = currentUser.confirmed ? 
+            '<span style="color:#27ae60;font-weight:600;">✓ Email Verified</span>' : 
+            '<span style="color:#e67e22;font-weight:600;">⚠️ Email Not Verified</span>';
+        
         document.getElementById('userInfo').innerHTML = `
             <h4 style="margin-bottom:12px;">${currentUser.username}</h4>
-            <p style="color:#666;">${currentUser.email}</p>
+            <p style="color:#666;">${currentUser.email} ${confirmStatus}</p>
             <p style="color:#999;font-size:14px;margin-top:8px;">Member since ${new Date(currentUser.joined).toLocaleDateString()}</p>
+            ${!currentUser.confirmed ? `
+                <button onclick="showEmailConfirmation()" style="margin-top:12px;padding:10px 20px;background:#E2231A;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Verify Email Now</button>
+            ` : ''}
         `;
         
         // My Threads
