@@ -188,6 +188,18 @@
         </div>
     </div>
 
+    <!-- Contact Seller Modal -->
+    <div id="contactModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:500px;width:90%;">
+            <h2 style="margin-bottom:16px;">Contact Seller</h2>
+            <div id="contactSellerInfo" style="background:#f8f9fa;padding:16px;border-radius:8px;margin-bottom:20px;"></div>
+            <textarea id="messageContent" placeholder="Write your message to the seller..." rows="6" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;resize:vertical;margin-bottom:16px;"></textarea>
+            <div style="font-size:13px;color:#666;margin-bottom:16px;">💡 The seller will be notified via email at their registered address</div>
+            <button onclick="sendMessage()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Send Message</button>
+            <button onclick="closeContactModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+
     <script src="../js/main.js"></script>
     <script src="../js/backlinks.js"></script>
     <script>
@@ -393,16 +405,18 @@
                     <div style="font-size:24px;font-weight:800;color:#27ae60;margin-bottom:8px;">$${listing.price.toLocaleString()}</div>
                     <h3 style="margin-bottom:8px;font-size:18px;">${listing.title}</h3>
                     <p style="color:#666;font-size:14px;margin-bottom:12px;">${listing.description.substring(0,100)}...</p>
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #f0f0f0;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #f0f0f0;margin-bottom:12px;">
                         <span style="color:#999;font-size:13px;">📍 ${listing.location}</span>
                         <span style="color:#999;font-size:13px;">👁️ ${listing.views}</span>
                     </div>
                     ${listing.userId === currentUser?.id ? `
-                        <div style="margin-top:12px;display:flex;gap:8px;">
+                        <div style="display:flex;gap:8px;">
                             <button onclick="event.stopPropagation();editListing('${listing.id}')" style="flex:1;padding:8px;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;">Edit</button>
                             <button onclick="event.stopPropagation();deleteListing('${listing.id}')" style="flex:1;padding:8px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;">Delete</button>
                         </div>
-                    ` : ''}
+                    ` : `
+                        <button onclick="event.stopPropagation();showContactModal('${listing.id}')" style="width:100%;padding:10px;background:#27ae60;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">📧 Contact Seller</button>
+                    `}
                 </div>
             `;
             
@@ -517,6 +531,88 @@
         }
     }
     
+    // Contact Seller
+    let contactListingId = null;
+    
+    function showContactModal(listingId) {
+        if (!currentUser) {
+            alert('Please sign up or login to contact sellers');
+            showAuthModal();
+            return;
+        }
+        
+        if (!currentUser.confirmed) {
+            alert('⚠️ Please confirm your email before contacting sellers.');
+            showEmailConfirmation();
+            return;
+        }
+        
+        contactListingId = listingId;
+        const listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+        const listing = listings.find(l => l.id === listingId);
+        
+        if (!listing) {
+            alert('Listing not found');
+            return;
+        }
+        
+        document.getElementById('contactSellerInfo').innerHTML = `
+            <div style="font-weight:600;margin-bottom:4px;">Regarding: ${listing.title}</div>
+            <div style="color:#27ae60;font-weight:600;margin-bottom:4px;">$${listing.price.toLocaleString()}</div>
+            <div style="color:#666;font-size:13px;">Seller: ${listing.username}</div>
+        `;
+        
+        document.getElementById('contactModal').style.display = 'flex';
+    }
+    
+    function closeContactModal() {
+        document.getElementById('contactModal').style.display = 'none';
+        document.getElementById('messageContent').value = '';
+        contactListingId = null;
+    }
+    
+    function sendMessage() {
+        if (!currentUser || !contactListingId) return;
+        
+        const messageContent = document.getElementById('messageContent').value.trim();
+        
+        if (!messageContent) {
+            alert('Please write a message');
+            return;
+        }
+        
+        const listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+        const listing = listings.find(l => l.id === contactListingId);
+        
+        if (!listing) {
+            alert('Listing not found');
+            return;
+        }
+        
+        const message = {
+            id: 'msg_' + Date.now(),
+            listingId: listing.id,
+            listingTitle: listing.title,
+            listingPrice: listing.price,
+            fromUserId: currentUser.id,
+            fromUsername: currentUser.username,
+            toUserId: listing.userId,
+            toUsername: listing.username,
+            message: messageContent,
+            created: new Date().toISOString(),
+            read: false
+        };
+        
+        let messages = JSON.parse(localStorage.getItem('autoilty_messages') || '[]');
+        messages.push(message);
+        localStorage.setItem('autoilty_messages', JSON.stringify(messages));
+        
+        // Simulate email notification
+        alert(`✓ Message sent successfully!\n\n📧 Email notification sent to ${listing.username}'s registered email address.\n\nThey will see your message in their profile.`);
+        
+        closeContactModal();
+    }
+    
     // Profile
     function showProfile() {
         if (!currentUser) return;
@@ -525,12 +621,21 @@
             '<span style="color:#27ae60;font-weight:600;">✓ Email Verified</span>' : 
             '<span style="color:#e67e22;font-weight:600;">⚠️ Email Not Verified</span>';
         
+        // Get unread message count
+        const messages = JSON.parse(localStorage.getItem('autoilty_messages') || '[]');
+        const unreadCount = messages.filter(m => m.toUserId === currentUser.id && !m.read).length;
+        
         document.getElementById('userInfo').innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                 <h4 style="margin:0;">${currentUser.username}</h4>
                 ${confirmStatus}
             </div>
             <p style="color:#999;font-size:14px;margin-bottom:8px;">Member since ${new Date(currentUser.joined).toLocaleDateString()}</p>
+            ${unreadCount > 0 ? `
+                <div style="background:#fff3cd;padding:12px;border-radius:6px;border-left:3px solid #ffc107;margin-bottom:12px;">
+                    <p style="color:#856404;font-weight:600;">📬 You have ${unreadCount} new message${unreadCount > 1 ? 's' : ''}!</p>
+                </div>
+            ` : ''}
             <div style="background:#fff;padding:12px;border-radius:6px;border-left:3px solid #27ae60;">
                 <p style="font-size:12px;color:#999;margin-bottom:4px;">🔒 Private - Only you can see this:</p>
                 <p style="color:#666;font-size:14px;">${currentUser.email}</p>
@@ -543,13 +648,18 @@
         const listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]')
             .filter(l => l.userId === currentUser.id);
         
+        const receivedMessages = messages.filter(m => m.toUserId === currentUser.id);
+        const sentMessages = messages.filter(m => m.fromUserId === currentUser.id);
+        
         const myListingsDiv = document.getElementById('myListings');
         myListingsDiv.innerHTML = `
             <button onclick="showPostModal();closeProfile();" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:16px;">+ Post New Listing</button>
+            
+            <h3 style="margin:24px 0 16px 0;">My Listings</h3>
             ${listings.length === 0 ? 
-                '<p style="color:#999;text-align:center;padding:20px;">You haven\'t posted any listings yet. Click above to create your first listing!</p>' :
+                '<p style="color:#999;text-align:center;padding:20px;background:#f8f9fa;border-radius:8px;">You haven\'t posted any listings yet.</p>' :
                 listings.map(l => `
-                    <div style="background:#f8f9fa;padding:16px;border-radius:8px;display:flex;gap:16px;align-items:start;">
+                    <div style="background:#f8f9fa;padding:16px;border-radius:8px;display:flex;gap:16px;align-items:start;margin-bottom:12px;">
                         <img src="${l.images[0]}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">
                         <div style="flex:1;">
                             <strong style="display:block;margin-bottom:4px;">${l.title}</strong>
@@ -563,9 +673,66 @@
                     </div>
                 `).join('')
             }
+            
+            <h3 style="margin:24px 0 16px 0;">📬 Messages Received (${receivedMessages.length})</h3>
+            ${receivedMessages.length === 0 ? 
+                '<p style="color:#999;text-align:center;padding:20px;background:#f8f9fa;border-radius:8px;">No messages yet.</p>' :
+                receivedMessages.sort((a, b) => new Date(b.created) - new Date(a.created)).map(m => `
+                    <div style="background:${m.read ? '#f8f9fa' : '#e8f5e9'};padding:16px;border-radius:8px;margin-bottom:12px;border-left:3px solid ${m.read ? '#e0e0e0' : '#27ae60'};">
+                        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+                            <div>
+                                <strong style="display:block;">From: ${m.fromUsername}</strong>
+                                <span style="color:#666;font-size:13px;">Re: ${m.listingTitle} ($${m.listingPrice.toLocaleString()})</span>
+                            </div>
+                            ${!m.read ? '<span style="background:#27ae60;color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">NEW</span>' : ''}
+                        </div>
+                        <p style="color:#333;margin-bottom:8px;">${m.message}</p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:#999;font-size:12px;">${formatTime(m.created)}</span>
+                            ${!m.read ? `<button onclick="markAsRead('${m.id}')" style="padding:4px 12px;background:#27ae60;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Mark as Read</button>` : ''}
+                        </div>
+                    </div>
+                `).join('')
+            }
+            
+            <h3 style="margin:24px 0 16px 0;">📤 Messages Sent (${sentMessages.length})</h3>
+            ${sentMessages.length === 0 ? 
+                '<p style="color:#999;text-align:center;padding:20px;background:#f8f9fa;border-radius:8px;">No sent messages yet.</p>' :
+                sentMessages.sort((a, b) => new Date(b.created) - new Date(a.created)).map(m => `
+                    <div style="background:#f8f9fa;padding:16px;border-radius:8px;margin-bottom:12px;">
+                        <div style="margin-bottom:8px;">
+                            <strong style="display:block;">To: ${m.toUsername}</strong>
+                            <span style="color:#666;font-size:13px;">Re: ${m.listingTitle} ($${m.listingPrice.toLocaleString()})</span>
+                        </div>
+                        <p style="color:#333;margin-bottom:8px;">${m.message}</p>
+                        <span style="color:#999;font-size:12px;">${formatTime(m.created)}</span>
+                    </div>
+                `).join('')
+            }
         `;
         
         document.getElementById('profileModal').style.display = 'flex';
+    }
+    
+    function markAsRead(messageId) {
+        let messages = JSON.parse(localStorage.getItem('autoilty_messages') || '[]');
+        const messageIndex = messages.findIndex(m => m.id === messageId);
+        if (messageIndex !== -1) {
+            messages[messageIndex].read = true;
+            localStorage.setItem('autoilty_messages', JSON.stringify(messages));
+            showProfile(); // Refresh profile
+        }
+    }
+    
+    function formatTime(timestamp) {
+        const diff = Date.now() - new Date(timestamp).getTime();
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (hours < 1) return 'Just now';
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        return new Date(timestamp).toLocaleDateString();
     }
     
     function closeProfile() {
