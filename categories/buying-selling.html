@@ -103,8 +103,8 @@
     </div>
 
     <!-- Profile Modal -->
-    <div id="profileModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
-        <div style="background:#fff;padding:40px;border-radius:16px;max-width:800px;width:90%;margin:40px auto;">
+    <div id="profileModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;overflow-y:auto;padding:40px 0;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:800px;width:90%;margin:0 auto;max-height:none;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
                 <h2 style="margin:0;">My Profile</h2>
                 <button onclick="logout()" style="padding:8px 16px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;">Logout</button>
@@ -656,6 +656,8 @@
         `;
         
         document.getElementById('profileModal').style.display = 'flex';
+        // Scroll to top of modal
+        document.getElementById('profileModal').scrollTop = 0;
     }
     
     function markAsRead(messageId) {
