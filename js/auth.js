@@ -2,6 +2,17 @@
 
 let currentUser = JSON.parse(localStorage.getItem('autoilty_user'));
 
+// Simple password hashing (for demo purposes - use bcrypt in production)
+function hashPassword(password) {
+    let hash = 0;
+    for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return hash.toString(36);
+}
+
 // Initialize authentication state
 function initAuth() {
     updateAuthButtons();
@@ -10,11 +21,13 @@ function initAuth() {
 // Update authentication buttons across the site
 function updateAuthButtons() {
     const authBtn = document.getElementById('authBtn');
+    const loginBtn = document.getElementById('loginBtn');
     const profileBtn = document.getElementById('profileBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     
     if (currentUser) {
         if (authBtn) authBtn.style.display = 'none';
+        if (loginBtn) loginBtn.style.display = 'none';
         if (profileBtn) {
             profileBtn.style.display = 'block';
             profileBtn.textContent = currentUser.username;
@@ -22,30 +35,48 @@ function updateAuthButtons() {
         if (logoutBtn) logoutBtn.style.display = 'block';
     } else {
         if (authBtn) authBtn.style.display = 'block';
+        if (loginBtn) loginBtn.style.display = 'block';
         if (profileBtn) profileBtn.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'none';
     }
 }
 
-// Show authentication modal
-function showAuthModal() {
-    document.getElementById('authModal').style.display = 'flex';
+// Show signup modal
+function showSignupModal() {
+    document.getElementById('signupModal').style.display = 'flex';
 }
 
-// Close authentication modal
-function closeAuthModal() {
-    document.getElementById('authModal').style.display = 'none';
-    document.getElementById('usernameInput').value = '';
-    document.getElementById('emailInput').value = '';
+// Close signup modal
+function closeSignupModal() {
+    document.getElementById('signupModal').style.display = 'none';
+    document.getElementById('signupUsername').value = '';
+    document.getElementById('signupEmail').value = '';
+    document.getElementById('signupPassword').value = '';
+    document.getElementById('signupConfirmPassword').value = '';
 }
 
-// Handle authentication (signup/login)
-function handleAuth() {
-    const username = document.getElementById('usernameInput').value.trim();
-    const email = document.getElementById('emailInput').value.trim();
+// Show login modal
+function showLoginModal() {
+    document.getElementById('loginModal').style.display = 'flex';
+}
+
+// Close login modal
+function closeLoginModal() {
+    document.getElementById('loginModal').style.display = 'none';
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+}
+
+// Handle signup
+function handleSignup() {
+    const username = document.getElementById('signupUsername').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const confirmPassword = document.getElementById('signupConfirmPassword').value;
     
-    if (!username || !email) {
-        alert('⚠️ Please enter both username and email');
+    // Validate all fields
+    if (!username || !email || !password || !confirmPassword) {
+        alert('⚠️ Please fill in all fields');
         return;
     }
     
@@ -67,35 +98,29 @@ function handleAuth() {
         return;
     }
     
+    // Validate password strength
+    if (password.length < 6) {
+        alert('⚠️ Password must be at least 6 characters long');
+        return;
+    }
+    
+    // Check password match
+    if (password !== confirmPassword) {
+        alert('⚠️ Passwords do not match');
+        return;
+    }
+    
     // Check for existing users
     const allUsers = JSON.parse(localStorage.getItem('autoilty_users') || '[]');
-    const existingUser = allUsers.find(u => u.username.toLowerCase() === username.toLowerCase() || u.email.toLowerCase() === email.toLowerCase());
     
-    if (existingUser) {
-        // User exists - check if it's a login attempt
-        if (existingUser.username.toLowerCase() === username.toLowerCase() && existingUser.email.toLowerCase() === email.toLowerCase()) {
-            // Both match - successful login
-            currentUser = existingUser;
-            localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
-            closeAuthModal();
-            updateAuthButtons();
-            
-            if (currentUser.confirmed) {
-                alert(`✓ Welcome back, ${currentUser.username}!`);
-            } else {
-                alert(`Welcome back, ${currentUser.username}!\n\n⚠️ Please verify your email to unlock all features.`);
-                showEmailConfirmation();
-            }
-            return;
-        } else {
-            // Partial match - account already exists
-            if (allUsers.some(u => u.username.toLowerCase() === username.toLowerCase())) {
-                alert('❌ This username is already taken. Please choose a different username or login with your existing account.');
-            } else {
-                alert('❌ This email is already registered. Please use a different email or login with your existing account.');
-            }
-            return;
-        }
+    if (allUsers.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+        alert('❌ This username is already taken. Please choose a different username.');
+        return;
+    }
+    
+    if (allUsers.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+        alert('❌ This email is already registered. Please use a different email or login.');
+        return;
     }
     
     // Create new user
@@ -103,6 +128,7 @@ function handleAuth() {
         id: 'user_' + Date.now(),
         username: username,
         email: email,
+        password: hashPassword(password),
         joined: new Date().toISOString(),
         confirmed: false,
         confirmationCode: Math.random().toString(36).substring(2, 10).toUpperCase()
@@ -114,9 +140,49 @@ function handleAuth() {
     currentUser = newUser;
     localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
     
-    closeAuthModal();
+    closeSignupModal();
     alert(`✓ Account created successfully!\n\nWelcome, ${username}!`);
+    updateAuthButtons();
     showEmailConfirmation();
+}
+
+// Handle login
+function handleLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!username || !password) {
+        alert('⚠️ Please enter both username and password');
+        return;
+    }
+    
+    // Find user
+    const allUsers = JSON.parse(localStorage.getItem('autoilty_users') || '[]');
+    const user = allUsers.find(u => u.username.toLowerCase() === username.toLowerCase());
+    
+    if (!user) {
+        alert('❌ Username not found. Please check your username or sign up.');
+        return;
+    }
+    
+    // Verify password
+    if (user.password !== hashPassword(password)) {
+        alert('❌ Incorrect password. Please try again.');
+        return;
+    }
+    
+    // Successful login
+    currentUser = user;
+    localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
+    closeLoginModal();
+    updateAuthButtons();
+    
+    if (currentUser.confirmed) {
+        alert(`✓ Welcome back, ${currentUser.username}!`);
+    } else {
+        alert(`Welcome back, ${currentUser.username}!\n\n⚠️ Please verify your email to unlock all features.`);
+        showEmailConfirmation();
+    }
 }
 
 // Show email confirmation modal
