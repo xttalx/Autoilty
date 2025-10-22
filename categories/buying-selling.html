@@ -202,14 +202,23 @@
     </div>
 
     <!-- Reply to Message Modal -->
-    <div id="replyModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
-        <div style="background:#fff;padding:40px;border-radius:16px;max-width:500px;width:90%;">
-            <h2 style="margin-bottom:16px;">Reply to Message</h2>
-            <div id="replyMessageInfo" style="background:#f8f9fa;padding:16px;border-radius:8px;margin-bottom:20px;"></div>
-            <textarea id="replyContent" placeholder="Write your reply..." rows="6" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;resize:vertical;margin-bottom:16px;"></textarea>
-            <div style="font-size:13px;color:#666;margin-bottom:16px;">💡 Your reply will be sent via email to the sender</div>
-            <button onclick="sendReply()" style="width:100%;padding:14px;background:#3498db;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Send Reply</button>
-            <button onclick="closeReplyModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+    <div id="replyModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:600px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h2 style="margin:0;color:#333;">↩️ Reply to Message</h2>
+                <button onclick="closeReplyModal()" style="background:transparent;border:none;font-size:24px;color:#999;cursor:pointer;padding:0;width:32px;height:32px;" onmouseover="this.style.color='#333'" onmouseout="this.style.color='#999'">&times;</button>
+            </div>
+            <div id="replyMessageInfo" style="background:#f8f9fa;padding:20px;border-radius:12px;margin-bottom:24px;border-left:4px solid #3498db;"></div>
+            <label style="display:block;font-weight:600;margin-bottom:8px;color:#333;">Your Reply:</label>
+            <textarea id="replyContent" placeholder="Type your reply here..." rows="6" style="width:100%;padding:14px;border:2px solid #e0e0e0;border-radius:8px;resize:vertical;margin-bottom:16px;font-size:14px;font-family:inherit;" onfocus="this.style.borderColor='#3498db'" onblur="this.style.borderColor='#e0e0e0'"></textarea>
+            <div style="background:#e3f2fd;padding:12px;border-radius:8px;font-size:13px;color:#1976d2;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:18px;">📧</span>
+                <span>The seller will receive your reply via email notification</span>
+            </div>
+            <div style="display:flex;gap:12px;">
+                <button onclick="sendReply()" style="flex:1;padding:14px;background:#3498db;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;transition:all 0.3s;" onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">📤 Send Reply</button>
+                <button onclick="closeReplyModal()" style="padding:14px 24px;background:#f5f5f5;color:#666;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;transition:all 0.3s;" onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f5f5f5'">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -619,11 +628,11 @@
                             ${!m.read ? '<span style="background:#27ae60;color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">NEW</span>' : ''}
                         </div>
                         <p style="color:#333;margin-bottom:8px;">${m.message}</p>
-                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #e0e0e0;">
                             <span style="color:#999;font-size:12px;">${formatTime(m.created)}</span>
                             <div style="display:flex;gap:8px;">
-                                ${!m.read ? `<button onclick="markAsRead('${m.id}')" style="padding:4px 12px;background:#27ae60;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Mark as Read</button>` : ''}
-                                <button onclick="showReplyModal('${m.id}')" style="padding:4px 12px;background:#3498db;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">↩️ Reply</button>
+                                ${!m.read ? `<button onclick="markAsRead('${m.id}')" style="padding:6px 14px;background:#27ae60;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">✓ Mark as Read</button>` : ''}
+                                <button onclick="showReplyModal('${m.id}')" style="padding:6px 14px;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.3s;" onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">↩️ Reply</button>
                             </div>
                         </div>
                     </div>
@@ -673,13 +682,18 @@
         }
         
         document.getElementById('replyMessageInfo').innerHTML = `
-            <div style="margin-bottom:8px;">
-                <strong>Original Message From: ${originalMessage.fromUsername}</strong>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div style="width:40px;height:40px;background:#3498db;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:18px;">
+                    ${originalMessage.fromUsername.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                    <strong style="display:block;font-size:15px;color:#333;">From: ${originalMessage.fromUsername}</strong>
+                    <span style="color:#666;font-size:13px;">Regarding: ${originalMessage.listingTitle} ($${originalMessage.listingPrice.toLocaleString()})</span>
+                </div>
             </div>
-            <div style="color:#666;font-size:13px;margin-bottom:8px;">Re: ${originalMessage.listingTitle} ($${originalMessage.listingPrice.toLocaleString()})</div>
-            <div style="background:#fff;padding:12px;border-radius:6px;border-left:3px solid #3498db;margin-top:12px;">
-                <p style="font-size:13px;color:#666;margin-bottom:4px;">Original message:</p>
-                <p style="color:#333;font-size:14px;">${originalMessage.message}</p>
+            <div style="background:#fff;padding:16px;border-radius:8px;border:1px solid #e0e0e0;margin-top:12px;">
+                <p style="font-size:12px;color:#999;margin-bottom:8px;text-transform:uppercase;font-weight:600;">Original Message:</p>
+                <p style="color:#333;font-size:14px;line-height:1.6;margin:0;">"${originalMessage.message}"</p>
             </div>
         `;
         

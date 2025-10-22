@@ -23,11 +23,13 @@
                 <a href="../index.html" class="nav-link">Home</a>
                 <a href="../forum.html" class="nav-link active">Forum</a>
                 <a href="../qa.html" class="nav-link">Q&A</a>
-                <a href="../reviews.html" class="nav-link">Reviews</a>
                 <a href="../guides.html" class="nav-link">Guides</a>
                 <a href="../tools.html" class="nav-link">Tools</a>
             </div>
-            <button class="btn-primary">Join Community</button>
+            <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
+            <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
+            <button class="btn-primary" onclick="window.location.href='../forum.html'" id="profileBtn" style="display:none;">My Profile</button>
+            <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
         </div>
     </nav>
 
