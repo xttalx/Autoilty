@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listing Details | Autoilty Marketplace</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/forum.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="brand">AUTOILTY</a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="forum.html" class="nav-link">Forum</a>
+                <a href="qa.html" class="nav-link">Q&A</a>
+                <a href="guides.html" class="nav-link">Guides</a>
+                <a href="tools.html" class="nav-link">Tools</a>
+            </div>
+            <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
+            <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
+            <button class="btn-primary" onclick="showProfile()" id="profileBtn" style="display:none;">My Profile</button>
+            <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container" style="padding:48px 0;max-width:1000px;">
+        <a href="categories/buying-selling.html" style="display:inline-block;margin-bottom:24px;color:#27ae60;text-decoration:none;font-weight:600;">← Back to Marketplace</a>
+        
+        <!-- Listing Content -->
+        <div id="listingContent" style="background:#fff;border-radius:12px;padding:32px;margin-bottom:32px;box-shadow:0 2px 8px rgba(0,0,0,0.08);"></div>
+
+        <!-- Seller Info & Contact -->
+        <div id="sellerInfo" style="background:#fff;border-radius:12px;padding:32px;box-shadow:0 2px 8px rgba(0,0,0,0.08);"></div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:450px;width:90%;">
+            <h2 style="margin-bottom:24px;">Create Account</h2>
+            <input type="text" id="signupUsername" placeholder="Username" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="email" id="signupEmail" placeholder="Email" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="password" id="signupPassword" placeholder="Password (min 6 characters)" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <button onclick="handleSignup()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Sign Up</button>
+            <button onclick="closeSignupModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:16px;">Cancel</button>
+            <div style="text-align:center;padding-top:16px;border-top:1px solid #e0e0e0;">
+                <p style="color:#666;margin-bottom:12px;">Already have an account?</p>
+                <button onclick="closeSignupModal();showLoginModal();" style="padding:12px 24px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Login Here</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:450px;width:90%;">
+            <h2 style="margin-bottom:24px;">Login to Your Account</h2>
+            <input type="text" id="loginUsername" placeholder="Username" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="password" id="loginPassword" placeholder="Password" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <button onclick="handleLogin()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Login</button>
+            <button onclick="closeLoginModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:16px;">Cancel</button>
+            <div style="text-align:center;padding-top:16px;border-top:1px solid #e0e0e0;">
+                <p style="color:#666;margin-bottom:12px;">Don't have an account?</p>
+                <button onclick="closeLoginModal();showSignupModal();" style="padding:12px 24px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Sign Up Here</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Confirmation Modal -->
+    <div id="emailConfirmModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10001;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:500px;width:90%;text-align:center;">
+            <div style="font-size:64px;margin-bottom:20px;">📧</div>
+            <h2 style="margin-bottom:16px;">Verify Your Email</h2>
+            <p style="color:#666;margin-bottom:24px;">We've sent a confirmation email to:</p>
+            <p style="font-weight:600;color:#27ae60;margin-bottom:24px;" id="confirmEmail"></p>
+            <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:24px;">
+                <p style="font-size:14px;color:#666;margin-bottom:12px;">Your confirmation code:</p>
+                <p style="font-size:24px;font-weight:700;color:#27ae60;letter-spacing:4px;" id="confirmCode"></p>
+            </div>
+            <p style="font-size:14px;color:#999;margin-bottom:24px;">Click the button below to simulate email confirmation</p>
+            <button onclick="confirmEmail()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;font-size:16px;">✓ Confirm Email</button>
+            <p style="font-size:12px;color:#999;margin-top:16px;">In production, you would click a link in your email to confirm</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>Marketplace</h4>
+                    <ul>
+                        <li><a href="categories/buying-selling.html">Browse Listings</a></li>
+                        <li><a href="categories/buying-selling.html">Post Listing</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="guides.html">Buying Guides</a></li>
+                        <li><a href="tools/financing.html">Financing Calculator</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Autoilty. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+    // Override updateAuthButton to use auth.js
+    function updateAuthButton() {
+        updateAuthButtons();
+    }
+
+    // Get listing ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const listingId = urlParams.get('id');
+    let currentListing = null;
+    
+    // Load Listing
+    function loadListing() {
+        if (!listingId) {
+            window.location.href = 'categories/buying-selling.html';
+            return;
+        }
+        
+        const listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+        currentListing = listings.find(l => l.id === listingId);
+        
+        if (!currentListing) {
+            alert('Listing not found');
+            window.location.href = 'categories/buying-selling.html';
+            return;
+        }
+        
+        // Update views
+        currentListing.views++;
+        const listingIndex = listings.findIndex(l => l.id === listingId);
+        listings[listingIndex] = currentListing;
+        localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+        
+        const categoryNames = {
+            cars: 'Cars & Trucks',
+            parts: 'Parts & Accessories',
+            wheels: 'Wheels & Tires',
+            audio: 'Audio & Electronics',
+            other: 'Other'
+        };
+        
+        // Display listing
+        document.getElementById('listingContent').innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:24px;">
+                <div>
+                    <span style="background:#27ae60;color:#fff;padding:6px 16px;border-radius:12px;font-size:14px;font-weight:600;display:inline-block;margin-bottom:12px;">${categoryNames[currentListing.category]}</span>
+                    <h1 style="margin:0 0 12px 0;font-size:32px;">${currentListing.title}</h1>
+                    <div style="display:flex;gap:16px;align-items:center;color:#666;font-size:14px;">
+                        <span>📍 ${currentListing.location}</span>
+                        <span>👁️ ${currentListing.views} views</span>
+                        <span>📅 ${formatTime(currentListing.created)}</span>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:36px;font-weight:800;color:#27ae60;margin-bottom:8px;">$${currentListing.price.toLocaleString()}</div>
+                </div>
+            </div>
+            
+            ${currentListing.images && currentListing.images.length > 0 ? `
+                <div style="margin-bottom:24px;">
+                    <img src="${currentListing.images[0]}" style="width:100%;max-height:500px;object-fit:cover;border-radius:12px;">
+                </div>
+            ` : ''}
+            
+            <div style="border-top:2px solid #f0f0f0;padding-top:24px;">
+                <h2 style="margin-bottom:16px;">Description</h2>
+                <p style="color:#333;line-height:1.8;font-size:16px;white-space:pre-wrap;">${currentListing.description}</p>
+            </div>
+        `;
+        
+        // Display seller info
+        const isOwnListing = currentUser && currentListing.userId === currentUser.id;
+        
+        document.getElementById('sellerInfo').innerHTML = `
+            <h3 style="margin-bottom:16px;">Seller Information</h3>
+            <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-size:18px;font-weight:600;margin-bottom:8px;">👤 ${currentListing.username}</div>
+                        <div style="color:#666;font-size:14px;">Member</div>
+                    </div>
+                </div>
+            </div>
+            
+            ${isOwnListing ? `
+                <div style="display:flex;gap:12px;">
+                    <button onclick="editListingRedirect()" style="flex:1;padding:16px;background:#3498db;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:16px;">✏️ Edit Listing</button>
+                    <button onclick="deleteListingRedirect()" style="flex:1;padding:16px;background:#e74c3c;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:16px;">🗑️ Delete Listing</button>
+                </div>
+            ` : `
+                <button onclick="contactSellerFromListing()" style="width:100%;padding:16px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:16px;">📧 Contact Seller</button>
+            `}
+        `;
+    }
+    
+    function formatTime(timestamp) {
+        const diff = Date.now() - new Date(timestamp).getTime();
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (hours < 1) return 'Just now';
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        return new Date(timestamp).toLocaleDateString();
+    }
+    
+    function editListingRedirect() {
+        window.location.href = `categories/buying-selling.html?edit=${listingId}`;
+    }
+    
+    function deleteListingRedirect() {
+        if (confirm('Are you sure you want to delete this listing?')) {
+            let listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+            listings = listings.filter(l => l.id !== listingId);
+            localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+            alert('Listing deleted successfully');
+            window.location.href = 'categories/buying-selling.html';
+        }
+    }
+    
+    function contactSellerFromListing() {
+        if (!currentUser) {
+            alert('Please sign up or login to contact the seller');
+            showSignupModal();
+            return;
+        }
+        
+        if (!currentUser.confirmed) {
+            alert('⚠️ Please confirm your email before contacting sellers.');
+            showEmailConfirmation();
+            return;
+        }
+        
+        // Redirect to marketplace with contact parameter
+        window.location.href = `categories/buying-selling.html?contact=${listingId}`;
+    }
+    
+    // Initialize
+    updateAuthButton();
+    loadListing();
+    </script>
+</body>
+</html>
+
