@@ -23,7 +23,8 @@
                 <a href="guides.html" class="nav-link">Guides</a>
                 <a href="tools.html" class="nav-link">Tools</a>
             </div>
-            <button class="btn-primary" onclick="askQuestion()">Ask Question</button>
+            <button class="btn-primary" onclick="showAuthModal()" id="authBtn">Sign Up / Login</button>
+            <button class="btn-primary" onclick="showProfile()" id="profileBtn" style="display:none;">My Profile</button>
             <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
         </div>
     </nav>
@@ -59,11 +60,14 @@
         <div class="container">
             <div class="qa-grid">
                 <div class="qa-main">
-                    <div class="qa-filters">
-                        <button class="filter-btn active" onclick="filterQA('all')">All Questions</button>
-                        <button class="filter-btn" onclick="filterQA('unsolved')">Unsolved</button>
-                        <button class="filter-btn" onclick="filterQA('solved')">Solved</button>
-                        <button class="filter-btn" onclick="filterQA('popular')">Popular</button>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                        <div class="qa-filters">
+                            <button class="filter-btn active" onclick="filterQA('all')">All Questions</button>
+                            <button class="filter-btn" onclick="filterQA('unsolved')">Unsolved</button>
+                            <button class="filter-btn" onclick="filterQA('solved')">Solved</button>
+                            <button class="filter-btn" onclick="filterQA('popular')">Popular</button>
+                        </div>
+                        <button onclick="showAskModal()" style="padding:12px 24px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">+ Ask Question</button>
                     </div>
                     
                     <div class="questions-list" id="questionsList">
@@ -114,6 +118,54 @@
         </div>
     </div>
 
+    <!-- Auth Modal -->
+    <div id="authModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:400px;width:90%;">
+            <h2 style="margin-bottom:24px;">Sign Up / Login</h2>
+            <input type="text" id="usernameInput" placeholder="Username" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="email" id="emailInput" placeholder="Email" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <button onclick="handleAuth()" style="width:100%;padding:14px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Continue</button>
+            <button onclick="closeAuthModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Email Confirmation Modal -->
+    <div id="emailConfirmModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10001;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:500px;width:90%;text-align:center;">
+            <div style="font-size:64px;margin-bottom:20px;">📧</div>
+            <h2 style="margin-bottom:16px;">Verify Your Email</h2>
+            <p style="color:#666;margin-bottom:24px;">We've sent a confirmation email to:</p>
+            <p style="font-weight:600;color:#E2231A;margin-bottom:24px;" id="confirmEmail"></p>
+            <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:24px;">
+                <p style="font-size:14px;color:#666;margin-bottom:12px;">Your confirmation code:</p>
+                <p style="font-size:24px;font-weight:700;color:#E2231A;letter-spacing:4px;" id="confirmCode"></p>
+            </div>
+            <p style="font-size:14px;color:#999;margin-bottom:24px;">Click the button below to simulate email confirmation</p>
+            <button onclick="confirmEmail()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;font-size:16px;">✓ Confirm Email</button>
+            <p style="font-size:12px;color:#999;margin-top:16px;">In production, you would click a link in your email to confirm</p>
+        </div>
+    </div>
+
+    <!-- Ask Question Modal -->
+    <div id="askModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:700px;width:90%;margin:40px auto;">
+            <h2 style="margin-bottom:24px;">Ask a Question</h2>
+            <input type="text" id="questionTitle" placeholder="Your question..." style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <select id="questionCategory" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+                <option value="maintenance">Maintenance & Repair</option>
+                <option value="buying">Buying & Selling</option>
+                <option value="diy">DIY & How-To</option>
+                <option value="diagnostics">Diagnostics & Troubleshooting</option>
+                <option value="electric">Electric Vehicles</option>
+                <option value="general">General</option>
+            </select>
+            <textarea id="questionDetails" placeholder="Provide more details about your question..." rows="8" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;resize:vertical;"></textarea>
+            <input type="file" id="questionImage" accept="image/*" style="width:100%;margin-bottom:16px;">
+            <button onclick="submitQuestion()" style="width:100%;padding:14px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Post Question</button>
+            <button onclick="closeAskModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -151,7 +203,6 @@
     </footer>
 
     <script src="js/main.js"></script>
-    <script src="js/forum-data.js"></script>
     <script src="js/qa.js"></script>
 </body>
 </html>
