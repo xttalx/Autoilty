@@ -24,6 +24,9 @@ function updateAuthButtons() {
     const loginBtn = document.getElementById('loginBtn');
     const profileBtn = document.getElementById('profileBtn');
     const logoutBtn = document.getElementById('logoutBtn');
+    const heroSignup = document.getElementById('heroSignup');
+    const heroLogin = document.getElementById('heroLogin');
+    const heroForum = document.getElementById('heroForum');
     
     if (currentUser) {
         if (authBtn) authBtn.style.display = 'none';
@@ -33,11 +36,17 @@ function updateAuthButtons() {
             profileBtn.textContent = currentUser.username;
         }
         if (logoutBtn) logoutBtn.style.display = 'block';
+        if (heroSignup) heroSignup.style.display = 'none';
+        if (heroLogin) heroLogin.style.display = 'none';
+        if (heroForum) heroForum.style.display = 'inline-block';
     } else {
         if (authBtn) authBtn.style.display = 'block';
         if (loginBtn) loginBtn.style.display = 'block';
         if (profileBtn) profileBtn.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'none';
+        if (heroSignup) heroSignup.style.display = 'inline-block';
+        if (heroLogin) heroLogin.style.display = 'inline-block';
+        if (heroForum) heroForum.style.display = 'none';
     }
 }
 
