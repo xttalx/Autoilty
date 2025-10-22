@@ -19,11 +19,13 @@
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="forum.html" class="nav-link">Forum</a>
                 <a href="qa.html" class="nav-link">Q&A</a>
-                <a href="reviews.html" class="nav-link">Reviews</a>
                 <a href="guides.html" class="nav-link">Guides</a>
                 <a href="tools.html" class="nav-link">Tools</a>
             </div>
-            <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
+            <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
+            <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
+            <button class="btn-primary" onclick="window.location.href='forum.html'" id="profileBtn" style="display:none;">My Profile</button>
+            <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
         </div>
     </nav>
 
@@ -129,7 +131,63 @@
         </div>
     </footer>
 
+    <!-- Signup Modal -->
+    <div id="signupModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:450px;width:90%;">
+            <h2 style="margin-bottom:24px;">Create Account</h2>
+            <input type="text" id="signupUsername" placeholder="Username" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="email" id="signupEmail" placeholder="Email" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="password" id="signupPassword" placeholder="Password (min 6 characters)" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <button onclick="handleSignup()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Sign Up</button>
+            <button onclick="closeSignupModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:16px;">Cancel</button>
+            <div style="text-align:center;padding-top:16px;border-top:1px solid #e0e0e0;">
+                <p style="color:#666;margin-bottom:12px;">Already have an account?</p>
+                <button onclick="closeSignupModal();showLoginModal();" style="padding:12px 24px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Login Here</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:450px;width:90%;">
+            <h2 style="margin-bottom:24px;">Login to Your Account</h2>
+            <input type="text" id="loginUsername" placeholder="Username" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="password" id="loginPassword" placeholder="Password" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <button onclick="handleLogin()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Login</button>
+            <button onclick="closeLoginModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:16px;">Cancel</button>
+            <div style="text-align:center;padding-top:16px;border-top:1px solid #e0e0e0;">
+                <p style="color:#666;margin-bottom:12px;">Don't have an account?</p>
+                <button onclick="closeLoginModal();showSignupModal();" style="padding:12px 24px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Sign Up Here</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Confirmation Modal -->
+    <div id="emailConfirmModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10001;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:500px;width:90%;text-align:center;">
+            <div style="font-size:64px;margin-bottom:20px;">📧</div>
+            <h2 style="margin-bottom:16px;">Verify Your Email</h2>
+            <p style="color:#666;margin-bottom:24px;">We've sent a confirmation email to:</p>
+            <p style="font-weight:600;color:#27ae60;margin-bottom:24px;" id="confirmEmail"></p>
+            <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:24px;">
+                <p style="font-size:14px;color:#666;margin-bottom:12px;">Your confirmation code:</p>
+                <p style="font-size:24px;font-weight:700;color:#27ae60;letter-spacing:4px;" id="confirmCode"></p>
+            </div>
+            <p style="font-size:14px;color:#999;margin-bottom:24px;">Click the button below to simulate email confirmation</p>
+            <button onclick="confirmEmail()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;font-size:16px;">✓ Confirm Email</button>
+            <p style="font-size:12px;color:#999;margin-top:16px;">In production, you would click a link in your email to confirm</p>
+        </div>
+    </div>
+
     <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+    function updateAuthButton() {
+        updateAuthButtons();
+    }
+    updateAuthButton();
+    </script>
 </body>
 </html>
 
