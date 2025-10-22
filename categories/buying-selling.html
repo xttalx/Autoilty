@@ -149,9 +149,48 @@
         </div>
     </footer>
 
+    <!-- Email Confirmation Modal -->
+    <div id="emailConfirmModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10001;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:500px;width:90%;text-align:center;">
+            <div style="font-size:64px;margin-bottom:20px;">📧</div>
+            <h2 style="margin-bottom:16px;">Verify Your Email</h2>
+            <p style="color:#666;margin-bottom:24px;">We've sent a confirmation email to:</p>
+            <p style="font-weight:600;color:#27ae60;margin-bottom:24px;" id="confirmEmail"></p>
+            <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:24px;">
+                <p style="font-size:14px;color:#666;margin-bottom:12px;">Your confirmation code:</p>
+                <p style="font-size:24px;font-weight:700;color:#27ae60;letter-spacing:4px;" id="confirmCode"></p>
+            </div>
+            <p style="font-size:14px;color:#999;margin-bottom:24px;">Click the button below to simulate email confirmation</p>
+            <button onclick="confirmEmail()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;font-size:16px;">✓ Confirm Email</button>
+            <p style="font-size:12px;color:#999;margin-top:16px;">In production, you would click a link in your email to confirm</p>
+        </div>
+    </div>
+
+    <!-- Edit Listing Modal -->
+    <div id="editModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:600px;width:90%;margin:40px auto;">
+            <h2 style="margin-bottom:24px;">Edit Listing</h2>
+            <input type="text" id="editTitleInput" placeholder="Title" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <select id="editCategoryInput" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+                <option value="cars">Cars & Trucks</option>
+                <option value="parts">Parts & Accessories</option>
+                <option value="wheels">Wheels & Tires</option>
+                <option value="audio">Audio & Electronics</option>
+                <option value="other">Other</option>
+            </select>
+            <input type="number" id="editPriceInput" placeholder="Price ($)" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="text" id="editLocationInput" placeholder="Location" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <textarea id="editDescriptionInput" placeholder="Description..." rows="6" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;resize:vertical;"></textarea>
+            <input type="file" id="editImageInput" accept="image/*" multiple style="width:100%;margin-bottom:16px;">
+            <div style="font-size:12px;color:#666;margin-bottom:16px;">✓ Upload new image (optional)</div>
+            <button onclick="updateListing()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Update Listing</button>
+            <button onclick="closeEditModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+
     <script src="../js/main.js"></script>
     <script src="../js/backlinks.js"></script>
-
+    <script>
     // User Management
     let currentUser = JSON.parse(localStorage.getItem('autoilty_user'));
     
@@ -183,17 +222,51 @@
             return;
         }
         
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+        
+        // Check if user already exists with confirmed email
+        const existingUser = JSON.parse(localStorage.getItem('autoilty_user'));
+        if (existingUser && existingUser.email === email && existingUser.confirmed) {
+            currentUser = existingUser;
+            localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
+            closeAuthModal();
+            updateAuthButton();
+            alert('Welcome back, ' + currentUser.username + '!');
+            return;
+        }
+        
+        // Create new unconfirmed user
         currentUser = {
             id: 'user_' + Date.now(),
             username: username,
             email: email,
-            joined: new Date().toISOString()
+            joined: new Date().toISOString(),
+            confirmed: false,
+            confirmationCode: Math.random().toString(36).substring(2, 10).toUpperCase()
         };
         
         localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
         closeAuthModal();
+        showEmailConfirmation();
+    }
+    
+    function showEmailConfirmation() {
+        document.getElementById('confirmEmail').textContent = currentUser.email;
+        document.getElementById('confirmCode').textContent = currentUser.confirmationCode;
+        document.getElementById('emailConfirmModal').style.display = 'flex';
+    }
+    
+    function confirmEmail() {
+        currentUser.confirmed = true;
+        localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
+        document.getElementById('emailConfirmModal').style.display = 'none';
         updateAuthButton();
-        alert('Welcome, ' + username + '!');
+        alert('✓ Email confirmed! Welcome, ' + currentUser.username + '! You can now post listings.');
     }
     
     function logout() {
@@ -213,6 +286,13 @@
             showAuthModal();
             return;
         }
+        
+        if (!currentUser.confirmed) {
+            alert('⚠️ Please confirm your email before posting listings.\n\nCheck your email for the confirmation link.');
+            showEmailConfirmation();
+            return;
+        }
+        
         document.getElementById('postModal').style.display = 'flex';
     }
     
@@ -358,38 +438,132 @@
         }
     }
     
+    let editingListingId = null;
+    
     function editListing(id) {
-        alert('Edit functionality coming soon!');
+        editingListingId = id;
+        const listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+        const listing = listings.find(l => l.id === id);
+        
+        if (!listing) {
+            alert('Listing not found');
+            return;
+        }
+        
+        document.getElementById('editTitleInput').value = listing.title;
+        document.getElementById('editCategoryInput').value = listing.category;
+        document.getElementById('editPriceInput').value = listing.price;
+        document.getElementById('editLocationInput').value = listing.location;
+        document.getElementById('editDescriptionInput').value = listing.description;
+        
+        document.getElementById('editModal').style.display = 'flex';
+    }
+    
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+        editingListingId = null;
+    }
+    
+    function updateListing() {
+        if (!editingListingId) return;
+        
+        const title = document.getElementById('editTitleInput').value.trim();
+        const category = document.getElementById('editCategoryInput').value;
+        const price = document.getElementById('editPriceInput').value;
+        const location = document.getElementById('editLocationInput').value.trim();
+        const description = document.getElementById('editDescriptionInput').value.trim();
+        const imageFile = document.getElementById('editImageInput').files[0];
+        
+        if (!title || !price || !location || !description) {
+            alert('Please fill in all fields');
+            return;
+        }
+        
+        let listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+        const index = listings.findIndex(l => l.id === editingListingId);
+        
+        if (index === -1) {
+            alert('Listing not found');
+            return;
+        }
+        
+        listings[index].title = title;
+        listings[index].category = category;
+        listings[index].price = parseFloat(price);
+        listings[index].location = location;
+        listings[index].description = description;
+        
+        if (imageFile) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                listings[index].images[0] = e.target.result;
+                localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+                closeEditModal();
+                alert('Listing updated successfully!');
+                loadListings();
+                if (document.getElementById('profileModal').style.display === 'flex') {
+                    showProfile();
+                }
+            };
+            reader.readAsDataURL(imageFile);
+        } else {
+            localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+            closeEditModal();
+            alert('Listing updated successfully!');
+            loadListings();
+            if (document.getElementById('profileModal').style.display === 'flex') {
+                showProfile();
+            }
+        }
     }
     
     // Profile
     function showProfile() {
         if (!currentUser) return;
         
+        const confirmStatus = currentUser.confirmed ? 
+            '<span style="color:#27ae60;font-weight:600;">✓ Email Verified</span>' : 
+            '<span style="color:#e67e22;font-weight:600;">⚠️ Email Not Verified</span>';
+        
         document.getElementById('userInfo').innerHTML = `
-            <h4 style="margin-bottom:12px;">${currentUser.username}</h4>
-            <p style="color:#666;">${currentUser.email}</p>
-            <p style="color:#999;font-size:14px;margin-top:8px;">Member since ${new Date(currentUser.joined).toLocaleDateString()}</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h4 style="margin:0;">${currentUser.username}</h4>
+                ${confirmStatus}
+            </div>
+            <p style="color:#999;font-size:14px;margin-bottom:8px;">Member since ${new Date(currentUser.joined).toLocaleDateString()}</p>
+            <div style="background:#fff;padding:12px;border-radius:6px;border-left:3px solid #27ae60;">
+                <p style="font-size:12px;color:#999;margin-bottom:4px;">🔒 Private - Only you can see this:</p>
+                <p style="color:#666;font-size:14px;">${currentUser.email}</p>
+            </div>
+            ${!currentUser.confirmed ? `
+                <button onclick="showEmailConfirmation()" style="margin-top:12px;padding:10px 20px;background:#27ae60;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Verify Email Now</button>
+            ` : ''}
         `;
         
         const listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]')
             .filter(l => l.userId === currentUser.id);
         
         const myListingsDiv = document.getElementById('myListings');
-        myListingsDiv.innerHTML = listings.length === 0 ? 
-            '<p style="color:#999;">You haven\'t posted any listings yet.</p>' :
-            listings.map(l => `
-                <div style="background:#f8f9fa;padding:16px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
-                    <div>
-                        <strong>${l.title}</strong>
-                        <p style="color:#666;font-size:14px;margin-top:4px;">$${l.price.toLocaleString()} • ${l.location}</p>
+        myListingsDiv.innerHTML = `
+            <button onclick="showPostModal();closeProfile();" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:16px;">+ Post New Listing</button>
+            ${listings.length === 0 ? 
+                '<p style="color:#999;text-align:center;padding:20px;">You haven\'t posted any listings yet. Click above to create your first listing!</p>' :
+                listings.map(l => `
+                    <div style="background:#f8f9fa;padding:16px;border-radius:8px;display:flex;gap:16px;align-items:start;">
+                        <img src="${l.images[0]}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">
+                        <div style="flex:1;">
+                            <strong style="display:block;margin-bottom:4px;">${l.title}</strong>
+                            <p style="color:#27ae60;font-weight:600;margin-bottom:4px;">$${l.price.toLocaleString()}</p>
+                            <p style="color:#666;font-size:14px;">📍 ${l.location} • 👁️ ${l.views} views</p>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-shrink:0;">
+                            <button onclick="editListing('${l.id}')" style="padding:8px 16px;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">Edit</button>
+                            <button onclick="deleteListing('${l.id}');showProfile();" style="padding:8px 16px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">Delete</button>
+                        </div>
                     </div>
-                    <div style="display:flex;gap:8px;">
-                        <button onclick="editListing('${l.id}')" style="padding:8px 16px;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;">Edit</button>
-                        <button onclick="deleteListing('${l.id}')" style="padding:8px 16px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;">Delete</button>
-                    </div>
-                </div>
-            `).join('');
+                `).join('')
+            }
+        `;
         
         document.getElementById('profileModal').style.display = 'flex';
     }
