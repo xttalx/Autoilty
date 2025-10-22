@@ -471,9 +471,15 @@
             '<span style="color:#e67e22;font-weight:600;">⚠️ Email Not Verified</span>';
         
         document.getElementById('userInfo').innerHTML = `
-            <h4 style="margin-bottom:12px;">${currentUser.username}</h4>
-            <p style="color:#666;">${currentUser.email} ${confirmStatus}</p>
-            <p style="color:#999;font-size:14px;margin-top:8px;">Member since ${new Date(currentUser.joined).toLocaleDateString()}</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h4 style="margin:0;">${currentUser.username}</h4>
+                ${confirmStatus}
+            </div>
+            <p style="color:#999;font-size:14px;margin-bottom:8px;">Member since ${new Date(currentUser.joined).toLocaleDateString()}</p>
+            <div style="background:#fff;padding:12px;border-radius:6px;border-left:3px solid #E2231A;">
+                <p style="font-size:12px;color:#999;margin-bottom:4px;">Private - Only you can see this:</p>
+                <p style="color:#666;font-size:14px;">${currentUser.email}</p>
+            </div>
             ${!currentUser.confirmed ? `
                 <button onclick="showEmailConfirmation()" style="margin-top:12px;padding:10px 20px;background:#E2231A;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Verify Email Now</button>
             ` : ''}
