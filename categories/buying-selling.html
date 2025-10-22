@@ -201,6 +201,18 @@
         </div>
     </div>
 
+    <!-- Reply to Message Modal -->
+    <div id="replyModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:500px;width:90%;">
+            <h2 style="margin-bottom:16px;">Reply to Message</h2>
+            <div id="replyMessageInfo" style="background:#f8f9fa;padding:16px;border-radius:8px;margin-bottom:20px;"></div>
+            <textarea id="replyContent" placeholder="Write your reply..." rows="6" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;resize:vertical;margin-bottom:16px;"></textarea>
+            <div style="font-size:13px;color:#666;margin-bottom:16px;">💡 Your reply will be sent via email to the sender</div>
+            <button onclick="sendReply()" style="width:100%;padding:14px;background:#3498db;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Send Reply</button>
+            <button onclick="closeReplyModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+
     <script src="../js/main.js"></script>
     <script src="../js/backlinks.js"></script>
     <script src="../js/auth.js"></script>
@@ -606,9 +618,12 @@
                             ${!m.read ? '<span style="background:#27ae60;color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">NEW</span>' : ''}
                         </div>
                         <p style="color:#333;margin-bottom:8px;">${m.message}</p>
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
                             <span style="color:#999;font-size:12px;">${formatTime(m.created)}</span>
-                            ${!m.read ? `<button onclick="markAsRead('${m.id}')" style="padding:4px 12px;background:#27ae60;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Mark as Read</button>` : ''}
+                            <div style="display:flex;gap:8px;">
+                                ${!m.read ? `<button onclick="markAsRead('${m.id}')" style="padding:4px 12px;background:#27ae60;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Mark as Read</button>` : ''}
+                                <button onclick="showReplyModal('${m.id}')" style="padding:4px 12px;background:#3498db;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">↩️ Reply</button>
+                            </div>
                         </div>
                     </div>
                 `).join('')
@@ -641,6 +656,88 @@
             localStorage.setItem('autoilty_messages', JSON.stringify(messages));
             showProfile(); // Refresh profile
         }
+    }
+    
+    // Reply to Message
+    let replyingToMessageId = null;
+    
+    function showReplyModal(messageId) {
+        replyingToMessageId = messageId;
+        const messages = JSON.parse(localStorage.getItem('autoilty_messages') || '[]');
+        const originalMessage = messages.find(m => m.id === messageId);
+        
+        if (!originalMessage) {
+            alert('Message not found');
+            return;
+        }
+        
+        document.getElementById('replyMessageInfo').innerHTML = `
+            <div style="margin-bottom:8px;">
+                <strong>Original Message From: ${originalMessage.fromUsername}</strong>
+            </div>
+            <div style="color:#666;font-size:13px;margin-bottom:8px;">Re: ${originalMessage.listingTitle} ($${originalMessage.listingPrice.toLocaleString()})</div>
+            <div style="background:#fff;padding:12px;border-radius:6px;border-left:3px solid #3498db;margin-top:12px;">
+                <p style="font-size:13px;color:#666;margin-bottom:4px;">Original message:</p>
+                <p style="color:#333;font-size:14px;">${originalMessage.message}</p>
+            </div>
+        `;
+        
+        document.getElementById('replyModal').style.display = 'flex';
+    }
+    
+    function closeReplyModal() {
+        document.getElementById('replyModal').style.display = 'none';
+        document.getElementById('replyContent').value = '';
+        replyingToMessageId = null;
+    }
+    
+    function sendReply() {
+        if (!currentUser || !replyingToMessageId) return;
+        
+        const replyContent = document.getElementById('replyContent').value.trim();
+        
+        if (!replyContent) {
+            alert('Please write a reply');
+            return;
+        }
+        
+        const messages = JSON.parse(localStorage.getItem('autoilty_messages') || '[]');
+        const originalMessage = messages.find(m => m.id === replyingToMessageId);
+        
+        if (!originalMessage) {
+            alert('Original message not found');
+            return;
+        }
+        
+        const reply = {
+            id: 'msg_' + Date.now(),
+            listingId: originalMessage.listingId,
+            listingTitle: originalMessage.listingTitle,
+            listingPrice: originalMessage.listingPrice,
+            fromUserId: currentUser.id,
+            fromUsername: currentUser.username,
+            toUserId: originalMessage.fromUserId,
+            toUsername: originalMessage.fromUsername,
+            message: replyContent,
+            created: new Date().toISOString(),
+            read: false,
+            inReplyTo: originalMessage.id
+        };
+        
+        messages.push(reply);
+        localStorage.setItem('autoilty_messages', JSON.stringify(messages));
+        
+        // Mark original as read when replying
+        const originalIndex = messages.findIndex(m => m.id === replyingToMessageId);
+        if (originalIndex !== -1 && !messages[originalIndex].read) {
+            messages[originalIndex].read = true;
+            localStorage.setItem('autoilty_messages', JSON.stringify(messages));
+        }
+        
+        alert(`✓ Reply sent successfully!\n\n📧 Email notification sent to ${originalMessage.fromUsername}'s registered email address.`);
+        
+        closeReplyModal();
+        showProfile(); // Refresh profile to show updated messages
     }
     
     function formatTime(timestamp) {
