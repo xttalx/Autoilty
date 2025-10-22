@@ -22,6 +22,7 @@
             </div>
             <button class="btn-primary" onclick="showAuthModal()" id="authBtn">Sign Up / Login</button>
             <button class="btn-primary" onclick="showProfile()" id="profileBtn" style="display:none;">My Profile</button>
+            <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
         </div>
     </nav>
 
@@ -105,80 +106,11 @@
     </footer>
 
     <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
     <script>
-    // User Management
-    let currentUser = JSON.parse(localStorage.getItem('autoilty_user'));
-    
+    // Override updateAuthButton to use auth.js
     function updateAuthButton() {
-        if (currentUser) {
-            document.getElementById('authBtn').style.display = 'none';
-            document.getElementById('profileBtn').style.display = 'block';
-            document.getElementById('profileBtn').textContent = currentUser.username;
-        } else {
-            document.getElementById('authBtn').style.display = 'block';
-            document.getElementById('profileBtn').style.display = 'none';
-        }
-    }
-    
-    function showAuthModal() {
-        document.getElementById('authModal').style.display = 'flex';
-    }
-    
-    function closeAuthModal() {
-        document.getElementById('authModal').style.display = 'none';
-    }
-    
-    function handleAuth() {
-        const username = document.getElementById('usernameInput').value.trim();
-        const email = document.getElementById('emailInput').value.trim();
-        
-        if (!username || !email) {
-            alert('Please enter both username and email');
-            return;
-        }
-        
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            alert('Please enter a valid email address');
-            return;
-        }
-        
-        const existingUser = JSON.parse(localStorage.getItem('autoilty_user'));
-        if (existingUser && existingUser.email === email && existingUser.confirmed) {
-            currentUser = existingUser;
-            localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
-            closeAuthModal();
-            updateAuthButton();
-            alert('Welcome back, ' + currentUser.username + '!');
-            return;
-        }
-        
-        currentUser = {
-            id: 'user_' + Date.now(),
-            username: username,
-            email: email,
-            joined: new Date().toISOString(),
-            confirmed: false,
-            confirmationCode: Math.random().toString(36).substring(2, 10).toUpperCase()
-        };
-        
-        localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
-        closeAuthModal();
-        showEmailConfirmation();
-    }
-    
-    function showEmailConfirmation() {
-        document.getElementById('confirmEmail').textContent = currentUser.email;
-        document.getElementById('confirmCode').textContent = currentUser.confirmationCode;
-        document.getElementById('emailConfirmModal').style.display = 'flex';
-    }
-    
-    function confirmEmail() {
-        currentUser.confirmed = true;
-        localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
-        document.getElementById('emailConfirmModal').style.display = 'none';
-        updateAuthButton();
-        alert('✓ Email confirmed! Welcome, ' + currentUser.username + '! You can now post answers.');
+        updateAuthButtons();
     }
 
     // Get question ID from URL

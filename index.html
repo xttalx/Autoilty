@@ -35,7 +35,9 @@
                 <a href="tools.html" class="nav-link">Tools</a>
             </div>
             
-            <button class="btn-primary" onclick="window.location.href='forum.html'">Join Community</button>
+            <button class="btn-primary" onclick="window.location.href='forum.html'" id="authBtn">Join Community</button>
+            <button class="btn-primary" onclick="showProfile()" id="profileBtn" style="display:none;">My Profile</button>
+            <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
             <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
         </div>
     </nav>
@@ -399,6 +401,7 @@
 
     <script src="js/main.js"></script>
     <script src="js/forum-data.js"></script>
+    <script src="js/auth.js"></script>
 </body>
 </html>
 
