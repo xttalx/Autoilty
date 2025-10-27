@@ -235,133 +235,48 @@
         </div>
     </footer>
 
+    <script src="../js/vehicle-data.js"></script>
     <script src="../js/main.js"></script>
     <script>
-        const vehicleData = {
-            camry: {
-                name: "2024 Toyota Camry",
-                price: "$28,950",
-                year: "2024",
-                make: "Toyota",
-                model: "Camry",
-                type: "Sedan",
-                engine: "2.5L 4-Cylinder",
-                horsepower: "203 hp",
-                torque: "184 lb-ft",
-                fuel: "Gasoline",
-                mpg: "28/39 MPG",
-                transmission: "8-Speed Automatic",
-                drivetrain: "FWD",
-                seating: "5",
-                country: "Japan",
-                rating: "⭐⭐⭐⭐⭐ 4.5/5"
-            },
-            accord: {
-                name: "2024 Honda Accord",
-                price: "$28,295",
-                year: "2024",
-                make: "Honda",
-                model: "Accord",
-                type: "Sedan",
-                engine: "1.5L Turbo 4-Cylinder",
-                horsepower: "192 hp",
-                torque: "192 lb-ft",
-                fuel: "Gasoline",
-                mpg: "30/38 MPG",
-                transmission: "CVT",
-                drivetrain: "FWD",
-                seating: "5",
-                country: "Japan",
-                rating: "⭐⭐⭐⭐⭐ 4.6/5"
-            },
-            civic: {
-                name: "2024 Honda Civic",
-                price: "$24,650",
-                year: "2024",
-                make: "Honda",
-                model: "Civic",
-                type: "Sedan",
-                engine: "2.0L 4-Cylinder",
-                horsepower: "158 hp",
-                torque: "138 lb-ft",
-                fuel: "Gasoline",
-                mpg: "31/40 MPG",
-                transmission: "CVT",
-                drivetrain: "FWD",
-                seating: "5",
-                country: "Japan",
-                rating: "⭐⭐⭐⭐⭐ 4.7/5"
-            },
-            crv: {
-                name: "2024 Honda CR-V",
-                price: "$32,350",
-                year: "2024",
-                make: "Honda",
-                model: "CR-V",
-                type: "SUV",
-                engine: "1.5L Turbo 4-Cylinder",
-                horsepower: "190 hp",
-                torque: "179 lb-ft",
-                fuel: "Gasoline",
-                mpg: "28/34 MPG",
-                transmission: "CVT",
-                drivetrain: "AWD",
-                seating: "5",
-                country: "Japan",
-                rating: "⭐⭐⭐⭐⭐ 4.5/5"
-            },
-            rav4: {
-                name: "2024 Toyota RAV4",
-                price: "$29,575",
-                year: "2024",
-                make: "Toyota",
-                model: "RAV4",
-                type: "SUV",
-                engine: "2.5L 4-Cylinder",
-                horsepower: "203 hp",
-                torque: "184 lb-ft",
-                fuel: "Gasoline",
-                mpg: "27/35 MPG",
-                transmission: "8-Speed Automatic",
-                drivetrain: "AWD",
-                seating: "5",
-                country: "Japan",
-                rating: "⭐⭐⭐⭐☆ 4.3/5"
-            },
-            f150: {
-                name: "2024 Ford F-150",
-                price: "$37,830",
-                year: "2024",
-                make: "Ford",
-                model: "F-150",
-                type: "Pickup Truck",
-                engine: "3.3L V6",
-                horsepower: "290 hp",
-                torque: "265 lb-ft",
-                fuel: "Gasoline",
-                mpg: "19/24 MPG",
-                transmission: "10-Speed Automatic",
-                drivetrain: "4WD",
-                seating: "5-6",
-                country: "USA",
-                rating: "⭐⭐⭐⭐☆ 4.4/5"
-            }
-        };
+        // Initialize vehicle selectors
+        document.addEventListener('DOMContentLoaded', function() {
+            initVehicleSelectors();
+        });
+        
+        function initVehicleSelectors() {
+            // Populate all selectors with complete vehicle list
+            const options = generateVehicleOptions();
+            ['vehicle1', 'vehicle2', 'vehicle3'].forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = options;
+                }
+            });
+        }
         
         function updateComparison() {
             const v1 = document.getElementById('vehicle1').value;
             const v2 = document.getElementById('vehicle2').value;
             const v3 = document.getElementById('vehicle3').value;
             
+            // Get vehicle data
+            const vehicle1 = v1 ? window.vehicleDatabase.vehicles[v1] : null;
+            const vehicle2 = v2 ? window.vehicleDatabase.vehicles[v2] : null;
+            const vehicle3 = v3 ? window.vehicleDatabase.vehicles[v3] : null;
+            
             // Update headers
-            document.getElementById('header1').textContent = v1 ? vehicleData[v1].name : 'Vehicle 1';
-            document.getElementById('header2').textContent = v2 ? vehicleData[v2].name : 'Vehicle 2';
-            document.getElementById('header3').textContent = v3 ? vehicleData[v3].name : 'Vehicle 3';
+            document.getElementById('header1').textContent = vehicle1 ? vehicle1.name : 'Vehicle 1';
+            document.getElementById('header2').textContent = vehicle2 ? vehicle2.name : 'Vehicle 2';
+            document.getElementById('header3').textContent = vehicle3 ? vehicle3.name : 'Vehicle 3';
             
             // Build comparison table
-            const specs = ['price', 'type', 'engine', 'horsepower', 'torque', 'fuel', 'mpg', 'transmission', 'drivetrain', 'seating', 'country', 'rating'];
+            const specs = [
+                'priceFormatted', 'type', 'engine', 'horsepower', 'torque', 
+                'fuel', 'mpg', 'transmission', 'drivetrain', 'seating', 'origin', 'rating'
+            ];
+            
             const labels = {
-                price: 'Starting Price',
+                priceFormatted: 'Starting Price',
                 type: 'Body Type',
                 engine: 'Engine',
                 horsepower: 'Horsepower',
@@ -371,7 +286,7 @@
                 transmission: 'Transmission',
                 drivetrain: 'Drivetrain',
                 seating: 'Seating',
-                country: 'Country of Origin',
+                origin: 'Country of Origin',
                 rating: 'Community Rating'
             };
             
@@ -379,13 +294,21 @@
             specs.forEach(spec => {
                 html += '<tr>';
                 html += `<td class="spec-label">${labels[spec]}</td>`;
-                html += `<td class="spec-value">${v1 ? vehicleData[v1][spec] : '-'}</td>`;
-                html += `<td class="spec-value">${v2 ? vehicleData[v2][spec] : '-'}</td>`;
-                html += `<td class="spec-value">${v3 ? vehicleData[v3][spec] : '-'}</td>`;
+                html += `<td class="spec-value">${vehicle1 ? (spec === 'rating' ? getStars(vehicle1[spec]) : vehicle1[spec]) : '-'}</td>`;
+                html += `<td class="spec-value">${vehicle2 ? (spec === 'rating' ? getStars(vehicle2[spec]) : vehicle2[spec]) : '-'}</td>`;
+                html += `<td class="spec-value">${vehicle3 ? (spec === 'rating' ? getStars(vehicle3[spec]) : vehicle3[spec]) : '-'}</td>`;
                 html += '</tr>';
             });
             
             document.getElementById('comparisonBody').innerHTML = html;
+        }
+        
+        function getStars(rating) {
+            const fullStars = Math.floor(rating);
+            const halfStar = rating % 1 >= 0.5;
+            let stars = '⭐'.repeat(fullStars);
+            if (halfStar) stars += '☆';
+            return stars + ' ' + rating.toFixed(1) + '/5';
         }
     </script>
 </body>
