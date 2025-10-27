@@ -208,15 +208,18 @@
         </div>
     </section>
 
-    <!-- Trending Discussions -->
-    <section class="trending">
+    <!-- Trending Discussions & News -->
+    <section class="trending" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); padding: 60px 0;">
         <div class="container">
-            <div class="section-header">
-                <h2>🔥 Trending This Week</h2>
-                <a href="forum.html" class="link-primary">View All →</a>
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+                <h2 style="font-size: 32px; color: #1a1a1a; margin: 0;">🔥 Trending This Week</h2>
+                <div style="display: flex; gap: 16px;">
+                    <button onclick="loadTodayNews()" class="btn-primary" style="padding: 10px 20px; background: #E2231A; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">📅 Today</button>
+                    <a href="forum.html" class="link-primary" style="padding: 10px 20px; background: #f0f0f0; color: #333; text-decoration: none; border-radius: 6px; font-weight: 600;">View All →</a>
+                </div>
             </div>
             
-            <div class="discussion-list" id="trendingDiscussions">
+            <div class="discussion-list" id="trendingDiscussions" style="display: grid; gap: 20px;">
                 <!-- Populated by JavaScript -->
             </div>
         </div>
@@ -242,8 +245,8 @@
         <div class="container">
             <div class="content-grid">
                 <div class="content-main">
-                    <h2>Latest Q&A</h2>
-                    <div class="qa-list" id="latestQA">
+                    <h2>📰 Latest Auto Industry News</h2>
+                    <div class="news-grid" id="latestNews">
                         <!-- Populated by JavaScript -->
                     </div>
                 </div>
