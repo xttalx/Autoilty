@@ -1,0 +1,71 @@
+AUTOILTY BACKEND SETUP INSTRUCTIONS
+=====================================
+
+QUICK START (Static Site - No Backend Needed)
+-----------------------------------------------
+Just open index.html in your browser to view the site!
+
+Most features work without a backend. Just double-click index.html
+
+
+BACKEND SETUP (For Full Features)
+----------------------------------
+
+STEP 1: Install Node.js
+- Go to: https://nodejs.org/
+- Download and install the LTS version
+- Restart your terminal/PowerShell
+
+STEP 2: Install MongoDB
+- Option A (Local): Download from mongodb.com
+- Option B (Cloud/Free): Use MongoDB Atlas
+  - Sign up: https://www.mongodb.com/cloud/atlas
+  - Create free cluster
+  - Get connection string
+
+STEP 3: Configure Environment
+- The .env file is already created in backend folder
+- Edit it with Notepad and change:
+  MONGODB_URI=mongodb://localhost:27017/autoilty
+  (Use your Atlas connection string if using cloud)
+
+STEP 4: Install Dependencies
+- Open PowerShell in backend folder
+- Run: npm install
+- Wait for installation to complete
+
+STEP 5: Start the Server
+- Run: npm start
+- You should see "Backend Server Running"
+- Server runs at http://localhost:5000
+
+
+TESTING
+-------
+Open browser: http://localhost:5000/api/health
+Should see JSON response with "status": "healthy"
+
+
+TROUBLESHOOTING
+---------------
+1. "node is not recognized"
+   -> Install Node.js from nodejs.org
+
+2. "MongoDB connection error"
+   -> Start MongoDB: net start MongoDB
+   -> Or use Atlas cloud database
+
+3. Port 5000 in use
+   -> Change PORT in .env to 5001
+
+4. npm install fails
+   -> Run: npm cache clean --force
+   -> Run: npm install again
+
+
+Need more help? See:
+- QUICK_START.md - Quick guide
+- SETUP_INSTRUCTIONS.md - Detailed guide
+- backend/README_SETUP.md - Backend specific
+- PROJECT_ANALYSIS.md - Full project analysis
+

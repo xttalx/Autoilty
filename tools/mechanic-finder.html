@@ -80,6 +80,12 @@
         .mechanic-rating {
             color: #ffa500;
             font-size: 18px;
+            margin-bottom: 8px;
+        }
+        
+        .mechanic-reviews {
+            color: #666;
+            font-size: 14px;
             margin-bottom: 12px;
         }
         
@@ -211,77 +217,200 @@
         </div>
     </footer>
 
+    <!-- Google Maps API -->
+    <script src="../js/google-maps-config.js"></script>
+    <script>
+        // Use configured API key or fallback
+        const apiKey = window.GOOGLE_MAPS_API_KEY || 'AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVsGeWbF4';
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVsGeWbF4&libraries=places&callback=initMap" async defer></script>
+    
     <script src="../js/main.js"></script>
     <script>
-        const mechanics = [
-            {
-                name: "Precision Auto Care",
-                location: "Toronto, ON",
-                rating: "⭐⭐⭐⭐⭐ 4.8/5",
-                services: ["General Repair", "Oil Change", "Brakes", "Engine"],
-                reviews: 156
-            },
-            {
-                name: "Honest Mechanics",
-                location: "Vancouver, BC",
-                rating: "⭐⭐⭐⭐⭐ 4.9/5",
-                services: ["General Repair", "Tires", "Transmission"],
-                reviews: 203
-            },
-            {
-                name: "Quick Lube & Repair",
-                location: "Calgary, AB",
-                rating: "⭐⭐⭐⭐☆ 4.5/5",
-                services: ["Oil Change", "Brakes", "Tires"],
-                reviews: 89
-            },
-            {
-                name: "Master Mechanics",
-                location: "Montreal, QC",
-                rating: "⭐⭐⭐⭐⭐ 4.7/5",
-                services: ["Engine", "Transmission", "General Repair"],
-                reviews: 178
-            },
-            {
-                name: "AutoPro Service",
-                location: "Ottawa, ON",
-                rating: "⭐⭐⭐⭐⭐ 4.6/5",
-                services: ["Brakes", "Oil Change", "Tires"],
-                reviews: 134
-            },
-            {
-                name: "Elite Auto Repair",
-                location: "Edmonton, AB",
-                rating: "⭐⭐⭐⭐⭐ 4.8/5",
-                services: ["General Repair", "Engine", "Transmission"],
-                reviews: 167
-            }
-        ];
+        let map;
+        let service;
+        let infowindow;
+        let markers = [];
         
+        // Initialize Google Maps
+        function initMap() {
+            // Default to Toronto, ON
+            const defaultLocation = { lat: 43.6532, lng: -79.3832 };
+            
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: defaultLocation,
+                zoom: 12,
+            });
+            
+            infowindow = new google.maps.InfoWindow();
+            service = new google.maps.places.PlacesService(map);
+            
+            // Try to get user's location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        map.setCenter(userLocation);
+                        map.setZoom(13);
+                    },
+                    () => {
+                        console.log('Geolocation not available');
+                    }
+                );
+            }
+        }
+        
+        // Search for mechanics using Google Places API
         function searchMechanics() {
+            const locationInput = document.getElementById('locationInput').value;
+            const serviceType = document.getElementById('serviceType').value;
+            const resultsDiv = document.getElementById('mechanicResults');
+            
+            if (!locationInput.trim()) {
+                alert('Please enter a location (city, postal code, or address)');
+                return;
+            }
+            
+            // Show loading
+            resultsDiv.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">Searching for mechanics...</div>';
+            
+            // Geocode the user's location input
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: locationInput }, (results, status) => {
+                if (status === 'OK' && results[0]) {
+                    const location = results[0].geometry.location;
+                    const searchLocation = {
+                        lat: location.lat(),
+                        lng: location.lng()
+                    };
+                    
+                    // Center map on search location
+                    map.setCenter(searchLocation);
+                    map.setZoom(13);
+                    
+                    // Search for auto repair shops
+                    const request = {
+                        location: searchLocation,
+                        radius: '10000',
+                        query: serviceType ? 
+                            `${serviceType} auto repair` : 
+                            'auto repair shop'
+                    };
+                    
+                    service.textSearch(request, (results, status) => {
+                        if (status === google.maps.places.PlacesServiceStatus.OK) {
+                            displayMechanics(results);
+                            addMarkersToMap(results);
+                        } else if (status === 'ZERO_RESULTS') {
+                            resultsDiv.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">No mechanics found. Try a different location or service type.</div>';
+                        } else {
+                            resultsDiv.innerHTML = '<div style="text-align:center;padding:40px;color:#e74c3c;">Error searching for mechanics. Please try again.</div>';
+                        }
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<div style="text-align:center;padding:40px;color:#e74c3c;">Could not find that location. Please try a valid city, postal code, or address.</div>';
+                }
+            });
+        }
+        
+        // Display mechanics in cards
+        function displayMechanics(places) {
             const resultsDiv = document.getElementById('mechanicResults');
             let html = '';
             
-            mechanics.forEach(mechanic => {
-                html += `
-                    <div class="mechanic-card">
-                        <div class="mechanic-name">${mechanic.name}</div>
-                        <div class="mechanic-location">📍 ${mechanic.location}</div>
-                        <div class="mechanic-rating">${mechanic.rating}</div>
-                        <div class="mechanic-services">
-                            ${mechanic.services.map(s => `<span class="service-tag">${s}</span>`).join('')}
+            if (places.length === 0) {
+                html = '<div style="text-align:center;padding:40px;color:#666;">No mechanics found. Try a different location.</div>';
+            } else {
+                places.forEach((place) => {
+                    const rating = place.rating ? `${'⭐'.repeat(Math.floor(place.rating))} ${place.rating.toFixed(1)}/5` : 'No rating';
+                    const reviews = place.user_ratings_total ? `${place.user_ratings_total} reviews` : 'No reviews';
+                    
+                    html += `
+                        <div class="mechanic-card">
+                            <div class="mechanic-name">${place.name}</div>
+                            <div class="mechanic-location">📍 ${place.formatted_address || 'Address not available'}</div>
+                            <div class="mechanic-rating">${rating}</div>
+                            <div class="mechanic-reviews">${reviews}</div>
+                            <div class="mechanic-services">
+                                ${place.types ? place.types.slice(0, 3).map(type => `<span class="service-tag">${type.replace(/_/g, ' ')}</span>`).join('') : ''}
+                            </div>
+                            ${place.website ? `<a href="${place.website}" target="_blank" class="contact-btn" style="text-decoration:none;display:inline-block;margin-top:8px;">View Website</a>` : ''}
+                            <button class="contact-btn" onclick="showMechanicDetails('${place.place_id}', '${place.name}')">View on Map</button>
                         </div>
-                        <button class="contact-btn" onclick="alert('Contact feature coming soon!')">View Details</button>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            }
             
             resultsDiv.innerHTML = html;
         }
         
-        // Load results on page load
-        searchMechanics();
+        // Add markers to map
+        function addMarkersToMap(places) {
+            // Clear existing markers
+            markers.forEach(marker => marker.setMap(null));
+            markers = [];
+            
+            places.forEach((place) => {
+                const marker = new google.maps.Marker({
+                    position: place.geometry.location,
+                    map: map,
+                    title: place.name
+                });
+                
+                marker.addListener('click', () => {
+                    const content = `
+                        <div style="padding:10px;">
+                            <h3 style="margin:0 0 8px;">${place.name}</h3>
+                            <p style="margin:4px 0;color:#666;">${place.formatted_address}</p>
+                            ${place.rating ? `<p style="margin:4px 0;">Rating: ${'⭐'.repeat(Math.floor(place.rating))} ${place.rating.toFixed(1)}/5</p>` : ''}
+                            ${place.phone_number ? `<p style="margin:4px 0;">📞 ${place.phone_number}</p>` : ''}
+                        </div>
+                    `;
+                    infowindow.setContent(content);
+                    infowindow.open(map, marker);
+                });
+                
+                markers.push(marker);
+            });
+        }
+        
+        // Show mechanic details
+        function showMechanicDetails(placeId, name) {
+            service.getDetails({ placeId: placeId }, (place, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    map.setCenter(place.geometry.location);
+                    map.setZoom(16);
+                    
+                    // Focus on the marker
+                    markers.forEach(marker => {
+                        if (marker.getPosition().equals(place.geometry.location)) {
+                            google.maps.event.trigger(marker, 'click');
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Allow Enter key to trigger search
+        document.getElementById('locationInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchMechanics();
+            }
+        });
+        
+        // Load sample results on page load (using Toronto as default)
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show default location message
+            document.getElementById('mechanicResults').innerHTML = 
+                '<div style="text-align:center;padding:40px;color:#666;">Enter your location and click Search to find mechanics near you.</div>';
+        });
     </script>
+    
+    <!-- Map Container (Hidden initially, shown when needed) -->
+    <div id="map" style="display:none;height:0px;"></div>
 </body>
 </html>
 
