@@ -17,7 +17,7 @@ function loadHotTopics() {
     const hotTopics = window.forumData?.hotTopics || [];
     
     grid.innerHTML = hotTopics.map(topic => `
-        <a href="forum/thread.html?id=${topic.id}" class="hot-topic-card">
+        <a href="thread.html?id=${topic.id}" class="hot-topic-card">
             <div class="hot-topic-header">
                 <span class="hot-badge">🔥 HOT</span>
                 <span class="hot-views">👁️ ${formatNumber(topic.views)}</span>
@@ -45,7 +45,7 @@ function loadCategories() {
     const categories = window.forumData?.categories || [];
     
     grid.innerHTML = categories.map(cat => `
-        <a href="forum/category.html?id=${cat.id}" class="category-card" style="border-left-color: ${cat.color}">
+        <a href="categories/general-discussion.html" class="category-card" style="border-left-color: ${cat.color}">
             <div class="category-header">
                 <div class="category-icon">${cat.icon}</div>
                 <div>
@@ -81,7 +81,7 @@ function renderThreads() {
     }
     
     container.innerHTML = paginatedThreads.map(thread => `
-        <a href="forum/thread.html?id=${thread.id}" class="thread-item ${thread.isPinned ? 'pinned' : ''}">
+        <a href="thread.html?id=${thread.id}" class="thread-item ${thread.isPinned ? 'pinned' : ''}">
             <div class="thread-avatar">${thread.author.charAt(0)}</div>
             <div class="thread-content">
                 <div class="thread-title">
