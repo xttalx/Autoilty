@@ -563,6 +563,209 @@ window.vehicleDatabase = {
             origin: 'Japan',
             rating: 4.6,
             features: ['Mazda Connect', 'i-Activsense', 'Premium Design']
+        },
+        
+        // Toyota Vehicles
+        '2024-Toyota-Corolla': {
+            year: '2024', make: 'Toyota', model: 'Corolla',
+            name: '2024 Toyota Corolla',
+            price: 23750, priceFormatted: '$23,750',
+            type: 'Sedan',
+            engine: '2.0L 4-Cylinder',
+            horsepower: 169,
+            torque: 151,
+            fuel: 'Gasoline',
+            mpg: '31/40',
+            transmission: 'CVT',
+            drivetrain: 'FWD',
+            seating: 5,
+            origin: 'Japan',
+            rating: 4.7,
+            features: ['Toyota Safety Sense', 'Apple CarPlay', 'Android Auto']
+        },
+        
+        '2024-Toyota-Prius': {
+            year: '2024', make: 'Toyota', model: 'Prius',
+            name: '2024 Toyota Prius',
+            price: 33370, priceFormatted: '$33,370',
+            type: 'Hybrid Sedan',
+            engine: '2.0L Hybrid',
+            horsepower: 194,
+            torque: 139,
+            fuel: 'Hybrid',
+            mpg: '57/56',
+            transmission: 'e-CVT',
+            drivetrain: 'FWD',
+            seating: 5,
+            origin: 'Japan',
+            rating: 4.8,
+            features: ['Prius Prime', 'Solar Roof', 'AWD Available']
+        },
+        
+        '2024-Toyota-4Runner': {
+            year: '2024', make: 'Toyota', model: '4Runner',
+            name: '2024 Toyota 4Runner',
+            price: 42370, priceFormatted: '$42,370',
+            type: 'SUV',
+            engine: '4.0L V6',
+            horsepower: 270,
+            torque: 278,
+            fuel: 'Gasoline',
+            mpg: '16/19',
+            transmission: '5-Speed Automatic',
+            drivetrain: '4WD',
+            seating: 7,
+            origin: 'Japan',
+            rating: 4.6,
+            features: ['TRD Off-Road', '4WD', 'Crawl Control']
+        },
+        
+        // Honda Vehicles
+        '2024-Honda-Odyssey': {
+            year: '2024', make: 'Honda', model: 'Odyssey',
+            name: '2024 Honda Odyssey',
+            price: 42475, priceFormatted: '$42,475',
+            type: 'Minivan',
+            engine: '3.5L V6',
+            horsepower: 280,
+            torque: 262,
+            fuel: 'Gasoline',
+            mpg: '19/28',
+            transmission: '10-Speed Automatic',
+            drivetrain: 'FWD',
+            seating: 8,
+            origin: 'Japan',
+            rating: 4.7,
+            features: ['CabinWatch', 'Magic Slide', 'Honda Sensing']
+        },
+        
+        '2024-Honda-Passport': {
+            year: '2024', make: 'Honda', model: 'Passport',
+            name: '2024 Honda Passport',
+            price: 48895, priceFormatted: '$48,895',
+            type: 'SUV',
+            engine: '3.5L V6',
+            horsepower: 280,
+            torque: 262,
+            fuel: 'Gasoline',
+            mpg: '20/25',
+            transmission: '9-Speed Automatic',
+            drivetrain: 'AWD',
+            seating: 5,
+            origin: 'Japan',
+            rating: 4.5,
+            features: ['i-VTM4 AWD', 'TrailSport Trim', '8" Display']
+        },
+        
+        // Ford Vehicles
+        '2024-Ford-Explorer': {
+            year: '2024', make: 'Ford', model: 'Explorer',
+            name: '2024 Ford Explorer',
+            price: 44155, priceFormatted: '$44,155',
+            type: 'SUV',
+            engine: '2.3L EcoBoost',
+            horsepower: 300,
+            torque: 310,
+            fuel: 'Gasoline',
+            mpg: '21/28',
+            transmission: '10-Speed Automatic',
+            drivetrain: 'AWD',
+            seating: 7,
+            origin: 'USA',
+            rating: 4.4,
+            features: ['SYNC 4', 'Co-Pilot360', 'Terrain Management']
+        },
+        
+        '2024-Ford-Escape': {
+            year: '2024', make: 'Ford', model: 'Escape',
+            name: '2024 Ford Escape',
+            price: 31295, priceFormatted: '$31,295',
+            type: 'SUV',
+            engine: '2.5L Hybrid',
+            horsepower: 165,
+            torque: 200,
+            fuel: 'Hybrid',
+            mpg: '44/37',
+            transmission: 'eCVT',
+            drivetrain: 'AWD',
+            seating: 5,
+            origin: 'USA',
+            rating: 4.5,
+            features: ['Hybrid System', 'Co-Pilot360', 'FordPass Connect']
+        },
+        
+        // Chevrolet Vehicles
+        '2024-Chevrolet-Tahoe': {
+            year: '2024', make: 'Chevrolet', model: 'Tahoe',
+            name: '2024 Chevrolet Tahoe',
+            price: 58875, priceFormatted: '$58,875',
+            type: 'SUV',
+            engine: '5.3L V8',
+            horsepower: 355,
+            torque: 383,
+            fuel: 'Gasoline',
+            mpg: '16/20',
+            transmission: '10-Speed Automatic',
+            drivetrain: '4WD',
+            seating: 8,
+            origin: 'USA',
+            rating: 4.5,
+            features: ['4WD', 'Max Trailering', 'Chevrolet Infotainment 3 Plus']
+        },
+        
+        '2024-Chevrolet-Malibu': {
+            year: '2024', make: 'Chevrolet', model: 'Malibu',
+            name: '2024 Chevrolet Malibu',
+            price: 26595, priceFormatted: '$26,595',
+            type: 'Sedan',
+            engine: '1.5L Turbo',
+            horsepower: 163,
+            torque: 184,
+            fuel: 'Gasoline',
+            mpg: '29/36',
+            transmission: 'CVT',
+            drivetrain: 'FWD',
+            seating: 5,
+            origin: 'USA',
+            rating: 4.1,
+            features: ['MyLink', 'Android Auto', 'Apple CarPlay']
+        },
+        
+        // Nissan Vehicles
+        '2024-Nissan-Pathfinder': {
+            year: '2024', make: 'Nissan', model: 'Pathfinder',
+            name: '2024 Nissan Pathfinder',
+            price: 41995, priceFormatted: '$41,995',
+            type: 'SUV',
+            engine: '3.5L V6',
+            horsepower: 284,
+            torque: 259,
+            fuel: 'Gasoline',
+            mpg: '21/27',
+            transmission: '9-Speed Automatic',
+            drivetrain: 'AWD',
+            seating: 7,
+            origin: 'Japan',
+            rating: 4.4,
+            features: ['Zero Gravity Seats', 'ProPILOT', 'AWD']
+        },
+        
+        '2024-Nissan-Sentra': {
+            year: '2024', make: 'Nissan', model: 'Sentra',
+            name: '2024 Nissan Sentra',
+            price: 21198, priceFormatted: '$21,198',
+            type: 'Sedan',
+            engine: '2.0L 4-Cylinder',
+            horsepower: 149,
+            torque: 146,
+            fuel: 'Gasoline',
+            mpg: '29/39',
+            transmission: 'CVT',
+            drivetrain: 'FWD',
+            seating: 5,
+            origin: 'Japan',
+            rating: 4.3,
+            features: ['Safety Shield 360', 'Android Auto', 'Apple CarPlay']
         }
     }
 };

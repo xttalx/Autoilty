@@ -27,10 +27,12 @@
                 <a href="../guides.html" class="nav-link">Guides</a>
                 <a href="../tools.html" class="nav-link">Tools</a>
             </div>
-            <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
-            <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
-            <button class="btn-primary" onclick="window.location.href='../forum.html'" id="profileBtn" style="display:none;">My Profile</button>
-            <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
+            <div style="display: flex; gap: 8px; margin-left: auto;">
+                <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
+                <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
+                <button class="btn-primary" onclick="window.location.href='../forum.html'" id="profileBtn" style="display:none;">My Profile</button>
+                <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
+            </div>
         </div>
     </nav>
 
@@ -42,6 +44,11 @@
             </div>
             <h1>💬 General Discussion</h1>
             <p>Talk about anything automotive - news, lifestyle, tips, and community chat</p>
+            <div style="margin-top: 24px;">
+                <button onclick="showNewDiscussionModal()" style="padding: 12px 32px; background: #fff; color: #E2231A; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px;">
+                    ✏️ Start New Discussion
+                </button>
+            </div>
             <div class="category-stats">
                 <div class="stat-item">
                     <strong>15,243</strong> <span>Topics</span>
@@ -291,6 +298,19 @@
         </div>
     </div>
 
+    <!-- New Discussion Modal -->
+    <div id="newDiscussionModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10002;align-items:center;justify-content:center;overflow-y:auto;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:700px;width:90%;margin:40px auto;">
+            <h2 style="margin-bottom:24px;">💬 Start New Discussion</h2>
+            <input type="text" id="discussionTitle" placeholder="Discussion title..." style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;box-sizing:border-box;">
+            <textarea id="discussionContent" placeholder="Share your thoughts, ask a question, or start a conversation..." rows="8" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;resize:vertical;box-sizing:border-box;"></textarea>
+            <input type="file" id="discussionImage" accept="image/*" style="width:100%;margin-bottom:16px;box-sizing:border-box;">
+            <div style="font-size:12px;color:#666;margin-bottom:16px;">✓ Optional: Add an image to your discussion</div>
+            <button onclick="submitNewDiscussion()" style="width:100%;padding:14px;background:#667eea;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Post Discussion</button>
+            <button onclick="closeNewDiscussionModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+
     <!-- Email Confirmation Modal -->
     <div id="emailConfirmModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10001;align-items:center;justify-content:center;">
         <div style="background:#fff;padding:40px;border-radius:16px;max-width:500px;width:90%;text-align:center;">
@@ -311,9 +331,73 @@
     <script src="../js/main.js"></script>
     <script src="../js/backlinks.js"></script>
     <script src="../js/forum-chat.js"></script>
-    
     <script src="../js/auth.js"></script>
     <script>
+    // Show new discussion modal
+    function showNewDiscussionModal() {
+        if (!currentUser) {
+            alert('Please sign up or login to start a discussion');
+            showSignupModal();
+            return;
+        }
+        document.getElementById('newDiscussionModal').style.display = 'flex';
+    }
+    
+    // Close new discussion modal
+    function closeNewDiscussionModal() {
+        document.getElementById('newDiscussionModal').style.display = 'none';
+        document.getElementById('discussionTitle').value = '';
+        document.getElementById('discussionContent').value = '';
+        document.getElementById('discussionImage').value = '';
+    }
+    
+    // Submit new discussion
+    function submitNewDiscussion() {
+        const title = document.getElementById('discussionTitle').value.trim();
+        const content = document.getElementById('discussionContent').value.trim();
+        const imageFile = document.getElementById('discussionImage').files[0];
+        
+        if (!title || !content) {
+            alert('Please fill in both title and content');
+            return;
+        }
+        
+        const discussion = {
+            id: 'discussion_' + Date.now(),
+            userId: currentUser.id,
+            username: currentUser.username,
+            title: title,
+            content: content,
+            category: 'general',
+            image: null,
+            created: new Date().toISOString(),
+            views: 0,
+            replies: 0,
+            likes: 0
+        };
+        
+        if (imageFile) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                discussion.image = e.target.result;
+                saveAndPostDiscussion(discussion);
+            };
+            reader.readAsDataURL(imageFile);
+        } else {
+            saveAndPostDiscussion(discussion);
+        }
+    }
+    
+    function saveAndPostDiscussion(discussion) {
+        let discussions = JSON.parse(localStorage.getItem('autoilty_discussions') || '[]');
+        discussions.unshift(discussion);
+        localStorage.setItem('autoilty_discussions', JSON.stringify(discussions));
+        
+        closeNewDiscussionModal();
+        alert('Discussion posted successfully! Redirecting to forum...');
+        window.location.href = '../forum.html';
+    }
+    
     function toggleCommunityChat() {
         const widget = document.getElementById('communityChatWidget');
         widget.classList.toggle('minimized');
