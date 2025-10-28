@@ -1,0 +1,41 @@
+# Autoilty.com - Robots.txt
+# Updated: October 28, 2024
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://autoilty.com/sitemap.xml
+
+# Crawl delay (be nice to our server)
+Crawl-delay: 1
+
+# Disallow paths (if any)
+Disallow: /backend/
+Disallow: /admin/
+Disallow: /private/
+Disallow: /*.json$
+Disallow: /js/
+Disallow: /css/
+
+# Allow important resources
+Allow: /css/main.css
+Allow: /js/main.js
+
+# Google-specific
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Bing-specific  
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Bad bots (block)
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
