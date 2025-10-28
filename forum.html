@@ -168,6 +168,7 @@
         </div>
     </footer>
 
+    <script src="js/thread-samples.js"></script>
     <script src="js/main.js"></script>
     <script src="js/auth.js"></script>
     <script>
@@ -273,7 +274,8 @@
         const container = document.getElementById('threadsContainer');
         const noThreads = document.getElementById('noThreads');
         
-        if (threads.length === 0) {
+        if (!threads || threads.length === 0) {
+            container.innerHTML = '';
             container.style.display = 'none';
             noThreads.style.display = 'block';
             return;
