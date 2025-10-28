@@ -85,36 +85,38 @@ function loadTrendingDiscussions() {
     const container = document.getElementById('trendingDiscussions');
     if (!container) return;
     
-    const discussions = window.forumData?.trending || [];
+    const news = window.autoNews?.today || [];
     
-    if (discussions.length === 0) {
-        container.innerHTML = '<p style="padding: 2rem; text-align: center; color: var(--text-secondary);">Loading discussions...</p>';
+    if (news.length === 0) {
+        container.innerHTML = '<p style="padding: 2rem; text-align: center; color: var(--text-secondary);">Loading news...</p>';
         return;
     }
     
-    container.innerHTML = discussions.map(d => `
-        <div class="trending-card" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s;" onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'; this.style.transform='translateY(-4px)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'; this.style.transform='translateY(0)'">
-            <div style="display: flex; gap: 16px; align-items: start;">
-                <div style="font-size: 32px; width: 48px; height: 48px; background: linear-gradient(135deg, #E2231A, #ff6b6b); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
-                    ${d.author.charAt(0)}
-                </div>
-                <div style="flex: 1;">
-                    <h3 style="font-size: 18px; color: #1a1a1a; margin-bottom: 8px; line-height: 1.4;">
-                        <a href="forum.html" style="color: #1a1a1a; text-decoration: none;" onmouseover="this.style.color='#E2231A'" onmouseout="this.style.color='#1a1a1a'">${d.title}</a>
-                    </h3>
-                    <div style="display: flex; gap: 16px; align-items: center; color: #666; font-size: 14px; margin-bottom: 12px;">
-                        <span>👤 ${d.author}</span>
-                        <span>📂 ${d.category}</span>
-                        <span>🕐 ${d.timeAgo}</span>
-                    </div>
-                    <div style="display: flex; gap: 24px; color: #999; font-size: 13px;">
-                        <span>👍 ${d.likes}</span>
-                        <span>💬 ${d.replies}</span>
-                        <span>👁️ ${d.views}</span>
+    // Show latest 4 news items in trending section
+    const trendingNews = news.slice(0, 4);
+    
+    container.innerHTML = trendingNews.map(item => `
+        <a href="${item.url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit; display: block;">
+            <div class="trending-card" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer;" onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'; this.style.transform='translateY(-4px)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'; this.style.transform='translateY(0)'">
+                <div style="display: flex; gap: 20px; align-items: start;">
+                    <img src="${item.image}" alt="${item.title}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                            <span style="background: #E2231A; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">${item.category}</span>
+                            <span style="color: #666; font-size: 12px;">📰 ${item.source}</span>
+                        </div>
+                        <h3 style="font-size: 20px; color: #1a1a1a; margin-bottom: 12px; line-height: 1.4; font-weight: 600;">
+                            ${item.title}
+                        </h3>
+                        <p style="color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">${item.summary}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #999; font-size: 13px;">🕐 ${formatTime(item.time)}</span>
+                            <span style="color: #E2231A; font-size: 13px; font-weight: 600;">Read full article →</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
     `).join('');
 }
 
