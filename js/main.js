@@ -19,7 +19,7 @@ window.autoNews = {
             category: 'Hybrid',
             image: 'https://via.placeholder.com/400x250?text=Toyota+Hybrid+2025',
             summary: 'Toyota reveals new hybrid models with extended electric-only range and improved fuel efficiency.',
-            url: '#'
+            url: 'https://www.autoblog.com'
         },
         {
             id: 'news2',
@@ -29,7 +29,7 @@ window.autoNews = {
             category: 'EV',
             image: 'https://via.placeholder.com/400x250?text=Tesla+Model+3',
             summary: 'Tesla drops Model 3 prices by $2,000, making it more accessible to Canadian buyers.',
-            url: '#'
+            url: 'https://www.driving.ca'
         },
         {
             id: 'news3',
@@ -39,7 +39,7 @@ window.autoNews = {
             category: 'Recalls',
             image: 'https://via.placeholder.com/400x250?text=Honda+Recall',
             summary: 'Honda issues voluntary recall for certain 2022-2024 models due to potential brake malfunction.',
-            url: '#'
+            url: 'https://www.cbc.ca'
         },
         {
             id: 'news4',
@@ -49,7 +49,7 @@ window.autoNews = {
             category: 'Trucks',
             image: 'https://via.placeholder.com/400x250?text=Ford+F-150+Lightning',
             summary: 'Ford ramps up production of the F-150 Lightning electric pickup to meet growing demand.',
-            url: '#'
+            url: 'https://www.motor1.com'
         },
         {
             id: 'news5',
@@ -59,7 +59,17 @@ window.autoNews = {
             category: 'EV Infrastructure',
             image: 'https://via.placeholder.com/400x250?text=EV+Charging',
             summary: 'Ontario announces 50 new DC fast-charging stations along Highway 401 corridor.',
-            url: '#'
+            url: 'https://globalnews.ca'
+        },
+        {
+            id: 'news6',
+            title: '2025 Honda CR-V Hybrid Gets 40 mpg Combined',
+            source: 'Car and Driver',
+            time: new Date(Date.now() - 14400000).toISOString(),
+            category: 'SUV',
+            image: 'https://via.placeholder.com/400x250?text=Honda+CR-V',
+            summary: 'New CR-V Hybrid achieves impressive fuel economy ratings, setting new benchmark for compact SUVs.',
+            url: 'https://www.caranddriver.com'
         }
     ]
 };
@@ -122,18 +132,23 @@ function loadLatestNews() {
     container.innerHTML = `
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
             ${news.map(item => `
-                <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
-                    <img src="${item.image}" alt="${item.title}" style="width: 100%; height: 180px; object-fit: cover;">
-                    <div style="padding: 20px;">
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                            <span style="background: #E2231A; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">${item.category}</span>
-                            <span style="color: #666; font-size: 12px;">${item.source}</span>
+                <a href="${item.url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit; display: block;">
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; height: 100%;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'">
+                        <img src="${item.image}" alt="${item.title}" style="width: 100%; height: 180px; object-fit: cover;">
+                        <div style="padding: 20px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <span style="background: #E2231A; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">${item.category}</span>
+                                <span style="color: #666; font-size: 12px;">${item.source}</span>
+                            </div>
+                            <h3 style="font-size: 18px; color: #1a1a1a; margin-bottom: 12px; line-height: 1.4;">${item.title}</h3>
+                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">${item.summary}</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #999; font-size: 12px;">${formatTime(item.time)}</span>
+                                <span style="color: #E2231A; font-size: 12px; font-weight: 600;">Read more →</span>
+                            </div>
                         </div>
-                        <h3 style="font-size: 18px; color: #1a1a1a; margin-bottom: 12px; line-height: 1.4;">${item.title}</h3>
-                        <p style="color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">${item.summary}</p>
-                        <div style="color: #999; font-size: 12px;">${formatTime(item.time)}</div>
                     </div>
-                </div>
+                </a>
             `).join('')}
         </div>
     `;
