@@ -20,9 +20,12 @@
                 <a href="guides.html" class="nav-link">Guides</a>
                 <a href="tools.html" class="nav-link">Tools</a>
             </div>
-            <button class="btn-primary" onclick="showAuthModal()" id="authBtn">Sign Up / Login</button>
-            <button class="btn-primary" onclick="showProfile()" id="profileBtn" style="display:none;">My Profile</button>
-            <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
+            <div style="display: flex; gap: 8px; margin-left: auto;">
+                <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
+                <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
+                <button class="btn-primary" onclick="window.location.href='forum.html'" id="profileBtn" style="display:none;">My Profile</button>
+                <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
+            </div>
         </div>
     </nav>
 
@@ -67,14 +70,35 @@
         </div>
     </div>
 
-    <!-- Auth Modal -->
-    <div id="authModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
-        <div style="background:#fff;padding:40px;border-radius:16px;max-width:400px;width:90%;">
-            <h2 style="margin-bottom:24px;">Sign Up / Login</h2>
-            <input type="text" id="usernameInput" placeholder="Username" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
-            <input type="email" id="emailInput" placeholder="Email" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
-            <button onclick="handleAuth()" style="width:100%;padding:14px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Continue</button>
-            <button onclick="closeAuthModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+    <!-- Signup Modal -->
+    <div id="signupModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:450px;width:90%;">
+            <h2 style="margin-bottom:24px;">Create Account</h2>
+            <input type="text" id="signupUsername" placeholder="Username" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="email" id="signupEmail" placeholder="Email" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="password" id="signupPassword" placeholder="Password (min 6 characters)" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <button onclick="handleSignup()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Sign Up</button>
+            <button onclick="closeSignupModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:16px;">Cancel</button>
+            <div style="text-align:center;padding-top:16px;border-top:1px solid #e0e0e0;">
+                <p style="color:#666;margin-bottom:12px;">Already have an account?</p>
+                <button onclick="closeSignupModal();showLoginModal();" style="padding:12px 24px;background:#E2231A;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Login Here</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:40px;border-radius:16px;max-width:450px;width:90%;">
+            <h2 style="margin-bottom:24px;">Login to Your Account</h2>
+            <input type="text" id="loginUsername" placeholder="Username" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <input type="password" id="loginPassword" placeholder="Password" style="width:100%;padding:12px;margin-bottom:16px;border:2px solid #e0e0e0;border-radius:8px;">
+            <button onclick="handleLogin()" style="width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:12px;">Login</button>
+            <button onclick="closeLoginModal()" style="width:100%;padding:14px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:16px;">Cancel</button>
+            <div style="text-align:center;padding-top:16px;border-top:1px solid #e0e0e0;">
+                <p style="color:#666;margin-bottom:12px;">Don't have an account?</p>
+                <button onclick="closeLoginModal();showSignupModal();" style="padding:12px 24px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Sign Up Here</button>
+            </div>
         </div>
     </div>
 
@@ -181,7 +205,7 @@
     function showThreadModal() {
         if (!currentUser) {
             alert('Please sign up or login to create a thread');
-            showAuthModal();
+            showSignupModal();
             return;
         }
         
