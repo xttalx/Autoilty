@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Your Autoilty Profile - Manage your listings, messages, and account settings">
+    <title>My Profile | Autoilty</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/forum.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="brand">AUTOILTY</a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="forum.html" class="nav-link">Forum</a>
+                <a href="guides.html" class="nav-link">Guides</a>
+                <a href="tools.html" class="nav-link">Tools</a>
+            </div>
+            <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
+            <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
+            <button class="btn-primary" onclick="goToProfile()" id="profileBtn" style="display:none;">My Profile</button>
+            <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="page-header" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> / <span>My Profile</span>
+            </div>
+            <h1>👤 My Profile</h1>
+            <p>Manage your account, listings, and activity</p>
+        </div>
+    </div>
+
+    <div class="container" style="padding: 48px 0;">
+        <!-- Profile Header -->
+        <div style="background: white; padding: 32px; border-radius: 12px; margin-bottom: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+                <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #3498db, #2ecc71); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px; font-weight: 800; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);">
+                    <span id="userAvatar"></span>
+                </div>
+                <div style="flex: 1;">
+                    <h2 id="userName" style="margin: 0 0 8px 0; font-size: 32px; color: #1a1a1a;"></h2>
+                    <p id="userEmail" style="margin: 0 0 12px 0; color: #666; font-size: 16px;"></p>
+                    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #f8f9fa; border-radius: 6px;">
+                            <span style="font-size: 20px;">📅</span>
+                            <div>
+                                <div style="font-size: 12px; color: #999;">Member Since</div>
+                                <div id="memberSince" style="font-weight: 600; color: #333;"></div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #f8f9fa; border-radius: 6px;">
+                            <span style="font-size: 20px;">✅</span>
+                            <div>
+                                <div style="font-size: 12px; color: #999;">Email Status</div>
+                                <div id="emailStatus" style="font-weight: 600;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="logout()" style="padding: 12px 24px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px;">
+                        🚪 Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 32px;">
+            <div style="background: linear-gradient(135deg, #27ae60, #1e8449); padding: 24px; border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);">
+                <div style="font-size: 36px; font-weight: 800; margin-bottom: 8px;" id="listingsCount">0</div>
+                <div style="font-size: 14px; opacity: 0.9;">Active Listings</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #3498db, #2980b9); padding: 24px; border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);">
+                <div style="font-size: 36px; font-weight: 800; margin-bottom: 8px;" id="messagesCount">0</div>
+                <div style="font-size: 14px; opacity: 0.9;">Messages Received</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); padding: 24px; border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);">
+                <div style="font-size: 36px; font-weight: 800; margin-bottom: 8px;" id="viewsCount">0</div>
+                <div style="font-size: 14px; opacity: 0.9;">Total Views</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #f39c12, #e67e22); padding: 24px; border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);">
+                <div style="font-size: 36px; font-weight: 800; margin-bottom: 8px;" id="threadsCount">0</div>
+                <div style="font-size: 14px; opacity: 0.9;">Forum Threads</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+            <div style="display: flex; border-bottom: 2px solid #e0e0e0; overflow-x: auto;">
+                <button class="profile-tab active" onclick="showTab('listings')" data-tab="listings" style="flex: 1; padding: 16px 24px; background: none; border: none; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid #3498db; color: #3498db;">
+                    🚗 My Listings
+                </button>
+                <button class="profile-tab" onclick="showTab('messages')" data-tab="messages" style="flex: 1; padding: 16px 24px; background: none; border: none; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; color: #666;">
+                    💬 Messages
+                </button>
+                <button class="profile-tab" onclick="showTab('threads')" data-tab="threads" style="flex: 1; padding: 16px 24px; background: none; border: none; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; color: #666;">
+                    📝 My Threads
+                </button>
+                <button class="profile-tab" onclick="showTab('settings')" data-tab="settings" style="flex: 1; padding: 16px 24px; background: none; border: none; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; color: #666;">
+                    ⚙️ Settings
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div style="padding: 32px;">
+                <!-- My Listings Tab -->
+                <div id="listingsTab" class="tab-content" style="display: block;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h3 style="margin: 0; font-size: 24px; color: #1a1a1a;">My Vehicle Listings</h3>
+                        <a href="categories/buying-selling.html" style="padding: 10px 20px; background: #27ae60; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                            + New Listing
+                        </a>
+                    </div>
+                    <div id="myListingsContainer" style="display: grid; gap: 20px;">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Messages Tab -->
+                <div id="messagesTab" class="tab-content" style="display: none;">
+                    <h3 style="margin: 0 0 24px 0; font-size: 24px; color: #1a1a1a;">Messages</h3>
+                    <div id="myMessagesContainer" style="display: grid; gap: 16px;">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- My Threads Tab -->
+                <div id="threadsTab" class="tab-content" style="display: none;">
+                    <h3 style="margin: 0 0 24px 0; font-size: 24px; color: #1a1a1a;">My Forum Threads</h3>
+                    <div id="myThreadsContainer" style="display: grid; gap: 16px;">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settingsTab" class="tab-content" style="display: none;">
+                    <h3 style="margin: 0 0 24px 0; font-size: 24px; color: #1a1a1a;">Account Settings</h3>
+                    <div style="max-width: 600px;">
+                        <div style="background: #f8f9fa; padding: 24px; border-radius: 12px; margin-bottom: 24px;">
+                            <h4 style="margin: 0 0 16px 0; color: #333;">Change Password</h4>
+                            <input type="password" id="currentPassword" placeholder="Current Password" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 2px solid #e0e0e0; border-radius: 8px; box-sizing: border-box;">
+                            <input type="password" id="newPassword" placeholder="New Password" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 2px solid #e0e0e0; border-radius: 8px; box-sizing: border-box;">
+                            <input type="password" id="confirmNewPassword" placeholder="Confirm New Password" style="width: 100%; padding: 12px; margin-bottom: 16px; border: 2px solid #e0e0e0; border-radius: 8px; box-sizing: border-box;">
+                            <button onclick="changePassword()" style="width: 100%; padding: 14px; background: #3498db; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                Update Password
+                            </button>
+                        </div>
+                        
+                        <div style="background: #fff3cd; border-left: 4px solid #f39c12; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                            <h4 style="margin: 0 0 12px 0; color: #856404;">⚠️ Danger Zone</h4>
+                            <p style="margin: 0 0 16px 0; color: #856404; font-size: 14px;">Once you delete your account, there is no going back. All your listings, messages, and threads will be permanently deleted.</p>
+                            <button onclick="deleteAccount()" style="padding: 12px 24px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="forum.html">Forums</a></li>
+                        <li><a href="categories/buying-selling.html">Marketplace</a></li>
+                        <li><a href="guides.html">Guides</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Tools</h4>
+                    <ul>
+                        <li><a href="tools/comparison.html">Vehicle Comparison</a></li>
+                        <li><a href="tools/financing.html">Financing Calculator</a></li>
+                        <li><a href="tools/mechanic-finder.html">Mechanic Finder</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="privacy.html">Privacy</a></li>
+                        <li><a href="terms.html">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Autoilty. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script>
+    // Check if user is logged in
+    if (!currentUser) {
+        alert('⚠️ Please login to view your profile');
+        window.location.href = 'index.html';
+    }
+
+    // Load profile data
+    function loadProfileData() {
+        if (!currentUser) return;
+
+        // User info
+        document.getElementById('userName').textContent = currentUser.username;
+        document.getElementById('userEmail').textContent = currentUser.email;
+        document.getElementById('userAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
+        
+        // Member since
+        const memberSince = new Date(currentUser.created || Date.now());
+        document.getElementById('memberSince').textContent = memberSince.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        
+        // Email status
+        const statusEl = document.getElementById('emailStatus');
+        if (currentUser.confirmed) {
+            statusEl.textContent = 'Verified';
+            statusEl.style.color = '#27ae60';
+        } else {
+            statusEl.textContent = 'Unverified';
+            statusEl.style.color = '#e74c3c';
+        }
+
+        // Load stats
+        loadUserStats();
+        
+        // Load listings
+        loadMyListings();
+        
+        // Load messages
+        loadMyMessages();
+        
+        // Load threads
+        loadMyThreads();
+    }
+
+    // Load user statistics
+    function loadUserStats() {
+        // Get listings
+        const listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+        const myListings = listings.filter(l => l.userId === currentUser.id);
+        document.getElementById('listingsCount').textContent = myListings.length;
+
+        // Get total views
+        const totalViews = myListings.reduce((sum, l) => sum + (l.views || 0), 0);
+        document.getElementById('viewsCount').textContent = totalViews.toLocaleString();
+
+        // Get messages
+        const messages = JSON.parse(localStorage.getItem('autoilty_messages') || '[]');
+        const myMessages = messages.filter(m => m.to === currentUser.id);
+        document.getElementById('messagesCount').textContent = myMessages.length;
+
+        // Get threads
+        const threads = JSON.parse(localStorage.getItem('forumThreads') || '[]');
+        const myThreads = threads.filter(t => t.author === currentUser.username);
+        document.getElementById('threadsCount').textContent = myThreads.length;
+    }
+
+    // Load my listings
+    function loadMyListings() {
+        const container = document.getElementById('myListingsContainer');
+        const listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+        const myListings = listings.filter(l => l.userId === currentUser.id);
+
+        if (myListings.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; background: #f8f9fa; border-radius: 12px;">
+                    <div style="font-size: 64px; margin-bottom: 16px;">📦</div>
+                    <h3 style="margin: 0 0 12px 0; color: #666;">No Listings Yet</h3>
+                    <p style="margin: 0 0 24px 0; color: #999;">Start selling by creating your first listing</p>
+                    <a href="categories/buying-selling.html" style="padding: 12px 24px; background: #27ae60; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                        Create Listing
+                    </a>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = myListings.map(listing => {
+            const imageUrl = listing.images && listing.images[0] ? listing.images[0] : 'https://via.placeholder.com/400x300?text=No+Image';
+            const timeAgo = getTimeAgo(listing.created);
+            const daysOld = Math.floor((Date.now() - new Date(listing.created).getTime()) / (1000 * 60 * 60 * 24));
+            const daysLeft = 90 - daysOld;
+
+            return `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; display: flex; gap: 20px; align-items: center;">
+                    <img src="${imageUrl}" alt="${listing.title}" style="width: 120px; height: 90px; object-fit: cover; border-radius: 8px;">
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a;">${listing.title}</h4>
+                        <div style="display: flex; gap: 20px; margin-bottom: 8px;">
+                            <span style="color: #27ae60; font-weight: 700; font-size: 20px;">$${listing.price.toLocaleString()}</span>
+                            <span style="color: #666;">👁️ ${listing.views || 0} views</span>
+                            <span style="color: #666;">📍 ${listing.location}</span>
+                        </div>
+                        <div style="font-size: 13px; color: ${daysLeft < 7 ? '#e74c3c' : '#999'};">
+                            ${daysLeft > 0 ? `Expires in ${daysLeft} days` : 'Expired'} • Posted ${timeAgo}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="window.location.href='listing.html?id=${listing.id}'" style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                            View
+                        </button>
+                        <button onclick="deleteListing('${listing.id}')" style="padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Load my messages
+    function loadMyMessages() {
+        const container = document.getElementById('myMessagesContainer');
+        const messages = JSON.parse(localStorage.getItem('autoilty_messages') || '[]');
+        const myMessages = messages.filter(m => m.to === currentUser.id);
+
+        if (myMessages.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; background: #f8f9fa; border-radius: 12px;">
+                    <div style="font-size: 64px; margin-bottom: 16px;">📭</div>
+                    <h3 style="margin: 0 0 12px 0; color: #666;">No Messages</h3>
+                    <p style="margin: 0; color: #999;">You haven't received any messages yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = myMessages.map(msg => {
+            const timeAgo = getTimeAgo(msg.created);
+            return `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                        <div>
+                            <strong style="color: #1a1a1a; font-size: 16px;">${msg.fromUsername || 'User'}</strong>
+                            <div style="font-size: 13px; color: #999;">${timeAgo}</div>
+                        </div>
+                        ${msg.listingTitle ? `<div style="font-size: 12px; color: #666; background: white; padding: 6px 12px; border-radius: 6px;">Re: ${msg.listingTitle}</div>` : ''}
+                    </div>
+                    <p style="margin: 0; color: #333; line-height: 1.6;">${msg.message}</p>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Load my threads
+    function loadMyThreads() {
+        const container = document.getElementById('myThreadsContainer');
+        const threads = JSON.parse(localStorage.getItem('forumThreads') || '[]');
+        const myThreads = threads.filter(t => t.author === currentUser.username);
+
+        if (myThreads.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; background: #f8f9fa; border-radius: 12px;">
+                    <div style="font-size: 64px; margin-bottom: 16px;">📝</div>
+                    <h3 style="margin: 0 0 12px 0; color: #666;">No Forum Threads</h3>
+                    <p style="margin: 0 0 24px 0; color: #999;">Start a discussion in the forum</p>
+                    <a href="forum.html" style="padding: 12px 24px; background: #3498db; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                        Go to Forum
+                    </a>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = myThreads.map(thread => {
+            return `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; cursor: pointer;" onclick="window.location.href='thread.html?id=${thread.id}'">
+                    <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #1a1a1a;">${thread.title}</h4>
+                    <div style="display: flex; gap: 20px; font-size: 13px; color: #666;">
+                        <span>💬 ${thread.replies || 0} replies</span>
+                        <span>👁️ ${thread.views || 0} views</span>
+                        <span>📅 ${thread.lastPost || 'Just now'}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Delete listing
+    function deleteListing(listingId) {
+        if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
+            return;
+        }
+
+        let listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+        listings = listings.filter(l => l.id !== listingId);
+        localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+
+        alert('✅ Listing deleted successfully');
+        loadProfileData();
+    }
+
+    // Tab switching
+    function showTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.style.display = 'none';
+        });
+
+        // Remove active class from all tab buttons
+        document.querySelectorAll('.profile-tab').forEach(btn => {
+            btn.style.borderBottomColor = 'transparent';
+            btn.style.color = '#666';
+            btn.classList.remove('active');
+        });
+
+        // Show selected tab
+        document.getElementById(tabName + 'Tab').style.display = 'block';
+
+        // Add active class to clicked button
+        const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+        activeBtn.style.borderBottomColor = '#3498db';
+        activeBtn.style.color = '#3498db';
+        activeBtn.classList.add('active');
+    }
+
+    // Change password
+    function changePassword() {
+        const current = document.getElementById('currentPassword').value;
+        const newPass = document.getElementById('newPassword').value;
+        const confirm = document.getElementById('confirmNewPassword').value;
+
+        if (!current || !newPass || !confirm) {
+            alert('⚠️ Please fill in all password fields');
+            return;
+        }
+
+        if (newPass !== confirm) {
+            alert('⚠️ New passwords do not match');
+            return;
+        }
+
+        if (newPass.length < 6) {
+            alert('⚠️ Password must be at least 6 characters');
+            return;
+        }
+
+        // In a real app, verify current password
+        currentUser.password = newPass;
+        localStorage.setItem('autoilty_user', JSON.stringify(currentUser));
+
+        alert('✅ Password changed successfully');
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmNewPassword').value = '';
+    }
+
+    // Delete account
+    function deleteAccount() {
+        const confirm1 = confirm('⚠️ Are you ABSOLUTELY SURE you want to delete your account?\n\nThis will permanently delete:\n• All your listings\n• All your messages\n• All your forum threads\n• Your account data\n\nThis action CANNOT be undone!');
+        
+        if (!confirm1) return;
+
+        const confirm2 = confirm('⚠️ FINAL WARNING: This is your last chance to cancel.\n\nClick OK to permanently delete your account.');
+        
+        if (!confirm2) return;
+
+        // Delete user's listings
+        let listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+        listings = listings.filter(l => l.userId !== currentUser.id);
+        localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+
+        // Delete user's threads
+        let threads = JSON.parse(localStorage.getItem('forumThreads') || '[]');
+        threads = threads.filter(t => t.author !== currentUser.username);
+        localStorage.setItem('forumThreads', JSON.stringify(threads));
+
+        // Delete user account
+        localStorage.removeItem('autoilty_user');
+
+        alert('Your account has been permanently deleted. Goodbye! 👋');
+        window.location.href = 'index.html';
+    }
+
+    // Utility function for time ago
+    function getTimeAgo(timestamp) {
+        const now = new Date();
+        const past = new Date(timestamp);
+        const seconds = Math.floor((now - past) / 1000);
+
+        const intervals = {
+            year: 31536000,
+            month: 2592000,
+            week: 604800,
+            day: 86400,
+            hour: 3600,
+            minute: 60
+        };
+
+        for (let [key, value] of Object.entries(intervals)) {
+            const interval = Math.floor(seconds / value);
+            if (interval >= 1) {
+                return interval + ' ' + key + (interval === 1 ? '' : 's') + ' ago';
+            }
+        }
+
+        return 'Just now';
+    }
+
+    // Initialize
+    loadProfileData();
+    initAuth();
+    </script>
+</body>
+</html>
+

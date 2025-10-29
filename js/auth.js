@@ -33,7 +33,8 @@ function updateAuthButtons() {
         if (loginBtn) loginBtn.style.display = 'none';
         if (profileBtn) {
             profileBtn.style.display = 'block';
-            profileBtn.textContent = currentUser.username;
+            profileBtn.textContent = '👤 ' + currentUser.username;
+            profileBtn.title = 'View your profile';
         }
         if (logoutBtn) logoutBtn.style.display = 'block';
         if (heroSignup) heroSignup.style.display = 'none';
@@ -48,6 +49,16 @@ function updateAuthButtons() {
         if (heroLogin) heroLogin.style.display = 'inline-block';
         if (heroForum) heroForum.style.display = 'none';
     }
+}
+
+// Navigate to profile page
+function goToProfile() {
+    if (!currentUser) {
+        alert('Please login first');
+        showLoginModal();
+        return;
+    }
+    window.location.href = 'profile.html';
 }
 
 // Show signup modal
