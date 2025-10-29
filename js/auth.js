@@ -32,9 +32,49 @@ function updateAuthButtons() {
         if (authBtn) authBtn.style.display = 'none';
         if (loginBtn) loginBtn.style.display = 'none';
         if (profileBtn) {
-            profileBtn.style.display = 'block';
-            profileBtn.textContent = '👤 ' + currentUser.username;
-            profileBtn.title = 'View your profile';
+            // Convert button to anchor link if it's not already one
+            const isAnchor = profileBtn.tagName === 'A';
+            if (!isAnchor) {
+                // Create new anchor element
+                const anchor = document.createElement('a');
+                anchor.id = 'profileBtn';
+                anchor.className = profileBtn.className;
+                anchor.style.cssText = profileBtn.style.cssText;
+                // Calculate correct href based on current path
+                const currentPath = window.location.pathname;
+                if (currentPath.includes('/categories/') || 
+                    currentPath.includes('/brands/') || 
+                    currentPath.includes('/regions/') || 
+                    currentPath.includes('/guides/') || 
+                    currentPath.includes('/tools/') ||
+                    currentPath.includes('/content-templates/')) {
+                    anchor.href = '../profile.html';
+                } else {
+                    anchor.href = 'profile.html';
+                }
+                // Replace button with anchor
+                profileBtn.parentNode.replaceChild(anchor, profileBtn);
+            }
+            
+            // Get the profile button (now an anchor)
+            const profileLink = document.getElementById('profileBtn');
+            if (profileLink) {
+                profileLink.style.display = 'block';
+                profileLink.textContent = '👤 ' + currentUser.username;
+                profileLink.title = 'View your profile';
+                // Ensure href is correct
+                const currentPath = window.location.pathname;
+                if (currentPath.includes('/categories/') || 
+                    currentPath.includes('/brands/') || 
+                    currentPath.includes('/regions/') || 
+                    currentPath.includes('/guides/') || 
+                    currentPath.includes('/tools/') ||
+                    currentPath.includes('/content-templates/')) {
+                    profileLink.href = '../profile.html';
+                } else {
+                    profileLink.href = 'profile.html';
+                }
+            }
         }
         if (logoutBtn) logoutBtn.style.display = 'block';
         if (heroSignup) heroSignup.style.display = 'none';
@@ -55,10 +95,34 @@ function updateAuthButtons() {
 function goToProfile() {
     if (!currentUser) {
         alert('Please login first');
-        showLoginModal();
-        return;
+        if (typeof showLoginModal === 'function') {
+            showLoginModal();
+        }
+        return false;
     }
-    window.location.href = 'profile.html';
+    
+    // Get current URL path
+    const currentPath = window.location.pathname;
+    let profilePath = '';
+    
+    // Determine if we're in a subdirectory
+    if (currentPath.includes('/categories/') || 
+        currentPath.includes('/brands/') || 
+        currentPath.includes('/regions/') || 
+        currentPath.includes('/guides/') || 
+        currentPath.includes('/tools/') ||
+        currentPath.includes('/content-templates/')) {
+        // We're in a subdirectory - go up one level
+        profilePath = '../profile.html';
+    } else {
+        // We're at root level
+        profilePath = 'profile.html';
+    }
+    
+    // Navigate to profile page
+    console.log('Navigating to profile page:', profilePath);
+    window.location.href = profilePath;
+    return false;
 }
 
 // Show signup modal

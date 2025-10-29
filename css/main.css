@@ -60,6 +60,7 @@ a {
     justify-content: space-between;
     height: 72px;
     gap: 20px;
+    position: relative;
 }
 
 .brand {
@@ -78,6 +79,16 @@ a {
     display: flex;
     gap: 24px;
     margin-left: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.auth-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 2;
 }
 
 .nav-link {
@@ -110,6 +121,9 @@ a {
     transition: background 0.2s;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
 }
 
 .btn-primary:hover {

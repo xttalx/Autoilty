@@ -13,18 +13,23 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <a href="index.html" class="brand">AUTOILTY</a>
+            <a href="index.html" class="brand">
+                <span class="brand-name">AUTOILTY</span>
+            </a>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="forum.html" class="nav-link active">Forum</a>
+                <a href="categories/buying-selling.html" class="nav-link">Buy/Sell</a>
                 <a href="guides.html" class="nav-link">Guides</a>
                 <a href="tools.html" class="nav-link">Tools</a>
             </div>
-            <div style="display: flex; gap: 8px; margin-left: auto;">
+            
+            <div class="auth-actions">
                 <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
                 <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
-                <button class="btn-primary" onclick="window.location.href='forum.html'" id="profileBtn" style="display:none;">My Profile</button>
+                <a href="profile.html" class="btn-primary" id="profileBtn" style="display:none; text-decoration: none;">My Profile</a>
                 <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
+                <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
             </div>
         </div>
     </nav>
@@ -404,7 +409,13 @@
     }
     
     // Profile
+    // Profile button redirects to profile.html
     function showProfile() {
+        goToProfile();
+        return;
+    }
+    
+    function showProfile_OLD() {
         if (!currentUser) return;
         
         const confirmStatus = currentUser.confirmed ? 
