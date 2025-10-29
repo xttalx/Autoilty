@@ -254,6 +254,59 @@
         </div>
     </section>
 
+    <!-- Active Vehicle Listings -->
+    <section class="vehicle-listings" style="background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%); padding: 60px 0; overflow: hidden;">
+        <div class="container">
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+                <div>
+                    <h2 style="font-size: 32px; color: #fff; margin: 0 0 8px 0;">🚗 Active Vehicle Listings</h2>
+                    <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 16px;">Browse the latest cars, trucks, and parts for sale</p>
+                </div>
+                <a href="categories/buying-selling.html" class="btn-primary" style="background: #fff; color: #27ae60; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; transition: all 0.3s;">
+                    View All Listings →
+                </a>
+            </div>
+            
+            <!-- Horizontal Scroll Container -->
+            <div class="listings-scroll" style="display: flex; gap: 24px; overflow-x: auto; padding: 8px 0 24px 0; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.3) transparent;">
+                <div id="vehicleListingsHome" style="display: flex; gap: 24px; min-width: 100%;">
+                    <!-- Populated by JavaScript -->
+                    <div style="min-width: 320px; background: rgba(255,255,255,0.1); border-radius: 12px; height: 200px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px;">
+                        ⏳ Loading listings...
+                    </div>
+                </div>
+            </div>
+            
+            <style>
+                /* Custom scrollbar for webkit browsers */
+                .listings-scroll::-webkit-scrollbar {
+                    height: 8px;
+                }
+                .listings-scroll::-webkit-scrollbar-track {
+                    background: rgba(255,255,255,0.1);
+                    border-radius: 10px;
+                }
+                .listings-scroll::-webkit-scrollbar-thumb {
+                    background: rgba(255,255,255,0.3);
+                    border-radius: 10px;
+                }
+                .listings-scroll::-webkit-scrollbar-thumb:hover {
+                    background: rgba(255,255,255,0.5);
+                }
+            </style>
+            
+            <!-- Scroll Navigation -->
+            <div style="display: flex; justify-content: center; gap: 12px; margin-top: 16px;">
+                <button onclick="scrollListings('left')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    ← Previous
+                </button>
+                <button onclick="scrollListings('right')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    Next →
+                </button>
+            </div>
+        </div>
+    </section>
+
     <!-- AdSense -->
     <section class="ad-container">
         <div class="container">

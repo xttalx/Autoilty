@@ -75,10 +75,191 @@ window.autoNews = {
 };
 
 // Load trending discussions on homepage
+// Load Vehicle Listings for Homepage
+function loadVehicleListingsHome() {
+    const container = document.getElementById('vehicleListingsHome');
+    if (!container) return;
+    
+    // Get listings from localStorage
+    let listings = [];
+    try {
+        listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+    } catch (e) {
+        console.error('Error loading listings:', e);
+    }
+    
+    // Filter to only show vehicle listings (cars category)
+    const vehicleListings = listings.filter(l => 
+        l.category === 'cars' && 
+        l.status !== 'sold' && 
+        l.status !== 'expired'
+    );
+    
+    // If no listings, create sample data
+    if (vehicleListings.length === 0) {
+        vehicleListings.push(
+            {
+                id: 'sample1',
+                title: '2022 Honda Civic Sport',
+                price: 28500,
+                location: 'Toronto, ON',
+                category: 'cars',
+                images: ['https://via.placeholder.com/400x300?text=2022+Honda+Civic'],
+                description: 'Excellent condition, low mileage, one owner',
+                created: new Date(Date.now() - 86400000).toISOString(),
+                views: 234,
+                username: 'CarDealer123'
+            },
+            {
+                id: 'sample2',
+                title: '2021 Toyota RAV4 Hybrid',
+                price: 35900,
+                location: 'Vancouver, BC',
+                category: 'cars',
+                images: ['https://via.placeholder.com/400x300?text=2021+RAV4+Hybrid'],
+                description: 'Fuel efficient, AWD, loaded with features',
+                created: new Date(Date.now() - 172800000).toISOString(),
+                views: 456,
+                username: 'VancouverAutos'
+            },
+            {
+                id: 'sample3',
+                title: '2023 Ford F-150 XLT',
+                price: 52000,
+                location: 'Calgary, AB',
+                category: 'cars',
+                images: ['https://via.placeholder.com/400x300?text=2023+Ford+F-150'],
+                description: 'Work truck, barely used, warranty remaining',
+                created: new Date(Date.now() - 259200000).toISOString(),
+                views: 189,
+                username: 'TruckSales'
+            },
+            {
+                id: 'sample4',
+                title: '2020 Mazda CX-5 GT',
+                price: 26900,
+                location: 'Montreal, QC',
+                category: 'cars',
+                images: ['https://via.placeholder.com/400x300?text=2020+Mazda+CX-5'],
+                description: 'Premium trim, leather seats, sunroof',
+                created: new Date(Date.now() - 345600000).toISOString(),
+                views: 312,
+                username: 'MTLMotors'
+            },
+            {
+                id: 'sample5',
+                title: '2024 Tesla Model 3',
+                price: 54999,
+                location: 'Ottawa, ON',
+                category: 'cars',
+                images: ['https://via.placeholder.com/400x300?text=2024+Tesla+Model+3'],
+                description: 'Brand new, never driven, factory warranty',
+                created: new Date(Date.now() - 432000000).toISOString(),
+                views: 567,
+                username: 'EVDealer'
+            },
+            {
+                id: 'sample6',
+                title: '2021 Subaru Outback',
+                price: 32500,
+                location: 'Edmonton, AB',
+                category: 'cars',
+                images: ['https://via.placeholder.com/400x300?text=2021+Subaru+Outback'],
+                description: 'Perfect for winter, AWD, low km',
+                created: new Date(Date.now() - 518400000).toISOString(),
+                views: 278,
+                username: 'SubaruPro'
+            }
+        );
+    }
+    
+    // Show max 8 listings
+    const displayListings = vehicleListings.slice(0, 8);
+    
+    if (displayListings.length === 0) {
+        container.innerHTML = `
+            <div style="min-width: 100%; text-align: center; padding: 40px; background: rgba(255,255,255,0.1); border-radius: 12px; color: white;">
+                <h3 style="margin: 0 0 16px 0; font-size: 24px;">No Active Listings</h3>
+                <p style="margin: 0 0 24px 0; opacity: 0.9;">Be the first to post a vehicle listing!</p>
+                <a href="categories/buying-selling.html" style="background: white; color: #27ae60; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                    Post Your Listing
+                </a>
+            </div>
+        `;
+        return;
+    }
+    
+    // Render listings
+    container.innerHTML = displayListings.map(listing => {
+        const timeAgo = getTimeAgo(listing.created);
+        const imageUrl = listing.images && listing.images[0] ? listing.images[0] : 'https://via.placeholder.com/400x300?text=No+Image';
+        
+        return `
+            <div class="listing-card-home" onclick="window.location.href='listing.html?id=${listing.id}'" style="min-width: 320px; max-width: 320px; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; transition: all 0.3s;">
+                <div style="position: relative;">
+                    <img src="${imageUrl}" alt="${listing.title}" style="width: 100%; height: 200px; object-fit: cover;">
+                    <div style="position: absolute; top: 12px; right: 12px; background: rgba(39, 174, 96, 0.95); color: white; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                        $${listing.price.toLocaleString()}
+                    </div>
+                    ${listing.views ? `
+                        <div style="position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                            👁️ ${formatNumber(listing.views)} views
+                        </div>
+                    ` : ''}
+                </div>
+                <div style="padding: 16px;">
+                    <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #1a1a1a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ${listing.title}
+                    </h3>
+                    <p style="margin: 0 0 12px 0; color: #666; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                        📍 ${listing.location}
+                    </p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+                        <div style="font-size: 12px; color: #999;">
+                            ${timeAgo}
+                        </div>
+                        <div style="font-size: 12px; color: #27ae60; font-weight: 600;">
+                            View Details →
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Add hover effect
+    const cards = container.querySelectorAll('.listing-card-home');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-8px)';
+            card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translateY(0)';
+            card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        });
+    });
+}
+
+// Scroll listings horizontally
+function scrollListings(direction) {
+    const container = document.querySelector('.listings-scroll');
+    if (!container) return;
+    
+    const scrollAmount = 350; // Scroll by one card width + gap
+    
+    if (direction === 'left') {
+        container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    } else {
+        container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     loadTrendingDiscussions();
     loadLatestNews();
     loadTopContributors();
+    loadVehicleListingsHome();
 });
 
 function loadTrendingDiscussions() {

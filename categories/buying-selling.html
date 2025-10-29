@@ -304,11 +304,25 @@
     }
     
     function submitListing() {
+        console.log('submitListing() called');
+        
+        // Check if user is logged in
         if (!currentUser) {
-            alert('Please login first');
+            alert('❌ Please sign up or login first to post a listing');
+            showAuthModal();
             return;
         }
         
+        console.log('Current user:', currentUser);
+        
+        // Check if email is confirmed
+        if (!currentUser.confirmed) {
+            alert('⚠️ Please confirm your email before posting listings.\n\nCheck your email for the confirmation link.');
+            showEmailConfirmation();
+            return;
+        }
+        
+        // Get form values
         const title = document.getElementById('titleInput').value.trim();
         const category = document.getElementById('categoryInput').value;
         const price = document.getElementById('priceInput').value;
@@ -316,11 +330,40 @@
         const description = document.getElementById('descriptionInput').value.trim();
         const imageFiles = document.getElementById('imageInput').files;
         
-        if (!title || !price || !location || !description) {
-            alert('Please fill in all fields');
+        console.log('Form values:', { title, category, price, location, description, imageCount: imageFiles.length });
+        
+        // Validate required fields
+        if (!title) {
+            alert('❌ Please enter a title for your listing');
+            document.getElementById('titleInput').focus();
             return;
         }
         
+        if (!price || price <= 0) {
+            alert('❌ Please enter a valid price');
+            document.getElementById('priceInput').focus();
+            return;
+        }
+        
+        if (!location) {
+            alert('❌ Please enter a location');
+            document.getElementById('locationInput').focus();
+            return;
+        }
+        
+        if (!description) {
+            alert('❌ Please enter a description');
+            document.getElementById('descriptionInput').focus();
+            return;
+        }
+        
+        // Disable button to prevent double submission
+        const submitBtn = event.target;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Posting...';
+        submitBtn.style.opacity = '0.7';
+        
+        // Create listing object
         const listing = {
             id: 'listing_' + Date.now(),
             userId: currentUser.id,
@@ -332,37 +375,91 @@
             description: description,
             images: [],
             created: new Date().toISOString(),
-            views: 0
+            views: 0,
+            status: 'active'
         };
+        
+        console.log('Created listing object:', listing);
         
         // Handle images
         if (imageFiles.length > 0) {
+            console.log('Processing image upload...');
             const reader = new FileReader();
             reader.onload = function(e) {
                 listing.images.push(e.target.result);
+                console.log('Image loaded, saving listing...');
                 saveAndClosePost(listing);
+            };
+            reader.onerror = function(e) {
+                console.error('Image upload error:', e);
+                alert('❌ Error uploading image. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Post Listing';
+                submitBtn.style.opacity = '1';
             };
             reader.readAsDataURL(imageFiles[0]);
         } else {
+            console.log('No image uploaded, using placeholder...');
             listing.images.push('https://via.placeholder.com/400x300?text=No+Image');
             saveAndClosePost(listing);
         }
     }
     
     function saveAndClosePost(listing) {
-        let listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
-        listings.unshift(listing);
-        localStorage.setItem('autoilty_listings', JSON.stringify(listings));
-        
-        closePostModal();
-        document.getElementById('titleInput').value = '';
-        document.getElementById('priceInput').value = '';
-        document.getElementById('locationInput').value = '';
-        document.getElementById('descriptionInput').value = '';
-        document.getElementById('imageInput').value = '';
-        
-        alert('Listing posted successfully!');
-        loadListings();
+        try {
+            console.log('Saving listing to localStorage...');
+            
+            // Get existing listings
+            let listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+            console.log('Current listings count:', listings.length);
+            
+            // Add new listing at the beginning
+            listings.unshift(listing);
+            
+            // Save to localStorage
+            localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+            console.log('Listing saved! New count:', listings.length);
+            
+            // Close modal
+            closePostModal();
+            
+            // Clear form
+            document.getElementById('titleInput').value = '';
+            document.getElementById('priceInput').value = '';
+            document.getElementById('locationInput').value = '';
+            document.getElementById('descriptionInput').value = '';
+            document.getElementById('imageInput').value = '';
+            
+            // Re-enable button
+            const submitBtn = document.querySelector('#postModal button[onclick="submitListing()"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Post Listing';
+                submitBtn.style.opacity = '1';
+            }
+            
+            // Show success message
+            alert('✅ Listing posted successfully!\n\n' + 
+                  '📝 Title: ' + listing.title + '\n' +
+                  '💰 Price: $' + listing.price.toLocaleString() + '\n' +
+                  '📍 Location: ' + listing.location + '\n\n' +
+                  'Your listing is now live and visible to all users!');
+            
+            // Reload listings to show the new one
+            loadListings();
+            
+        } catch (error) {
+            console.error('Error saving listing:', error);
+            alert('❌ Error posting listing: ' + error.message + '\n\nPlease try again.');
+            
+            // Re-enable button
+            const submitBtn = document.querySelector('#postModal button[onclick="submitListing()"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Post Listing';
+                submitBtn.style.opacity = '1';
+            }
+        }
     }
     
     function loadListings() {
