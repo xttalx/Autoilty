@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+<!-- Homepage with Vehicle Images -->
+<url>
+  <loc>https://autoilty.com/</loc>
+  <image:image>
+    <image:loc>https://autoilty.com/images/hero/automotive-community.jpg</image:loc>
+    <image:title>Canadian Automotive Community</image:title>
+    <image:caption>Join 50,000+ car enthusiasts</image:caption>
+  </image:image>
+</url>
+
+<!-- Vehicle Comparison Pages with Images -->
+<url>
+  <loc>https://autoilty.com/tools/comparison.html</loc>
+  <lastmod>2024-10-28</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.9</priority>
+  <image:image>
+    <image:loc>https://autoilty.com/images/vehicles/2024-honda-civic.jpg</image:loc>
+    <image:title>2024 Honda Civic</image:title>
+    <image:caption>2024 Honda Civic - Complete specifications and review</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/vehicles/2024-toyota-corolla.jpg</image:loc>
+    <image:title>2024 Toyota Corolla</image:title>
+    <image:caption>2024 Toyota Corolla - Complete specifications and review</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/vehicles/2024-toyota-camry.jpg</image:loc>
+    <image:title>2024 Toyota Camry</image:title>
+    <image:caption>2024 Toyota Camry - Complete specifications and review</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/vehicles/2024-honda-accord.jpg</image:loc>
+    <image:title>2024 Honda Accord</image:title>
+    <image:caption>2024 Honda Accord - Complete specifications and review</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/vehicles/2024-toyota-rav4.jpg</image:loc>
+    <image:title>2024 Toyota RAV4</image:title>
+    <image:caption>2024 Toyota RAV4 - Complete specifications and review</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/vehicles/2024-honda-crv.jpg</image:loc>
+    <image:title>2024 Honda CR-V</image:title>
+    <image:caption>2024 Honda CR-V - Complete specifications and review</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/vehicles/2024-ford-f150.jpg</image:loc>
+    <image:title>2024 Ford F-150</image:title>
+    <image:caption>2024 Ford F-150 - Complete specifications and review</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/vehicles/2024-tesla-model3.jpg</image:loc>
+    <image:title>2024 Tesla Model 3</image:title>
+    <image:caption>2024 Tesla Model 3 - Complete specifications and review</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/vehicles/2024-tesla-modely.jpg</image:loc>
+    <image:title>2024 Tesla Model Y</image:title>
+    <image:caption>2024 Tesla Model Y - Complete specifications and review</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/vehicles/2024-mazda-cx5.jpg</image:loc>
+    <image:title>2024 Mazda CX-5</image:title>
+    <image:caption>2024 Mazda CX-5 - Complete specifications and review</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+</url>
+
+<!-- Individual Comparison Pages (Examples - Generate more) -->
+<url>
+  <loc>https://autoilty.com/comparisons/2024-honda-civic-vs-toyota-corolla.html</loc>
+  <lastmod>2024-10-28</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+  <image:image>
+    <image:loc>https://autoilty.com/images/comparisons/2024-honda-civic.jpg</image:loc>
+    <image:title>2024 Honda Civic</image:title>
+    <image:caption>2024 Honda Civic - Side-by-side comparison with Toyota Corolla</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/comparisons/2024-toyota-corolla.jpg</image:loc>
+    <image:title>2024 Toyota Corolla</image:title>
+    <image:caption>2024 Toyota Corolla - Side-by-side comparison with Honda Civic</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/comparisons/civic-vs-corolla-interior.jpg</image:loc>
+    <image:title>2024 Civic vs Corolla Interior Comparison</image:title>
+    <image:caption>Interior space comparison between 2024 Honda Civic and Toyota Corolla</image:caption>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/comparisons/civic-vs-corolla-trunk.jpg</image:loc>
+    <image:title>2024 Civic vs Corolla Cargo Space</image:title>
+    <image:caption>Trunk and cargo space comparison</image:caption>
+  </image:image>
+</url>
+
+<url>
+  <loc>https://autoilty.com/comparisons/2024-toyota-rav4-vs-honda-crv.html</loc>
+  <lastmod>2024-10-28</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+  <image:image>
+    <image:loc>https://autoilty.com/images/comparisons/2024-toyota-rav4.jpg</image:loc>
+    <image:title>2024 Toyota RAV4</image:title>
+    <image:caption>2024 Toyota RAV4 - SUV comparison with Honda CR-V</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/comparisons/2024-honda-crv.jpg</image:loc>
+    <image:title>2024 Honda CR-V</image:title>
+    <image:caption>2024 Honda CR-V - SUV comparison with Toyota RAV4</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+</url>
+
+<url>
+  <loc>https://autoilty.com/comparisons/2024-tesla-model3-vs-modely.html</loc>
+  <lastmod>2024-10-28</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+  <image:image>
+    <image:loc>https://autoilty.com/images/comparisons/2024-tesla-model3.jpg</image:loc>
+    <image:title>2024 Tesla Model 3</image:title>
+    <image:caption>2024 Tesla Model 3 Electric Sedan</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/comparisons/2024-tesla-modely.jpg</image:loc>
+    <image:title>2024 Tesla Model Y</image:title>
+    <image:caption>2024 Tesla Model Y Electric SUV</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+</url>
+
+<!-- Guides with Vehicle Images -->
+<url>
+  <loc>https://autoilty.com/guides/winter-driving.html</loc>
+  <lastmod>2024-10-28</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.7</priority>
+  <image:image>
+    <image:loc>https://autoilty.com/images/guides/winter-tires-installation.jpg</image:loc>
+    <image:title>Winter Tire Installation Guide</image:title>
+    <image:caption>How to install winter tires on your vehicle</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/guides/snow-driving-tips.jpg</image:loc>
+    <image:title>Canadian Winter Driving Tips</image:title>
+    <image:caption>Essential tips for driving in Canadian winter conditions</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+</url>
+
+<url>
+  <loc>https://autoilty.com/guides/tire-buying-guide.html</loc>
+  <lastmod>2024-10-28</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.7</priority>
+  <image:image>
+    <image:loc>https://autoilty.com/images/guides/tire-types-comparison.jpg</image:loc>
+    <image:title>Tire Types Comparison Chart</image:title>
+    <image:caption>All-season vs Winter vs Summer tires comparison</image:caption>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/guides/tire-size-guide.jpg</image:loc>
+    <image:title>How to Read Tire Sizes</image:title>
+    <image:caption>Understanding tire size markings and specifications</image:caption>
+  </image:image>
+</url>
+
+<!-- Brand-Specific Pages with Vehicle Images -->
+<url>
+  <loc>https://autoilty.com/brands/toyota-lexus.html</loc>
+  <lastmod>2024-10-28</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.6</priority>
+  <image:image>
+    <image:loc>https://autoilty.com/images/brands/toyota-lineup-2024.jpg</image:loc>
+    <image:title>2024 Toyota Lineup Canada</image:title>
+    <image:caption>Complete 2024 Toyota vehicle lineup available in Canada</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+  <image:image>
+    <image:loc>https://autoilty.com/images/brands/lexus-lineup-2024.jpg</image:loc>
+    <image:title>2024 Lexus Lineup Canada</image:title>
+    <image:caption>Complete 2024 Lexus luxury vehicle lineup in Canada</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+</url>
+
+<url>
+  <loc>https://autoilty.com/brands/honda-acura.html</loc>
+  <lastmod>2024-10-28</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.6</priority>
+  <image:image>
+    <image:loc>https://autoilty.com/images/brands/honda-lineup-2024.jpg</image:loc>
+    <image:title>2024 Honda Lineup Canada</image:title>
+    <image:caption>Complete 2024 Honda vehicle lineup available in Canada</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+</url>
+
+<url>
+  <loc>https://autoilty.com/brands/tesla-ev.html</loc>
+  <lastmod>2024-10-28</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.6</priority>
+  <image:image>
+    <image:loc>https://autoilty.com/images/brands/tesla-lineup-2024.jpg</image:loc>
+    <image:title>2024 Tesla Electric Vehicle Lineup</image:title>
+    <image:caption>Complete Tesla EV lineup - Model 3, Model S, Model X, Model Y</image:caption>
+    <image:geo_location>Canada</image:geo_location>
+  </image:image>
+</url>
+
+</urlset>
+

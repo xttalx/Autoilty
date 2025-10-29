@@ -4,8 +4,10 @@
 User-agent: *
 Allow: /
 
-# Sitemap location
+# Sitemap locations (Master Index + Individual Sitemaps)
+Sitemap: https://autoilty.com/sitemap-index.xml
 Sitemap: https://autoilty.com/sitemap.xml
+Sitemap: https://autoilty.com/image-sitemap.xml
 
 # Crawl delay (be nice to our server)
 Crawl-delay: 1

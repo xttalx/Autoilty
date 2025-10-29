@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+   
+   <!-- Main Pages Sitemap -->
+   <sitemap>
+      <loc>https://autoilty.com/sitemap.xml</loc>
+      <lastmod>2024-10-28</lastmod>
+   </sitemap>
+   
+   <!-- Image Sitemap (Vehicle Photos) -->
+   <sitemap>
+      <loc>https://autoilty.com/image-sitemap.xml</loc>
+      <lastmod>2024-10-28</lastmod>
+   </sitemap>
+   
+   <!-- Forum Threads Sitemap (Dynamic Content) -->
+   <sitemap>
+      <loc>https://autoilty.com/sitemap-forum.xml</loc>
+      <lastmod>2024-10-28</lastmod>
+   </sitemap>
+   
+   <!-- Comparison Pages Sitemap -->
+   <sitemap>
+      <loc>https://autoilty.com/sitemap-comparisons.xml</loc>
+      <lastmod>2024-10-28</lastmod>
+   </sitemap>
+   
+   <!-- Guides Sitemap -->
+   <sitemap>
+      <loc>https://autoilty.com/sitemap-guides.xml</loc>
+      <lastmod>2024-10-28</lastmod>
+   </sitemap>
+   
+   <!-- Regional Pages Sitemap -->
+   <sitemap>
+      <loc>https://autoilty.com/sitemap-regions.xml</loc>
+      <lastmod>2024-10-28</lastmod>
+   </sitemap>
+
+</sitemapindex>
+
