@@ -138,14 +138,14 @@
     </section>
 
     <!-- NEW: Browse All Forums -->
-    <section class="browse-forums" style="background: #f8f9fa; padding: 60px 0;">
+    <section class="browse-forums">
         <div class="container">
-            <h2 style="text-align: center; margin-bottom: 40px; font-size: 32px;">🗂️ Browse All Forums</h2>
+            <h2>🗂️ Browse All Forums</h2>
             
             <!-- Categories -->
             <div style="margin-bottom: 50px;">
-                <h3 style="margin-bottom: 20px; color: #E2231A;">📂 Discussion Categories</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
+                <h3>📂 Discussion Categories</h3>
+                <div class="forum-category-grid">
                     <!-- General Discussion merged into Forum -->
                         <div style="font-size: 32px; margin-bottom: 10px;">💬</div>
                         <h4 style="color: #1a1a1a; margin-bottom: 8px;">General Discussion</h4>
@@ -171,21 +171,21 @@
 
             <!-- Brand Forums -->
             <div style="margin-bottom: 50px;">
-                <h3 style="margin-bottom: 20px; color: #E2231A;">🏷️ Brand-Specific Forums</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
-                    <a href="brands/toyota-lexus.html" style="padding: 16px; background: linear-gradient(135deg, #eb0a1e 0%, #8b0000 100%); border-radius: 10px; text-decoration: none; color: #fff; text-align: center; font-weight: 600; transition: transform 0.3s;">
+                <h3>🏷️ Brand-Specific Forums</h3>
+                <div class="forum-brand-grid">
+                    <a href="brands/toyota-lexus.html" class="brand-link" style="background: linear-gradient(135deg, #eb0a1e 0%, #8b0000 100%);">
                         Toyota & Lexus
                     </a>
-                    <a href="brands/honda-acura.html" style="padding: 16px; background: linear-gradient(135deg, #cc0000 0%, #8b0000 100%); border-radius: 10px; text-decoration: none; color: #fff; text-align: center; font-weight: 600; transition: transform 0.3s;">
+                    <a href="brands/honda-acura.html" class="brand-link" style="background: linear-gradient(135deg, #cc0000 0%, #8b0000 100%);">
                         Honda & Acura
                     </a>
-                    <a href="brands/ford-lincoln.html" style="padding: 16px; background: linear-gradient(135deg, #003478 0%, #002050 100%); border-radius: 10px; text-decoration: none; color: #fff; text-align: center; font-weight: 600; transition: transform 0.3s;">
+                    <a href="brands/ford-lincoln.html" class="brand-link" style="background: linear-gradient(135deg, #003478 0%, #002050 100%);">
                         Ford & Lincoln
                     </a>
-                    <a href="brands/gm-brands.html" style="padding: 16px; background: linear-gradient(135deg, #0057a0 0%, #003a6a 100%); border-radius: 10px; text-decoration: none; color: #fff; text-align: center; font-weight: 600; transition: transform 0.3s;">
+                    <a href="brands/gm-brands.html" class="brand-link" style="background: linear-gradient(135deg, #0057a0 0%, #003a6a 100%);">
                         GM Brands
                     </a>
-                    <a href="brands/tesla-ev.html" style="padding: 16px; background: linear-gradient(135deg, #e82127 0%, #a01820 100%); border-radius: 10px; text-decoration: none; color: #fff; text-align: center; font-weight: 600; transition: transform 0.3s;">
+                    <a href="brands/tesla-ev.html" class="brand-link" style="background: linear-gradient(135deg, #e82127 0%, #a01820 100%);">
                         Tesla & EVs
                     </a>
                 </div>
@@ -193,18 +193,18 @@
 
             <!-- Regional Forums -->
             <div>
-                <h3 style="margin-bottom: 20px; color: #E2231A;">🗺️ Regional Forums</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
-                    <a href="regions/ontario.html" style="padding: 16px; background: linear-gradient(135deg, #0066cc 0%, #003d7a 100%); border-radius: 10px; text-decoration: none; color: #fff; text-align: center; font-weight: 600; transition: transform 0.3s;">
+                <h3>🗺️ Regional Forums</h3>
+                <div class="forum-brand-grid">
+                    <a href="regions/ontario.html" class="brand-link" style="background: linear-gradient(135deg, #0066cc 0%, #003d7a 100%);">
                         🏙️ Ontario
                     </a>
-                    <a href="regions/quebec.html" style="padding: 16px; background: linear-gradient(135deg, #003d7a 0%, #007acc 100%); border-radius: 10px; text-decoration: none; color: #fff; text-align: center; font-weight: 600; transition: transform 0.3s;">
+                    <a href="regions/quebec.html" class="brand-link" style="background: linear-gradient(135deg, #003d7a 0%, #007acc 100%);">
                         ⚜️ Québec
                     </a>
-                    <a href="regions/british-columbia.html" style="padding: 16px; background: linear-gradient(135deg, #006400 0%, #004d00 100%); border-radius: 10px; text-decoration: none; color: #fff; text-align: center; font-weight: 600; transition: transform 0.3s;">
+                    <a href="regions/british-columbia.html" class="brand-link" style="background: linear-gradient(135deg, #006400 0%, #004d00 100%);">
                         🌲 British Columbia
                     </a>
-                    <a href="regions/alberta.html" style="padding: 16px; background: linear-gradient(135deg, #cc0000 0%, #8b0000 100%); border-radius: 10px; text-decoration: none; color: #fff; text-align: center; font-weight: 600; transition: transform 0.3s;">
+                    <a href="regions/alberta.html" class="brand-link" style="background: linear-gradient(135deg, #cc0000 0%, #8b0000 100%);">
                         ⛰️ Alberta
                     </a>
                 </div>

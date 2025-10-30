@@ -136,6 +136,35 @@ a {
     border: none;
     font-size: 24px;
     cursor: pointer;
+    padding: 8px;
+    z-index: 1001;
+    color: var(--text-primary);
+}
+
+/* Mobile Menu Styles */
+.mobile-menu-open .nav-links {
+    display: flex !important;
+    flex-direction: column;
+    position: absolute;
+    top: 72px;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-top: 1px solid var(--border);
+    gap: 16px;
+    z-index: 999;
+}
+
+.mobile-menu-open .auth-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+}
+
+.mobile-menu-open .auth-actions .btn-primary {
+    width: 100%;
 }
 
 /* Hero Section - Lenovo Style */
@@ -552,10 +581,62 @@ a {
     font-size: 12px;
 }
 
+/* Responsive Modals */
+@media (max-width: 768px) {
+    #signupModal > div,
+    #loginModal > div,
+    #emailConfirmModal > div,
+    #threadModal > div,
+    #profileModal > div {
+        max-width: 95% !important;
+        padding: 24px !important;
+        margin: 20px !important;
+    }
+}
+
 /* Responsive Design */
+@media (max-width: 1400px) {
+    .container {
+        max-width: 1200px;
+    }
+}
+
 @media (max-width: 1024px) {
     .container {
         padding: 0 24px;
+    }
+    
+    .navbar .container {
+        height: 64px;
+    }
+    
+    .brand {
+        font-size: 24px;
+    }
+    
+    .hero {
+        padding: 80px 0;
+    }
+    
+    .hero-title {
+        font-size: 48px;
+    }
+    
+    .hero-subtitle {
+        font-size: 18px;
+    }
+    
+    .hero-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+    
+    .stat {
+        padding: 20px;
+    }
+    
+    .stat-number {
+        font-size: 32px;
     }
     
     .quick-grid {
@@ -570,51 +651,380 @@ a {
         grid-template-columns: 1fr;
     }
     
+    .sidebar {
+        position: static;
+        margin-top: 40px;
+    }
+    
     .footer-grid {
         grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    
+    .section-header h2 {
+        font-size: 32px;
+    }
+    
+    .page-header {
+        padding: 60px 0 40px;
+    }
+    
+    .page-header h1 {
+        font-size: 40px;
+    }
+    
+    .trending,
+    .featured,
+    .tools-section,
+    .quick-access {
+        padding: 60px 0;
     }
 }
 
 @media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+    
+    .navbar .container {
+        height: 60px;
+        flex-wrap: wrap;
+    }
+    
+    .brand {
+        font-size: 22px;
+    }
+    
     .nav-links {
         display: none;
     }
     
     .mobile-toggle {
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .auth-actions {
+        gap: 8px;
+    }
+    
+    .auth-actions .btn-primary {
+        padding: 10px 20px;
+        font-size: 12px;
     }
     
     .hero {
-        padding: 60px 0;
+        padding: 48px 0;
     }
     
     .hero-title {
-        font-size: 36px;
+        font-size: 32px;
+        letter-spacing: -1px;
+        margin-bottom: 16px;
+    }
+    
+    .hero-subtitle {
+        font-size: 16px;
+        margin-bottom: 32px;
     }
     
     .hero-stats {
         grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
+        gap: 12px;
+        margin-bottom: 32px;
+    }
+    
+    .stat {
+        padding: 16px;
+    }
+    
+    .stat-number {
+        font-size: 24px;
+        margin-bottom: 4px;
+    }
+    
+    .stat-label {
+        font-size: 11px;
     }
     
     .hero-cta {
         flex-direction: column;
+        gap: 12px;
+    }
+    
+    .btn-hero-primary,
+    .btn-hero-secondary {
+        padding: 14px 32px;
+        font-size: 13px;
+        width: 100%;
     }
     
     .quick-grid {
         grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .quick-card {
+        padding: 24px;
+    }
+    
+    .quick-icon {
+        font-size: 40px;
+        margin-bottom: 16px;
+    }
+    
+    .quick-card h3 {
+        font-size: 18px;
     }
     
     .tools-grid {
         grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .tool-card {
+        padding: 32px 24px;
+    }
+    
+    .tool-icon {
+        font-size: 40px;
+        margin-bottom: 16px;
+    }
+    
+    .page-header {
+        padding: 48px 0 32px;
     }
     
     .page-header h1 {
-        font-size: 32px;
+        font-size: 28px;
+    }
+    
+    .page-header p {
+        font-size: 16px;
     }
     
     .footer-grid {
         grid-template-columns: 1fr;
-        gap: 40px;
+        gap: 32px;
+    }
+    
+    .footer {
+        padding: 60px 0 32px;
+    }
+    
+    .section-title {
+        font-size: 28px;
+        margin-bottom: 40px;
+    }
+    
+    .section-header h2 {
+        font-size: 28px;
+    }
+    
+    .trending,
+    .featured,
+    .tools-section,
+    .quick-access {
+        padding: 48px 0;
+    }
+    
+    .ad-container {
+        padding: 40px 0;
+        margin: 48px 0;
+    }
+    
+    .content-main h2 {
+        font-size: 24px;
+    }
+    
+    .sidebar-card {
+        padding: 24px;
+        margin-bottom: 16px;
+    }
+    
+    .btn-primary {
+        padding: 10px 24px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 12px;
+    }
+    
+    .brand {
+        font-size: 20px;
+    }
+    
+    .hero-title {
+        font-size: 28px;
+    }
+    
+    .hero-subtitle {
+        font-size: 14px;
+    }
+    
+    .hero-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-number {
+        font-size: 20px;
+    }
+    
+    .page-header h1 {
+        font-size: 24px;
+    }
+    
+    .section-title {
+        font-size: 24px;
+    }
+    
+    .section-header h2 {
+        font-size: 24px;
+    }
+    
+    .quick-card,
+    .tool-card {
+        padding: 20px;
+    }
+    
+    .auth-actions .btn-primary {
+        padding: 8px 16px;
+        font-size: 11px;
+    }
+    
+    .btn-primary {
+        padding: 10px 20px;
+        font-size: 12px;
+    }
+}
+
+/* Responsive Images */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive Tables */
+@media (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Responsive Forms */
+@media (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
+
+/* Responsive Inline Styles Support */
+.browse-forums {
+    background: #f8f9fa;
+    padding: 60px 0;
+}
+
+.browse-forums h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 32px;
+}
+
+.browse-forums h3 {
+    margin-bottom: 20px;
+    color: #E2231A;
+}
+
+.forum-category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.forum-brand-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.brand-link,
+.category-link {
+    padding: 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #fff;
+    text-align: center;
+    font-weight: 600;
+    transition: transform 0.3s;
+}
+
+.brand-link:hover,
+.category-link:hover {
+    transform: translateY(-2px);
+}
+
+.listings-scroll {
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    padding: 8px 0 24px 0;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.3) transparent;
+}
+
+@media (max-width: 768px) {
+    .browse-forums {
+        padding: 40px 0;
+    }
+    
+    .browse-forums h2 {
+        font-size: 24px;
+        margin-bottom: 32px;
+    }
+    
+    .browse-forums h3 {
+        font-size: 20px;
+    }
+    
+    .forum-category-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .forum-brand-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .listings-scroll {
+        gap: 16px;
+        padding: 8px 0 16px 0;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .forum-category-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    
+    .forum-brand-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     }
 }

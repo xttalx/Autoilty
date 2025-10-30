@@ -2,9 +2,19 @@
 
 // Mobile menu toggle
 function toggleMobileMenu() {
+    const navbar = document.querySelector('.navbar');
     const navLinks = document.querySelector('.nav-links');
-    if (navLinks) {
-        navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+    if (navbar && navLinks) {
+        navbar.classList.toggle('mobile-menu-open');
+        // Close menu when clicking outside
+        if (navbar.classList.contains('mobile-menu-open')) {
+            document.addEventListener('click', function closeMenuOnOutsideClick(e) {
+                if (!navbar.contains(e.target) || e.target.closest('.nav-link')) {
+                    navbar.classList.remove('mobile-menu-open');
+                    document.removeEventListener('click', closeMenuOnOutsideClick);
+                }
+            });
+        }
     }
 }
 
