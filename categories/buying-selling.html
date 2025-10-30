@@ -15,17 +15,23 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <a href="../index.html" class="brand">AUTOILTY</a>
+            <a href="../index.html" class="brand">
+                <span class="brand-name">AUTOILTY</span>
+            </a>
+            
             <div class="nav-links">
                 <a href="../index.html" class="nav-link">Home</a>
                 <a href="../forum.html" class="nav-link">Forum</a>
-                <a href="../qa.html" class="nav-link">Q&A</a>
+                <a href="buying-selling.html" class="nav-link active">Buy/Sell</a>
                 <a href="../guides.html" class="nav-link">Guides</a>
                 <a href="../tools.html" class="nav-link">Tools</a>
             </div>
-            <button class="btn-primary" onclick="showAuthModal()" id="authBtn">Sign Up / Login</button>
-            <button class="btn-primary" onclick="showProfile()" id="profileBtn" style="display:none;">My Profile</button>
+            
+            <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
+            <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
+            <a href="../profile.html" class="btn-primary" id="profileBtn" style="display:none;">My Profile</a>
             <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
+            <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
         </div>
     </nav>
 
@@ -167,7 +173,6 @@
                     <ul>
                         <li><a href="../guides.html">Buying Guides</a></li>
                         <li><a href="../tools/financing.html">Financing Calculator</a></li>
-                        <li><a href="../qa.html">Q&A</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
@@ -270,7 +275,7 @@
     // Show auth modal (chooses signup or login)
     function showAuthModal() {
         if (currentUser) {
-            showProfile();
+            goToProfile();
             return;
         }
         // Show choice modal
@@ -303,6 +308,42 @@
         document.getElementById('postModal').style.display = 'none';
     }
     
+    // Compress image client-side to avoid exceeding localStorage quota
+    function compressImage(file, maxWidth = 960, maxHeight = 720, qualityStart = 0.7) {
+        return new Promise((resolve, reject) => {
+            try {
+                const img = new Image();
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.onload = function() {
+                        let { width, height } = img;
+                        const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.floor(width * ratio);
+                        canvas.height = Math.floor(height * ratio);
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        // Iteratively reduce quality if still large
+                        let quality = qualityStart;
+                        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        const maxBytes = 200 * 1024; // 200KB target
+                        while (dataUrl.length > maxBytes && quality > 0.45) {
+                            quality -= 0.05;
+                            dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        }
+                        resolve(dataUrl);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
     function submitListing() {
         console.log('submitListing() called');
         
@@ -358,10 +399,12 @@
         }
         
         // Disable button to prevent double submission
-        const submitBtn = event.target;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '⏳ Posting...';
-        submitBtn.style.opacity = '0.7';
+        const submitBtn = document.querySelector('#postModal button[onclick="submitListing()"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Posting...';
+            submitBtn.style.opacity = '0.7';
+        }
         
         // Create listing object
         const listing = {
@@ -381,23 +424,26 @@
         
         console.log('Created listing object:', listing);
         
-        // Handle images
-        if (imageFiles.length > 0) {
-            console.log('Processing image upload...');
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                listing.images.push(e.target.result);
-                console.log('Image loaded, saving listing...');
+        // Handle images (support multiple images, up to 3 to keep storage small)
+        if (imageFiles && imageFiles.length > 0) {
+            console.log('Processing image upload...', imageFiles.length, 'images');
+            const maxImages = Math.min(imageFiles.length, 3);
+            const promises = [];
+            for (let i = 0; i < maxImages; i++) {
+                promises.push(
+                    compressImage(imageFiles[i]).then(dataUrl => {
+                        listing.images.push(dataUrl);
+                    }).catch(err => {
+                        console.error('Image compression failed:', err);
+                    })
+                );
+            }
+            Promise.all(promises).then(() => {
+                if (listing.images.length === 0) {
+                    listing.images.push('https://via.placeholder.com/400x300?text=No+Image');
+                }
                 saveAndClosePost(listing);
-            };
-            reader.onerror = function(e) {
-                console.error('Image upload error:', e);
-                alert('❌ Error uploading image. Please try again.');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Post Listing';
-                submitBtn.style.opacity = '1';
-            };
-            reader.readAsDataURL(imageFiles[0]);
+            });
         } else {
             console.log('No image uploaded, using placeholder...');
             listing.images.push('https://via.placeholder.com/400x300?text=No+Image');
@@ -409,16 +455,75 @@
         try {
             console.log('Saving listing to localStorage...');
             
-            // Get existing listings
-            let listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
+            // Get existing listings with error handling
+            let listings = [];
+            try {
+                const stored = localStorage.getItem('autoilty_listings');
+                if (stored) {
+                    listings = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.error('Error parsing existing listings:', e);
+                // If corrupted, start fresh
+                listings = [];
+                localStorage.removeItem('autoilty_listings');
+            }
+            
             console.log('Current listings count:', listings.length);
+            
+            // Validate listing object
+            if (!listing || !listing.id) {
+                throw new Error('Invalid listing object');
+            }
             
             // Add new listing at the beginning
             listings.unshift(listing);
             
-            // Save to localStorage
-            localStorage.setItem('autoilty_listings', JSON.stringify(listings));
-            console.log('Listing saved! New count:', listings.length);
+            // Save to localStorage with quota handling and pruning
+            try {
+                localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+                console.log('Listing saved! New count:', listings.length);
+            } catch (e) {
+                if (e.name === 'QuotaExceededError' || e.code === 22) {
+                    console.warn('Quota exceeded. Attempting to reduce size and retry...');
+                    // 1) Try removing images from the newest listing and retry
+                    const newest = listings[0];
+                    if (newest && newest.images && newest.images.length) {
+                        newest.images = ['https://via.placeholder.com/400x300?text=No+Image'];
+                        try {
+                            localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+                            console.log('Saved after stripping images from newest listing');
+                        } catch (e2) {
+                            if (e2.name === 'QuotaExceededError' || e2.code === 22) {
+                                // 2) Prune older listings until it fits
+                                let pruned = 0;
+                                while (listings.length > 1) {
+                                    listings.pop();
+                                    pruned++;
+                                    try {
+                                        localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+                                        console.log('Saved after pruning', pruned, 'old listings');
+                                        break;
+                                    } catch (e3) {
+                                        if (!(e3.name === 'QuotaExceededError' || e3.code === 22)) {
+                                            throw e3;
+                                        }
+                                    }
+                                }
+                                if (pruned === 0) {
+                                    alert('⚠️ Storage limit reached. Could not save images. The listing was saved with a placeholder image.');
+                                }
+                            } else {
+                                throw e2;
+                            }
+                        }
+                    } else {
+                        alert('⚠️ Storage limit reached. Listing saved without images.');
+                    }
+                } else {
+                    throw e;
+                }
+            }
             
             // Close modal
             closePostModal();
@@ -450,7 +555,13 @@
             
         } catch (error) {
             console.error('Error saving listing:', error);
-            alert('❌ Error posting listing: ' + error.message + '\n\nPlease try again.');
+            let errorMsg = '❌ Error posting listing: ' + error.message;
+            
+            if (error.name === 'QuotaExceededError' || error.code === 22) {
+                errorMsg += '\n\n💡 Try:\n• Delete old listings\n• Clear browser cache\n• Use fewer/lower quality images';
+            }
+            
+            alert(errorMsg + '\n\nPlease try again.');
             
             // Re-enable button
             const submitBtn = document.querySelector('#postModal button[onclick="submitListing()"]');
@@ -568,7 +679,10 @@
     }
     
     function updateListing() {
-        if (!editingListingId) return;
+        if (!editingListingId) {
+            alert('⚠️ No listing selected for editing');
+            return;
+        }
         
         const title = document.getElementById('editTitleInput').value.trim();
         const category = document.getElementById('editCategoryInput').value;
@@ -577,46 +691,117 @@
         const description = document.getElementById('editDescriptionInput').value.trim();
         const imageFile = document.getElementById('editImageInput').files[0];
         
+        // Validation
         if (!title || !price || !location || !description) {
-            alert('Please fill in all fields');
+            alert('❌ Please fill in all required fields');
             return;
         }
         
-        let listings = JSON.parse(localStorage.getItem('autoilty_listings') || '[]');
-        const index = listings.findIndex(l => l.id === editingListingId);
-        
-        if (index === -1) {
-            alert('Listing not found');
-            return;
+        if (isNaN(price) || parseFloat(price) <= 0) {
+            alert('❌ Please enter a valid price');
+            document.getElementById('editPriceInput').focus();
+ continued;
         }
         
-        listings[index].title = title;
-        listings[index].category = category;
-        listings[index].price = parseFloat(price);
-        listings[index].location = location;
-        listings[index].description = description;
-        
-        if (imageFile) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                listings[index].images[0] = e.target.result;
-                localStorage.setItem('autoilty_listings', JSON.stringify(listings));
-                closeEditModal();
-                alert('Listing updated successfully!');
-                loadListings();
-                if (document.getElementById('profileModal').style.display === 'flex') {
-                    showProfile();
+        try {
+            // Get listings with error handling
+            let listings = [];
+            try {
+                const stored = localStorage.getItem('autoilty_listings');
+                if (stored) {
+                    listings = JSON.parse(stored);
                 }
-            };
-            reader.readAsDataURL(imageFile);
-        } else {
-            localStorage.setItem('autoilty_listings', JSON.stringify(listings));
-            closeEditModal();
-            alert('Listing updated successfully!');
-            loadListings();
-            if (document.getElementById('profileModal').style.display === 'flex') {
-                showProfile();
+            } catch (e) {
+                console.error('Error parsing listings:', e);
+                alert('❌ Error loading listings. Please refresh the page and try again.');
+                return;
             }
+            
+            const index = listings.findIndex(l => l.id === editingListingId);
+            
+            if (index === -1) {
+                alert('❌ Listing not found. It may have been deleted.');
+                closeEditModal();
+                loadListings();
+                return;
+            }
+            
+            // Verify ownership
+            if (currentUser && listings[index].userId !== currentUser.id) {
+                alert('❌ You can only edit your own listings');
+                closeEditModal();
+                return;
+            }
+            
+            // Update listing fields
+            listings[index].title = title;
+            listings[index].category = category;
+            listings[index].price = parseFloat(price);
+            listings[index].location = location;
+            listings[index].description = description;
+            listings[index].editedAt = new Date().toISOString();
+            listings[index].edited = true;
+            
+            // Handle image update (compress before saving)
+            if (imageFile) {
+                compressImage(imageFile).then(dataUrl => {
+                    try {
+                        if (!listings[index].images) {
+                            listings[index].images = [];
+                        }
+                        listings[index].images[0] = dataUrl;
+                        try {
+                            localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+                        } catch (e) {
+                            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                                // fallback: strip image
+                                listings[index].images[0] = 'https://via.placeholder.com/400x300?text=No+Image';
+                                localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+                                alert('⚠️ Storage limit reached. Image was compressed/removed to save the listing.');
+                            } else {
+                                throw e;
+                            }
+                        }
+                        closeEditModal();
+                        alert('✅ Listing updated successfully!');
+                        loadListings();
+                        if (window.location.pathname.includes('profile.html')) {
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        console.error('Error saving updated listing:', error);
+                        alert('❌ Error saving listing: ' + error.message);
+                    }
+                }).catch(e => {
+                    console.error('Image compression failed:', e);
+                    alert('❌ Error processing image. Please try again.');
+                });
+            } else {
+                // No image update, just save the changes
+                try {
+                    localStorage.setItem('autoilty_listings', JSON.stringify(listings));
+                    closeEditModal();
+                    alert('✅ Listing updated successfully!');
+                    loadListings();
+                    // Refresh profile if open
+                    if (document.getElementById('profileModal') && document.getElementById('profileModal').style.display === 'flex') {
+                        // Refresh profile if modal was open (redirects to profile page now)
+                        if (window.location.pathname.includes('profile.html')) {
+                            window.location.reload();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error saving listing:', error);
+                    if (error.name === 'QuotaExceededError' || error.code === 22) {
+                        alert('⚠️ Storage limit reached! Please delete some old listings.');
+                    } else {
+                        alert('❌ Error saving listing: ' + error.message);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error updating listing:', error);
+            alert('❌ Error updating listing: ' + error.message);
         }
     }
     
@@ -702,8 +887,9 @@
         closeContactModal();
     }
     
-    // Profile
-    function showProfile() {
+    // Profile button redirects to profile.html (handled by goToProfile() in auth.js)
+    // This function kept for internal modal use on this page only, but nav button redirects
+    function showProfileModal() {
         if (!currentUser) return;
         
         const confirmStatus = currentUser.confirmed ? 
@@ -757,7 +943,7 @@
                         </div>
                         <div style="display:flex;gap:8px;flex-shrink:0;">
                             <button onclick="event.stopPropagation();editListing('${l.id}')" style="padding:8px 16px;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">Edit</button>
-                            <button onclick="event.stopPropagation();deleteListing('${l.id}');showProfile();" style="padding:8px 16px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">Delete</button>
+                            <button onclick="event.stopPropagation();deleteListing('${l.id}')" style="padding:8px 16px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">Delete</button>
                         </div>
                     </div>
                 `).join('')
@@ -814,7 +1000,10 @@
         if (messageIndex !== -1) {
             messages[messageIndex].read = true;
             localStorage.setItem('autoilty_messages', JSON.stringify(messages));
-            showProfile(); // Refresh profile
+            // If on profile page, reload it
+            if (window.location.pathname.includes('profile.html')) {
+                window.location.reload();
+            }
         }
     }
     
@@ -902,7 +1091,10 @@
         alert(`✓ Reply sent successfully!\n\n📧 Email notification sent to ${originalMessage.fromUsername}'s registered email address.`);
         
         closeReplyModal();
-        showProfile(); // Refresh profile to show updated messages
+        // If on profile page, reload it
+        if (window.location.pathname.includes('profile.html')) {
+            window.location.reload();
+        }
     }
     
     function formatTime(timestamp) {
