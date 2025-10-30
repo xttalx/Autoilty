@@ -13,17 +13,23 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <a href="index.html" class="brand">AUTOILTY</a>
+            <a href="index.html" class="brand">
+                <span class="brand-name">AUTOILTY</span>
+            </a>
+            
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="forum.html" class="nav-link">Forum</a>
+                <a href="categories/buying-selling.html" class="nav-link">Buy/Sell</a>
                 <a href="guides.html" class="nav-link">Guides</a>
                 <a href="tools.html" class="nav-link">Tools</a>
             </div>
+            
             <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
             <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
-            <button class="btn-primary" onclick="goToProfile()" id="profileBtn" style="display:none;">My Profile</button>
+            <a href="profile.html" class="btn-primary" id="profileBtn" style="display:none;">My Profile</a>
             <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
+            <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
         </div>
     </nav>
 
@@ -262,9 +268,15 @@
         const myMessages = messages.filter(m => m.to === currentUser.id);
         document.getElementById('messagesCount').textContent = myMessages.length;
 
-        // Get threads
-        const threads = JSON.parse(localStorage.getItem('forumThreads') || '[]');
-        const myThreads = threads.filter(t => t.author === currentUser.username);
+        // Get threads from both storage keys
+        let threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+        const forumThreads = JSON.parse(localStorage.getItem('forumThreads') || '[]');
+        threads = [...threads, ...forumThreads.filter(t => !threads.find(existing => existing.id === t.id))];
+        
+        const myThreads = threads.filter(t => 
+            (t.author === currentUser.username || t.username === currentUser.username) || 
+            (t.userId === currentUser.id)
+        );
         document.getElementById('threadsCount').textContent = myThreads.length;
     }
 
@@ -358,8 +370,27 @@
     // Load my threads
     function loadMyThreads() {
         const container = document.getElementById('myThreadsContainer');
-        const threads = JSON.parse(localStorage.getItem('forumThreads') || '[]');
-        const myThreads = threads.filter(t => t.author === currentUser.username);
+        // Check both storage keys for compatibility
+        let threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+        const forumThreads = JSON.parse(localStorage.getItem('forumThreads') || '[]');
+        // Merge both arrays, removing duplicates
+        threads = [...threads, ...forumThreads.filter(t => !threads.find(existing => existing.id === t.id))];
+
+        // Normalize and robust author matching
+        const cuId = (currentUser && currentUser.id) ? String(currentUser.id) : '';
+        const cuName = (currentUser && currentUser.username) ? String(currentUser.username).toLowerCase() : '';
+        const cuEmail = (currentUser && currentUser.email) ? String(currentUser.email).toLowerCase() : '';
+
+        const myThreads = threads.filter(t => {
+            const tUserId = t.userId != null ? String(t.userId) : '';
+            const tUsername = (t.username || t.author || t.authorName || '').toLowerCase();
+            const tEmail = (t.email || t.authorEmail || '').toLowerCase();
+            return (
+                (cuId && tUserId === cuId) ||
+                (cuName && tUsername === cuName) ||
+                (cuEmail && tEmail === cuEmail)
+            );
+        });
 
         if (myThreads.length === 0) {
             container.innerHTML = `
@@ -376,13 +407,28 @@
         }
 
         container.innerHTML = myThreads.map(thread => {
+            const timeAgo = getTimeAgo(thread.created || thread.createdAt || Date.now());
             return `
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; cursor: pointer;" onclick="window.location.href='thread.html?id=${thread.id}'">
-                    <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #1a1a1a;">${thread.title}</h4>
-                    <div style="display: flex; gap: 20px; font-size: 13px; color: #666;">
-                        <span>💬 ${thread.replies || 0} replies</span>
-                        <span>👁️ ${thread.views || 0} views</span>
-                        <span>📅 ${thread.lastPost || 'Just now'}</span>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+                        <div style="flex: 1; cursor: pointer;" onclick="window.location.href='thread.html?id=${thread.id}'">
+                            <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #1a1a1a; font-weight: 600;">${thread.title}</h4>
+                            <p style="margin: 0 0 12px 0; color: #666; font-size: 14px; line-height: 1.5;">${(thread.content || thread.description || '').substring(0, 150)}${(thread.content || thread.description || '').length > 150 ? '...' : ''}</p>
+                            <div style="display: flex; gap: 20px; font-size: 13px; color: #666; flex-wrap: wrap;">
+                                <span>💬 ${thread.replies || 0} replies</span>
+                                <span>👁️ ${thread.views || 0} views</span>
+                                <span>📅 ${timeAgo}</span>
+                                ${thread.category ? `<span style="background: #3498db; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">${thread.category}</span>` : ''}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-shrink: 0; flex-direction: column;">
+                            <button onclick="event.stopPropagation(); editThread('${thread.id}')" style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap;">
+                                ✏️ Edit
+                            </button>
+                            <button onclick="event.stopPropagation(); deleteThread('${thread.id}')" style="padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap;">
+                                🗑️ Delete
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -458,6 +504,264 @@
         document.getElementById('confirmNewPassword').value = '';
     }
 
+    // Edit thread
+    function editThread(threadId) {
+        // Check both storage keys
+        let threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+        const forumThreads = JSON.parse(localStorage.getItem('forumThreads') || '[]');
+        threads = [...threads, ...forumThreads.filter(t => !threads.find(existing => existing.id === t.id))];
+        
+        const thread = threads.find(t => t.id === threadId);
+        
+        if (!thread) {
+            alert('Thread not found');
+            return;
+        }
+        
+        // Check if user owns this thread (check both author/username and userId)
+        const isOwner = (thread.author === currentUser.username || thread.username === currentUser.username) || 
+                        (thread.userId === currentUser.id);
+        if (!isOwner) {
+            alert('You can only edit your own threads');
+            return;
+        }
+        
+        // Show edit modal
+        showEditThreadModal(thread);
+    }
+    
+    function showEditThreadModal(thread) {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('editThreadModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'editThreadModal';
+            modal.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;';
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    closeEditThreadModal();
+                }
+            };
+            modal.innerHTML = `
+                <div style="background:#fff;padding:40px;border-radius:16px;max-width:700px;width:90%;margin:40px auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);" onclick="event.stopPropagation();">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                        <h2 style="margin:0;font-size:28px;color:#1a1a1a;">✏️ Edit Thread</h2>
+                        <button onclick="closeEditThreadModal()" style="background:none;border:none;font-size:32px;cursor:pointer;color:#999;padding:0;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all 0.3s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='none'">×</button>
+                    </div>
+                    
+                    <form id="editThreadForm" onsubmit="saveThreadEdit(event);return false;">
+                        <div style="margin-bottom:20px;">
+                            <label style="display:block;margin-bottom:8px;font-weight:600;color:#333;">Thread Title *</label>
+                            <input type="text" id="editThreadTitle" required style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:16px;box-sizing:border-box;" placeholder="Enter thread title">
+                        </div>
+                        
+                        <div style="margin-bottom:20px;">
+                            <label style="display:block;margin-bottom:8px;font-weight:600;color:#333;">Category *</label>
+                            <select id="editThreadCategory" required style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:16px;box-sizing:border-box;">
+                                <option value="">Select a category</option>
+                                <option value="general-discussion">General Discussion</option>
+                                <option value="buying-selling">Buying/Selling</option>
+                                <option value="maintenance-repair">Maintenance & Repair</option>
+                                <option value="modifications-performance">Modifications & Performance</option>
+                                <option value="winter-driving">Winter Driving</option>
+                                <option value="events-meetups">Events & Meetups</option>
+                                <option value="off-topic">Off Topic</option>
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom:20px;">
+                            <label style="display:block;margin-bottom:8px;font-weight:600;color:#333;">Content *</label>
+                            <textarea id="editThreadContent" required rows="10" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:15px;resize:vertical;box-sizing:border-box;font-family:inherit;" placeholder="Write your thread content..."></textarea>
+                        </div>
+                        
+                        <div style="display:flex;gap:12px;justify-content:flex-end;">
+                            <button type="button" onclick="closeEditThreadModal()" style="padding:12px 24px;background:#e0e0e0;color:#333;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;">
+                                Cancel
+                            </button>
+                            <button type="submit" style="padding:12px 24px;background:#27ae60;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;">
+                                💾 Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Populate form with thread data
+        document.getElementById('editThreadTitle').value = thread.title || '';
+        document.getElementById('editThreadCategory').value = thread.category || '';
+        document.getElementById('editThreadContent').value = thread.content || thread.description || '';
+        modal.dataset.threadId = thread.id;
+        
+        // Show modal
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // Close modal on ESC key
+        const escHandler = function(e) {
+            if (e.key === 'Escape') {
+                closeEditThreadModal();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    }
+    
+    function closeEditThreadModal() {
+        const modal = document.getElementById('editThreadModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+            // Clear form
+            const form = document.getElementById('editThreadForm');
+            if (form) {
+                form.reset();
+            }
+        }
+    }
+    
+    function saveThreadEdit(event) {
+        event.preventDefault();
+        
+        const modal = document.getElementById('editThreadModal');
+        const threadId = modal.dataset.threadId;
+        
+        const title = document.getElementById('editThreadTitle').value.trim();
+        const category = document.getElementById('editThreadCategory').value;
+        const content = document.getElementById('editThreadContent').value.trim();
+        
+        if (!title || !content || !category) {
+            alert('⚠️ Please fill in all required fields');
+            return;
+        }
+        
+        // Get threads from both storage keys
+        let threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+        let forumThreads = JSON.parse(localStorage.getItem('forumThreads') || '[]');
+        
+        // Check which storage has the thread
+        let threadIndex = threads.findIndex(t => t.id === threadId);
+        let storageKey = 'autoilty_threads';
+        
+        if (threadIndex === -1) {
+            threadIndex = forumThreads.findIndex(t => t.id === threadId);
+            if (threadIndex !== -1) {
+                threads = forumThreads;
+                storageKey = 'forumThreads';
+            }
+        }
+        
+        if (threadIndex === -1) {
+            alert('❌ Thread not found');
+            return;
+        }
+        
+        const thread = threads[threadIndex];
+        
+        // Verify ownership (check both author/username and userId)
+        const isOwner = (thread.author === currentUser.username || thread.username === currentUser.username) || 
+                        (thread.userId === currentUser.id);
+        if (!isOwner) {
+            alert('❌ You can only edit your own threads');
+            return;
+        }
+        
+        // Update thread
+        threads[threadIndex] = {
+            ...thread,
+            title: title,
+            category: category,
+            content: content,
+            description: content, // Keep both for compatibility
+            edited: true,
+            editedAt: new Date().toISOString()
+        };
+        
+        // Save back to the correct localStorage key
+        localStorage.setItem(storageKey, JSON.stringify(threads));
+        
+        // If we updated in one storage, also update in the other if it exists there
+        if (storageKey === 'autoilty_threads') {
+            const forumIndex = forumThreads.findIndex(t => t.id === threadId);
+            if (forumIndex !== -1) {
+                forumThreads[forumIndex] = threads[threadIndex];
+                localStorage.setItem('forumThreads', JSON.stringify(forumThreads));
+            }
+        } else {
+            const autoIndex = JSON.parse(localStorage.getItem('autoilty_threads') || '[]').findIndex(t => t.id === threadId);
+            if (autoIndex !== -1) {
+                let autoThreads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+                autoThreads[autoIndex] = threads[threadIndex];
+                localStorage.setItem('autoilty_threads', JSON.stringify(autoThreads));
+            }
+        }
+        
+        // Close modal and reload
+        closeEditThreadModal();
+        loadMyThreads();
+        
+        alert('✅ Thread updated successfully!');
+    }
+    
+    // Delete thread
+    function deleteThread(threadId) {
+        if (!confirm('⚠️ Are you sure you want to delete this thread?\n\nThis action cannot be undone. All replies will also be deleted.')) {
+            return;
+        }
+        
+        // Check both storage keys
+        let threads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+        let forumThreads = JSON.parse(localStorage.getItem('forumThreads') || '[]');
+        
+        let thread = threads.find(t => t.id === threadId);
+        let storageKey = 'autoilty_threads';
+        
+        if (!thread) {
+            thread = forumThreads.find(t => t.id === threadId);
+            if (thread) {
+                threads = forumThreads;
+                storageKey = 'forumThreads';
+            }
+        }
+        
+        if (!thread) {
+            alert('❌ Thread not found');
+            return;
+        }
+        
+        // Verify ownership
+        const isOwner = (thread.author === currentUser.username || thread.username === currentUser.username) || 
+                        (thread.userId === currentUser.id);
+        if (!isOwner) {
+            alert('❌ You can only delete your own threads');
+            return;
+        }
+        
+        // Remove thread from the correct storage
+        threads = threads.filter(t => t.id !== threadId);
+        localStorage.setItem(storageKey, JSON.stringify(threads));
+        
+        // Also remove from the other storage if it exists there
+        if (storageKey === 'autoilty_threads') {
+            forumThreads = forumThreads.filter(t => t.id !== threadId);
+            localStorage.setItem('forumThreads', JSON.stringify(forumThreads));
+        } else {
+            let autoThreads = JSON.parse(localStorage.getItem('autoilty_threads') || '[]');
+            autoThreads = autoThreads.filter(t => t.id !== threadId);
+            localStorage.setItem('autoilty_threads', JSON.stringify(autoThreads));
+        }
+        
+        // Also remove related replies if stored separately
+        let replies = JSON.parse(localStorage.getItem('autoilty_replies') || '[]');
+        replies = replies.filter(r => r.threadId !== threadId);
+        localStorage.setItem('autoilty_replies', JSON.stringify(replies));
+        
+        alert('✅ Thread deleted successfully');
+        loadMyThreads();
+        loadUserStats();
+    }
+    
     // Delete account
     function deleteAccount() {
         const confirm1 = confirm('⚠️ Are you ABSOLUTELY SURE you want to delete your account?\n\nThis will permanently delete:\n• All your listings\n• All your messages\n• All your forum threads\n• Your account data\n\nThis action CANNOT be undone!');
@@ -516,4 +820,5 @@
     </script>
 </body>
 </html>
+
 
