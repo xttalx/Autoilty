@@ -424,10 +424,10 @@
         
         console.log('Created listing object:', listing);
         
-        // Handle images (support multiple images, up to 3 to keep storage small)
+        // Handle images (support multiple images, up to 5)
         if (imageFiles && imageFiles.length > 0) {
             console.log('Processing image upload...', imageFiles.length, 'images');
-            const maxImages = Math.min(imageFiles.length, 3);
+            const maxImages = Math.min(imageFiles.length, 5);
             const promises = [];
             for (let i = 0; i < maxImages; i++) {
                 promises.push(
