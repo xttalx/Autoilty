@@ -18,18 +18,23 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <a href="../index.html" class="brand">AUTOILTY</a>
+            <a href="../index.html" class="brand">
+                <span class="brand-name">AUTOILTY</span>
+            </a>
+            
             <div class="nav-links">
                 <a href="../index.html" class="nav-link">Home</a>
                 <a href="../forum.html" class="nav-link active">Forum</a>
-                <a href="../qa.html" class="nav-link">Q&A</a>
+                <a href="buying-selling.html" class="nav-link">Buy/Sell</a>
                 <a href="../guides.html" class="nav-link">Guides</a>
                 <a href="../tools.html" class="nav-link">Tools</a>
             </div>
+            
             <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
             <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
-            <button class="btn-primary" onclick="window.location.href='../forum.html'" id="profileBtn" style="display:none;">My Profile</button>
+            <button class="btn-primary" onclick="goToProfile()" id="profileBtn" style="display:none;">My Profile</button>
             <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
+            <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
         </div>
     </nav>
 
@@ -240,7 +245,6 @@
                     <div class="help-card">
                         <h3>💬 Ask the Community</h3>
                         <p>Get answers from experienced members</p>
-                        <a href="../qa.html" class="btn-primary">Ask Question</a>
                     </div>
                     <div class="help-card">
                         <h3>📚 Browse Guides</h3>
@@ -262,7 +266,7 @@
                 <div class="footer-col">
                     <h4>Forum Categories</h4>
                     <ul>
-                        <li><a href="general-discussion.html">General Discussion</a></li>
+                        <!-- General Discussion merged into Forum -->
                         <li><a href="maintenance-repair.html">Maintenance & Repair</a></li>
                         <li><a href="buying-selling.html">Buying & Selling</a></li>
                         <li><a href="modifications-performance.html">Modifications</a></li>
@@ -274,7 +278,6 @@
                         <li><a href="../guides.html">Repair Guides</a></li>
                         <li><a href="../tools/mechanic-finder.html">Find Mechanic</a></li>
                         <li><a href="../tools/maintenance-tracker.html">Maintenance Tracker</a></li>
-                        <li><a href="../qa.html">Ask Questions</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">

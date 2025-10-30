@@ -45,7 +45,7 @@ function loadCategories() {
     const categories = window.forumData?.categories || [];
     
     grid.innerHTML = categories.map(cat => `
-        <a href="categories/general-discussion.html" class="category-card" style="border-left-color: ${cat.color}">
+        <!-- General Discussion merged into Forum -->
             <div class="category-header">
                 <div class="category-icon">${cat.icon}</div>
                 <div>

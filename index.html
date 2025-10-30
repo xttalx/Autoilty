@@ -91,13 +91,14 @@
             <div class="nav-links">
                 <a href="index.html" class="nav-link active">Home</a>
                 <a href="forum.html" class="nav-link">Forum</a>
+                <a href="categories/buying-selling.html" class="nav-link">Buy/Sell</a>
                 <a href="guides.html" class="nav-link">Guides</a>
                 <a href="tools.html" class="nav-link">Tools</a>
             </div>
             
             <button class="btn-primary" onclick="showSignupModal()" id="authBtn">Sign Up</button>
             <button class="btn-primary" onclick="showLoginModal()" id="loginBtn" style="background:#27ae60;">Login</button>
-            <button class="btn-primary" onclick="goToProfile()" id="profileBtn" style="display:none;">My Profile</button>
+            <a href="profile.html" class="btn-primary" id="profileBtn" style="display:none;">My Profile</a>
             <button class="btn-primary" onclick="logout()" id="logoutBtn" style="display:none;background:#e74c3c;">Logout</button>
             <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
         </div>
@@ -145,7 +146,7 @@
             <div style="margin-bottom: 50px;">
                 <h3 style="margin-bottom: 20px; color: #E2231A;">📂 Discussion Categories</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
-                    <a href="categories/general-discussion.html" style="padding: 20px; background: #fff; border-radius: 12px; text-decoration: none; color: inherit; border: 2px solid #e0e0e0; transition: all 0.3s;">
+                    <!-- General Discussion merged into Forum -->
                         <div style="font-size: 32px; margin-bottom: 10px;">💬</div>
                         <h4 style="color: #1a1a1a; margin-bottom: 8px;">General Discussion</h4>
                         <p style="font-size: 14px; color: #666;">15,243 topics</p>
@@ -215,7 +216,7 @@
     <section class="quick-access">
         <div class="container">
             <div class="quick-grid">
-                <a href="categories/general-discussion.html" class="quick-card">
+                <!-- General Discussion merged into Forum -->
                     <div class="quick-icon">💬</div>
                     <h3>General Discussion</h3>
                     <p>Talk about anything automotive</p>
@@ -235,13 +236,6 @@
                     <h3>Buying & Selling</h3>
                     <p>Advice on purchasing vehicles</p>
                     <span class="quick-count">12,445 topics</span>
-                </a>
-                
-                <a href="qa.html" class="quick-card">
-                    <div class="quick-icon">❓</div>
-                    <h3>Ask the Community</h3>
-                    <p>Get expert answers fast</p>
-                    <span class="quick-count">18,721 questions</span>
                 </a>
                 
                 <a href="tools.html" class="quick-card">
@@ -485,7 +479,6 @@
                     <h4>Community</h4>
                     <ul>
                         <li><a href="forum.html">Forum</a></li>
-                        <li><a href="qa.html">Q&A</a></li>
                         <li><a href="reviews.html">Reviews</a></li>
                         <li><a href="guides.html">Guides</a></li>
                     </ul>

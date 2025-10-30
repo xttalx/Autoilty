@@ -36,7 +36,7 @@
 
 <!-- Categories -->
 <url>
-  <loc>https://autoilty.com/categories/general-discussion.html</loc>
+  <!-- General Discussion merged into Forum; URL removed -->
   <lastmod>2024-10-28</lastmod>
   <changefreq>daily</changefreq>
   <priority>0.7</priority>
@@ -229,4 +229,6 @@
 </url>
 
 </urlset>
+
+
 
