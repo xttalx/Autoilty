@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Listing } from '@/types';
 import { formatPrice, formatMileage, formatYear, getStarRating, formatRelativeTime } from '@/lib/utils/format';
 import { CountryCode } from '@/lib/countries';
+import DiscussionButton from './DiscussionButton';
 
 interface DirectoryListingProps {
   listing: Listing;
@@ -154,14 +155,12 @@ export default function DirectoryListing({ listing, country, className = '' }: D
           >
             View Details
           </Link>
-          {hasForumLink && (
-            <Link
-              href={`/forum/threads/${listing.forumThreadId}`}
-              className="px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary/10 transition-colors font-medium text-sm sm:text-base text-center"
-            >
-              Forum
-            </Link>
-          )}
+          <DiscussionButton
+            listingId={listing.id}
+            threadId={listing.forumThreadId}
+            variant="outline"
+            className="flex-1 justify-center"
+          />
         </div>
       </div>
     </div>

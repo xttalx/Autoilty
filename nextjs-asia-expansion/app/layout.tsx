@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import '../lib/i18n/config';
 import Navbar from '@/components/Navbar';
+import { SessionProvider } from '@/components/SessionProvider';
 import { headers } from 'next/headers';
 import { detectCountryFromHeaders, getCountryFromCookie } from '@/lib/geo-detection';
 import { CountryCode } from '@/lib/countries';
@@ -56,10 +57,12 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Navbar currentCountry={countryCode} />
-        <main className="min-h-screen bg-gray-50">
-          {children}
-        </main>
+        <SessionProvider>
+          <Navbar currentCountry={countryCode} />
+          <main className="min-h-screen bg-gray-50">
+            {children}
+          </main>
+        </SessionProvider>
         <footer className="bg-gray-900 text-white py-12 mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
