@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "home": "Beranda",
+    "search": "Cari",
+    "listings": "Daftar",
+    "sell": "Jual Mobil Anda",
+    "forum": "Forum",
+    "guides": "Panduan",
+    "tools": "Alat",
+    "login": "Masuk",
+    "signup": "Daftar"
+  },
+  "home": {
+    "title": "Temukan Mobil Sempurna Anda",
+    "subtitle": "Cari ribuan daftar terverifikasi di seluruh Kanada dan Asia",
+    "searchPlaceholder": "Cari berdasarkan merek, model, atau kata kunci...",
+    "searchButton": "Cari",
+    "popularSearches": "Pencarian Populer",
+    "featuredListings": "Daftar Unggulan",
+    "howItWorks": "Cara Kerja",
+    "step1": "Cari",
+    "step1Desc": "Jelajahi ribuan daftar terverifikasi",
+    "step2": "Bandingkan",
+    "step2Desc": "Bandingkan harga dan fitur",
+    "step3": "Hubungi",
+    "step3Desc": "Terhubung langsung dengan penjual"
+  },
+  "listing": {
+    "price": "Harga",
+    "year": "Tahun",
+    "mileage": "Jarak Tempuh",
+    "fuel": "Jenis Bahan Bakar",
+    "transmission": "Transmisi",
+    "engine": "Mesin",
+    "viewDetails": "Lihat Detail",
+    "contactSeller": "Hubungi Penjual",
+    "description": "Deskripsi",
+    "features": "Fitur",
+    "location": "Lokasi"
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "tryAgain": "Coba Lagi",
+    "noResults": "Tidak ada hasil ditemukan",
+    "seeMore": "Lihat Lebih Banyak"
+  }
+}
+

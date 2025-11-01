@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "listings": "Listings",
+    "sell": "Sell Your Car",
+    "forum": "Forum",
+    "guides": "Guides",
+    "tools": "Tools",
+    "login": "Login",
+    "signup": "Sign Up"
+  },
+  "home": {
+    "title": "Find Your Perfect Car",
+    "subtitle": "Search thousands of verified listings across Canada and Asia",
+    "searchPlaceholder": "Search by brand, model, or keyword...",
+    "searchButton": "Search",
+    "popularSearches": "Popular Searches",
+    "featuredListings": "Featured Listings",
+    "howItWorks": "How It Works",
+    "step1": "Search",
+    "step1Desc": "Browse thousands of verified listings",
+    "step2": "Compare",
+    "step2Desc": "Compare prices and features",
+    "step3": "Contact",
+    "step3Desc": "Connect with sellers directly"
+  },
+  "listing": {
+    "price": "Price",
+    "year": "Year",
+    "mileage": "Mileage",
+    "fuel": "Fuel Type",
+    "transmission": "Transmission",
+    "engine": "Engine",
+    "viewDetails": "View Details",
+    "contactSeller": "Contact Seller",
+    "description": "Description",
+    "features": "Features",
+    "location": "Location"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "tryAgain": "Try Again",
+    "noResults": "No results found",
+    "seeMore": "See More"
+  }
+}
+

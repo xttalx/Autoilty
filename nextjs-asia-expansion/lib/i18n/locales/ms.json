@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "home": "Laman Utama",
+    "search": "Cari",
+    "listings": "Senarai",
+    "sell": "Jual Kereta Anda",
+    "forum": "Forum",
+    "guides": "Panduan",
+    "tools": "Alat",
+    "login": "Log Masuk",
+    "signup": "Daftar"
+  },
+  "home": {
+    "title": "Cari Kereta Sempurna Anda",
+    "subtitle": "Cari beribu-ribu senarai yang disahkan di seluruh Kanada dan Asia",
+    "searchPlaceholder": "Cari mengikut jenama, model, atau kata kunci...",
+    "searchButton": "Cari",
+    "popularSearches": "Carian Popular",
+    "featuredListings": "Senarai Pilihan",
+    "howItWorks": "Bagaimana Ia Berfungsi",
+    "step1": "Cari",
+    "step1Desc": "Layari beribu-ribu senarai yang disahkan",
+    "step2": "Bandingkan",
+    "step2Desc": "Bandingkan harga dan ciri-ciri",
+    "step3": "Hubungi",
+    "step3Desc": "Berhubung terus dengan penjual"
+  },
+  "listing": {
+    "price": "Harga",
+    "year": "Tahun",
+    "mileage": "Jarak",
+    "fuel": "Jenis Bahan Api",
+    "transmission": "Transmisi",
+    "engine": "Enjin",
+    "viewDetails": "Lihat Butiran",
+    "contactSeller": "Hubungi Penjual",
+    "description": "Penerangan",
+    "features": "Ciri-ciri",
+    "location": "Lokasi"
+  },
+  "common": {
+    "loading": "Memuatkan...",
+    "error": "Ralat berlaku",
+    "tryAgain": "Cuba Lagi",
+    "noResults": "Tiada hasil dijumpai",
+    "seeMore": "Lihat Lagi"
+  }
+}
+
