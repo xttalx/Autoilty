@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import '../lib/i18n/config';
 import Navbar from '@/components/Navbar';
+import { headers } from 'next/headers';
 import { detectCountryFromHeaders, getCountryFromCookie } from '@/lib/geo-detection';
 import { CountryCode } from '@/lib/countries';
 import { cookies } from 'next/headers';
@@ -28,21 +29,28 @@ export default async function RootLayout({
   
   // If no cookie, try to detect from headers (server-side)
   if (!getCountryFromCookie(cookieString)) {
-    // In Next.js 15, use headers() from next/headers
-    const { headers: getHeaders } = await import('next/headers');
-    const headersList = getHeaders();
-    
-    const headers = new Headers();
-    
-    // Copy relevant headers for geo-detection
-    headersList.forEach((value, key) => {
-      if (key.startsWith('x-') || key === 'accept-language' || key === 'cf-connecting-ip') {
-        headers.set(key, Array.isArray(value) ? value[0] : value);
-      }
-    });
-    
-    const geoResult = detectCountryFromHeaders(headers);
-    countryCode = geoResult.countryCode;
+    try {
+      const headersList = headers();
+      const headersObj = new Headers();
+      
+      // Get IP-related headers
+      const forwardedFor = headersList.get('x-forwarded-for');
+      const realIP = headersList.get('x-real-ip');
+      const cfConnectingIP = headersList.get('cf-connecting-ip');
+      const acceptLanguage = headersList.get('accept-language');
+      
+      if (forwardedFor) headersObj.set('x-forwarded-for', forwardedFor);
+      if (realIP) headersObj.set('x-real-ip', realIP);
+      if (cfConnectingIP) headersObj.set('cf-connecting-ip', cfConnectingIP);
+      if (acceptLanguage) headersObj.set('accept-language', acceptLanguage);
+      
+      const geoResult = detectCountryFromHeaders(headersObj);
+      countryCode = geoResult.countryCode;
+    } catch (error) {
+      console.error('Geo-detection error:', error);
+      // Fallback to default
+      countryCode = 'CA';
+    }
   }
 
   return (
