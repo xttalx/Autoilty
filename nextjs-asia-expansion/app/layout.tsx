@@ -28,14 +28,16 @@ export default async function RootLayout({
   
   // If no cookie, try to detect from headers (server-side)
   if (!getCountryFromCookie(cookieString)) {
-    // In Next.js 15, we need to use headers() from next/headers
-    const headersList = await import('next/headers').then(m => m.headers());
+    // In Next.js 15, use headers() from next/headers
+    const { headers: getHeaders } = await import('next/headers');
+    const headersList = getHeaders();
+    
     const headers = new Headers();
     
     // Copy relevant headers for geo-detection
     headersList.forEach((value, key) => {
       if (key.startsWith('x-') || key === 'accept-language' || key === 'cf-connecting-ip') {
-        headers.set(key, value);
+        headers.set(key, Array.isArray(value) ? value[0] : value);
       }
     });
     
