@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
+import { useSession, signOut } from 'next-auth/react';
 import { CountryCode, countries } from '@/lib/countries';
 
 interface NavbarProps {
@@ -11,6 +12,7 @@ interface NavbarProps {
 
 export default function Navbar({ currentCountry = 'CA' }: NavbarProps) {
   const { t, i18n } = useTranslation();
+  const { data: session } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [country, setCountry] = useState<CountryCode>(currentCountry);
 
@@ -105,18 +107,37 @@ export default function Navbar({ currentCountry = 'CA' }: NavbarProps) {
             </div>
 
             {/* Auth Buttons */}
-            <Link
-              href="/login"
-              className="px-4 py-2 text-gray-700 hover:text-primary transition-colors"
-            >
-              {t('nav.login')}
-            </Link>
-            <Link
-              href="/signup"
-              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors"
-            >
-              {t('nav.signup')}
-            </Link>
+            {session ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="px-4 py-2 text-gray-700 hover:text-primary transition-colors"
+                >
+                  {session.user?.name || session.user?.username || 'Profile'}
+                </Link>
+                <button
+                  onClick={() => signOut()}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                >
+                  {t('nav.logout') || 'Logout'}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-gray-700 hover:text-primary transition-colors"
+                >
+                  {t('nav.login')}
+                </Link>
+                <Link
+                  href="/signup"
+                  className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors"
+                >
+                  {t('nav.signup')}
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -187,20 +208,43 @@ export default function Navbar({ currentCountry = 'CA' }: NavbarProps) {
 
               {/* Mobile Auth Buttons */}
               <div className="pt-4 border-t border-gray-200 space-y-2">
-                <Link
-                  href="/login"
-                  className="block text-center px-4 py-2 text-gray-700 hover:text-primary transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {t('nav.login')}
-                </Link>
-                <Link
-                  href="/signup"
-                  className="block text-center px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {t('nav.signup')}
-                </Link>
+                {session ? (
+                  <>
+                    <Link
+                      href="/profile"
+                      className="block text-center px-4 py-2 text-gray-700 hover:text-primary transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {session.user?.name || 'Profile'}
+                    </Link>
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full text-center px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="block text-center px-4 py-2 text-gray-700 hover:text-primary transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {t('nav.login')}
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="block text-center px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {t('nav.signup')}
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
