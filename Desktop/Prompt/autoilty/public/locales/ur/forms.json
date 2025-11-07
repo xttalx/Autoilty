@@ -1,0 +1,20 @@
+﻿{
+  "fields": {
+    "title": "Listing title",
+    "description": "Description",
+    "price": "Price",
+    "currency": "Currency",
+    "city": "City",
+    "country": "Country",
+    "year": "Model year",
+    "mileage": "Mileage (km)",
+    "vin": "VIN",
+    "images": "Upload photos"
+  },
+  "actions": {
+    "save": "Save draft",
+    "publish": "Publish",
+    "update": "Update listing"
+  }
+}
+{}

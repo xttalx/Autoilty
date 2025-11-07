@@ -1,0 +1,30 @@
+import i18next, { type InitOptions } from "i18next";
+import Backend from "i18next-fs-backend";
+import LanguageDetector from "i18next-browser-languagedetector";
+import { SUPPORTED_LANGUAGES } from "@/lib/constants";
+
+const options: InitOptions = {
+  fallbackLng: "en",
+  supportedLngs: Array.from(SUPPORTED_LANGUAGES),
+  defaultNS: "common",
+  ns: ["common", "homepage", "listings", "forms", "faq"],
+  interpolation: {
+    escapeValue: false
+  },
+  react: {
+    useSuspense: false
+  }
+};
+
+if (!i18next.isInitialized) {
+  i18next
+    .use(LanguageDetector)
+    .use(Backend)
+    .init(options)
+    .catch((error) => {
+      console.error("i18n initialization failed", error);
+    });
+}
+
+export default i18next;
+

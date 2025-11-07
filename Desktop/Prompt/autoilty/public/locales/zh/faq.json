@@ -1,0 +1,18 @@
+﻿{
+  "title": "Marketplace FAQs",
+  "items": [
+    {
+      "question": "How does Autoilty verify listings?",
+      "answer": "Every listing is validated with Supabase row-level security, VIN decoding, and manual inspection workflows before publishing."
+    },
+    {
+      "question": "What payment options are supported?",
+      "answer": "Buyers can pay using Stripe, Razorpay, Alipay, or JazzCash with escrow release triggered after inspection sign-off."
+    },
+    {
+      "question": "Can I access listings offline?",
+      "answer": "Install the Autoilty PWA to cache your watchlist and OpenStreetMap tiles for offline browsing."
+    }
+  ]
+}
+{}

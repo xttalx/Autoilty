@@ -1,0 +1,30 @@
+{
+  "name": "Autoilty — Hyperlocal Automotive Marketplace",
+  "short_name": "Autoilty",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#1d82ff",
+  "description": "Buy, sell, and finance verified vehicles across Canada, India, Pakistan, China, and Bangladesh with AI pricing and escrow.",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
+

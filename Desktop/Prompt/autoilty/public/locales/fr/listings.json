@@ -1,0 +1,20 @@
+﻿{
+  "filters": {
+    "title": "Filter inventory",
+    "country": "Country",
+    "city": "City",
+    "price": "Price",
+    "sellerType": "Seller type",
+    "category": "Category"
+  },
+  "categories": {
+    "car": "Cars",
+    "part": "Parts",
+    "service": "Services"
+  },
+  "empty": {
+    "title": "No listings match your filters",
+    "subtitle": "Try expanding your location radius or adjusting pricing." 
+  }
+}
+{}

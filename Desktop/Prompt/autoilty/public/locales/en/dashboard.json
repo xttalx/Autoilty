@@ -1,0 +1,13 @@
+﻿{
+  "welcome": {
+    "title": "Welcome back",
+    "subtitle": "Track listings, payments, and trust verifications in one console."
+  },
+  "cards": {
+    "inventory": "Active listings",
+    "watchers": "Watchers",
+    "escrow": "Escrow balance",
+    "inspections": "Pending inspections"
+  }
+}
+{}
