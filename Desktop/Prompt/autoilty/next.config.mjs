@@ -1,21 +1,6 @@
-import type { NextConfig } from "next";
-import { createTranslator } from "@i18next/next";
-import createNextIntlPlugin from "@i18next/next/plugin";
 import withPWA from "next-pwa";
 
-const locales = ["en", "fr", "hi", "ur", "zh", "bn"] as const;
-
-const translator = createTranslator({
-  resources: {},
-  lng: "en",
-  fallbackLng: "en"
-});
-
-const intlPlugin = createNextIntlPlugin({
-  supportedLngs: locales,
-  fallbackLng: "en",
-  defaultNS: "common"
-});
+const locales = ["en", "fr", "hi", "ur", "zh", "bn"];
 
 const pwa = withPWA({
   dest: "public",
@@ -45,7 +30,7 @@ const pwa = withPWA({
   ]
 });
 
-const config: NextConfig = {
+const config = {
   reactStrictMode: true,
   experimental: {
     serverActions: {
@@ -72,7 +57,7 @@ const config: NextConfig = {
     ]
   },
   i18n: {
-    locales: Array.from(locales),
+    locales,
     defaultLocale: "en",
     localeDetection: true
   },
@@ -116,5 +101,8 @@ const config: NextConfig = {
   ]
 };
 
-export default intlPlugin(pwa(config));
+const withPlugins = pwa;
+
+export default withPlugins(config);
+
 

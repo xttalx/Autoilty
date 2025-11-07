@@ -19,3 +19,4 @@ export const TRUST_BADGES = [
   "finance-ready"
 ] as const;
 
+

@@ -46,7 +46,18 @@ export default async function ListingsPage({ params, searchParams }: ListingsPag
 
   const schema = buildListingCollectionSchema({
     locale: params.locale,
-    listings: (data ?? []).map((listing) => ({
+    listings: (data ?? []).map((listing: {
+      id: string;
+      slug: string;
+      title: string;
+      description: string;
+      images: string[];
+      currency: string;
+      price: number;
+      country: string;
+      city: string;
+      seller_type: "dealer" | "private";
+    }) => ({
       id: listing.id,
       slug: listing.slug,
       title: listing.title,
@@ -93,7 +104,17 @@ export default async function ListingsPage({ params, searchParams }: ListingsPag
         </form>
       </div>
       <div className="mt-10 grid gap-6 md:grid-cols-3">
-        {(data ?? []).map((listing) => (
+        {(data ?? []).map((listing: {
+          id: string;
+          slug: string;
+          title: string;
+          price: number;
+          currency: string;
+          city: string;
+          country: string;
+          images: string[];
+          seller_type: "dealer" | "private";
+        }) => (
           <ListingCard key={listing.id} locale={params.locale} listing={listing} />
         ))}
       </div>

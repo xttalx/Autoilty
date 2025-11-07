@@ -11,7 +11,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .eq("status", "published")
     .limit(5000);
 
-  const listingEntries = (data ?? []).flatMap((listing) => {
+  const listingEntries = (data ?? []).flatMap((listing: {
+    slug: string;
+    updated_at: string | null;
+    country: string;
+  }) => {
     return SUPPORTED_LANGUAGES.map((locale) => ({
       url: `${baseUrl}/${locale}/listings/${listing.slug}`,
       lastModified: listing.updated_at ? new Date(listing.updated_at) : new Date(),

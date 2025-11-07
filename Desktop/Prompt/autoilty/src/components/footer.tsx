@@ -81,3 +81,4 @@ export function Footer({ locale }: { locale: string }) {
   );
 }
 
+

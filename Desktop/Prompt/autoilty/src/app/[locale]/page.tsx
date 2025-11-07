@@ -68,7 +68,17 @@ export default async function LocaleHome({ params }: { params: { locale: string 
           <CountryFilters locale={params.locale} />
         </div>
         <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {(featured ?? []).map((listing) => (
+          {(featured ?? []).map((listing: {
+            id: string;
+            slug: string;
+            title: string;
+            price: number;
+            currency: string;
+            city: string;
+            country: string;
+            images: string[];
+            seller_type: "dealer" | "private";
+          }) => (
             <ListingCard key={listing.id} locale={params.locale} listing={listing} />
           ))}
         </div>

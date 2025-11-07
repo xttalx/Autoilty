@@ -91,7 +91,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
       <div className="grid gap-8 md:grid-cols-[2fr,1fr]">
         <div>
           <div className="grid gap-4 md:grid-cols-2">
-            {listing.images.map((image) => (
+            {listing.images.map((image: string) => (
               <img
                 key={image}
                 src={image}
@@ -162,7 +162,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
             <h2 className="text-lg font-semibold text-white">{t("seller", "Seller")}</h2>
             <p className="mt-2 text-sm text-slate-300">{listing.seller.name}</p>
             <ul className="mt-3 flex flex-wrap gap-2">
-              {listing.seller.badges.map((badge) => (
+              {listing.seller.badges.map((badge: string) => (
                 <li
                   key={badge}
                   className="rounded-full bg-primary-500/10 px-3 py-1 text-xs font-medium text-primary-100"

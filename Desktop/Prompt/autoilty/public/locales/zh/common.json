@@ -23,29 +23,4 @@
     "cookies": "Cookies"
   }
 }
-{
-  "navigation": {
-    "features": "Features",
-    "listings": "Listings",
-    "dealers": "Dealers",
-    "pricing": "Pricing",
-    "guides": "Guides",
-    "dashboard": "Dashboard"
-  },
-  "footer": {
-    "tagline": "Trust-first hyperlocal automotive marketplace across Canada, India, Pakistan, China, and Bangladesh.",
-    "marketplace": "Marketplace",
-    "listings": "Browse Listings",
-    "dealers": "Verified Dealers",
-    "services": "Services",
-    "support": "Support",
-    "helpCenter": "Help Center",
-    "faq": "FAQ",
-    "trust": "Trust & Safety",
-    "legal": "Legal",
-    "privacy": "Privacy Policy",
-    "terms": "Terms of Service",
-    "cookies": "Cookie Policy"
-  }
-}
 

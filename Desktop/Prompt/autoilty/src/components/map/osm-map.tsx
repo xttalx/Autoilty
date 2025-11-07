@@ -50,3 +50,4 @@ export function OSMMap({ lat, lng, zoom = 12 }: Props) {
   return <div ref={mapRef} className="h-72 w-full rounded-2xl border border-white/10" />;
 }
 
+

@@ -21,3 +21,4 @@ export function LocaleSwitcher({ locale, pathname }: { locale: string; pathname:
   );
 }
 
+

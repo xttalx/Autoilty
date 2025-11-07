@@ -28,34 +28,4 @@
     "cta": "See all listings"
   }
 }
-{
-  "hero": {
-    "badge": "Autoilty Verified",
-    "title": "Hyperlocal automotive trading with escrow-protected confidence",
-    "subtitle": "Discover verified vehicles, parts, and services near you with AI pricing, live inspections, and localized financing across Canada, India, Pakistan, China, and Bangladesh.",
-    "ctaPrimary": "Explore listings",
-    "ctaSecondary": "Sell on Autoilty"
-  },
-  "features": {
-    "title": "Why Autoilty dominates zero-click automotive search",
-    "subtitle": "Structured data, conversational AI, and voice commerce optimizations deliver instant answers for every local intent.",
-    "trust": {
-      "title": "Trusted by regulators",
-      "body": "RLS-enforced marketplace with VIN verification, inspection trails, and escrow-backed transactions."
-    },
-    "pricing": {
-      "title": "AI price intelligence",
-      "body": "OpenAI-powered valuations blended with regional comparables, inflation data, and EV incentives."
-    },
-    "finance": {
-      "title": "Localized financing",
-      "body": "Instant EMI, BNPL, and dealership financing across Stripe, Razorpay, Alipay, and JazzCash."
-    }
-  },
-  "featuredListings": {
-    "title": "Trending near you",
-    "subtitle": "Real-time ranked listings refreshed via Supabase revalidation and ISR for edge-fast discovery.",
-    "cta": "View all hyperlocal listings"
-  }
-}
 

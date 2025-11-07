@@ -1,5 +1,5 @@
 import i18next, { type InitOptions } from "i18next";
-import Backend from "i18next-fs-backend";
+import HttpBackend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { SUPPORTED_LANGUAGES } from "@/lib/constants";
 
@@ -11,6 +11,9 @@ const options: InitOptions = {
   interpolation: {
     escapeValue: false
   },
+  backend: {
+    loadPath: "/locales/{{lng}}/{{ns}}.json"
+  },
   react: {
     useSuspense: false
   }
@@ -19,7 +22,7 @@ const options: InitOptions = {
 if (!i18next.isInitialized) {
   i18next
     .use(LanguageDetector)
-    .use(Backend)
+    .use(HttpBackend)
     .init(options)
     .catch((error) => {
       console.error("i18n initialization failed", error);
