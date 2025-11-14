@@ -6,6 +6,7 @@ const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
+  // eslint-disable-next-line no-console
   console.error('Missing Supabase environment variables. Please check your Vercel environment variables.');
 }
 
@@ -31,6 +32,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (!supabase) {
       setLoading(false);
+      // eslint-disable-next-line no-console
       console.error('Supabase client not initialized. Check environment variables.');
       return;
     }
@@ -91,6 +93,7 @@ export const AuthProvider = ({ children }) => {
         email: data.email || '',
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error fetching user profile:', error);
     }
   };
@@ -167,6 +170,7 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       localStorage.removeItem('token');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error logging out:', error);
     }
   };
