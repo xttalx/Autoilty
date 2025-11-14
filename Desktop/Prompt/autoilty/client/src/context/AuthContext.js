@@ -29,6 +29,12 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      console.error('Supabase client not initialized. Check environment variables.');
+      return;
+    }
+
     // Check for existing session
     checkUser();
     
@@ -49,6 +55,11 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkUser = async () => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -83,6 +94,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (email, password, name, role = 'buyer') => {
+    if (!supabase) {
+      return { success: false, error: 'Supabase not configured' };
+    }
+    
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -119,6 +134,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
+    if (!supabase) {
+      return { success: false, error: 'Supabase not configured' };
+    }
+    
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -138,6 +157,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    if (!supabase) return;
+    
     try {
       await supabase.auth.signOut();
       setUser(null);
