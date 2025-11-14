@@ -1,9 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "cd Desktop/Prompt/autoilty/client && npm install && npm run build",
-  "outputDirectory": "Desktop/Prompt/autoilty/client/build",
-  "installCommand": "cd Desktop/Prompt/autoilty/client && npm install",
-  "framework": null,
   "rewrites": [
     {
       "source": "/(.*)",
