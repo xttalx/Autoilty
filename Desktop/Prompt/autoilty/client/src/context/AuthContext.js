@@ -70,6 +70,7 @@ export const AuthProvider = ({ children }) => {
         await fetchUserProfile(session.user.id);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error checking user:', error);
     } finally {
       setLoading(false);
