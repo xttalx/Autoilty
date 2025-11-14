@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "Desktop/Prompt/autoilty/client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "Desktop/Prompt/autoilty/client/build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/Desktop/Prompt/autoilty/client/build/$1"
+    }
+  ]
+}
+

@@ -19,11 +19,17 @@ npm i -g vercel
    - Vercel will auto-detect it's a React app
 
 3. **Configure Project Settings**
-   - **Root Directory**: Set to `client` (since your React app is in the client folder)
+   - **Root Directory**: Set to `Desktop/Prompt/autoilty/client` (since your React app is nested in this path)
    - **Framework Preset**: Create React App
    - **Build Command**: `npm run build` (auto-detected)
    - **Output Directory**: `build` (auto-detected)
    - **Install Command**: `npm install`
+   
+   **OR** if Root Directory option doesn't work:
+   - Leave Root Directory empty (use repository root)
+   - **Build Command**: `cd Desktop/Prompt/autoilty/client && npm run build`
+   - **Output Directory**: `Desktop/Prompt/autoilty/client/build`
+   - **Install Command**: `cd Desktop/Prompt/autoilty/client && npm install`
 
 4. **Add Environment Variables**
    Go to Settings > Environment Variables and add:
