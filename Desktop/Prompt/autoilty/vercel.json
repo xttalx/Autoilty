@@ -1,18 +1,13 @@
 {
   "version": 2,
-  "builds": [
+  "buildCommand": "cd Desktop/Prompt/autoilty/client && npm install && npm run build",
+  "outputDirectory": "Desktop/Prompt/autoilty/client/build",
+  "installCommand": "cd Desktop/Prompt/autoilty/client && npm install",
+  "framework": null,
+  "rewrites": [
     {
-      "src": "Desktop/Prompt/autoilty/client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "Desktop/Prompt/autoilty/client/build"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/Desktop/Prompt/autoilty/client/build/$1"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
