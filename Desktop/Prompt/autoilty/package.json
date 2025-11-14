@@ -7,9 +7,8 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server/index.js",
     "client": "cd client && npm start",
-    "build": "cd Desktop/Prompt/autoilty/client && npm install && npm run build",
-    "install-all": "npm install && cd client && npm install",
-    "vercel-build": "cd Desktop/Prompt/autoilty/client && npm install && npm run build"
+    "build": "cd client && npm run build",
+    "install-all": "npm install && cd client && npm install"
   },
   "keywords": ["marketplace", "automotive", "detailing"],
   "author": "",
@@ -30,3 +29,4 @@
     "concurrently": "^8.2.2"
   }
 }
+
