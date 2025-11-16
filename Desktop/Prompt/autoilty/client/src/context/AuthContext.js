@@ -136,7 +136,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  }, [fetchUserProfile]);
+  };
 
   const login = async (email, password) => {
     if (!supabase) {
