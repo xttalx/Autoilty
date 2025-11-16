@@ -42,14 +42,28 @@ const CheckoutForm = () => {
     setLoading(true);
 
     try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      
+      if (!apiUrl || apiUrl === 'http://localhost:5000') {
+        toast.error('Backend server not configured. Payment processing requires a backend server.');
+        setLoading(false);
+        return;
+      }
+
       // Create payment intent on backend
       const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/create-payment-intent`,
+        `${apiUrl}/api/create-payment-intent`,
         {
           amount: Math.round(getCartTotal() * 100), // Convert to cents
           items: cart,
         }
       );
+
+      if (!data || !data.clientSecret) {
+        toast.error('Failed to create payment intent. Please try again.');
+        setLoading(false);
+        return;
+      }
 
       // Confirm payment with Stripe
       const { error, paymentIntent } = await stripe.confirmCardPayment(
