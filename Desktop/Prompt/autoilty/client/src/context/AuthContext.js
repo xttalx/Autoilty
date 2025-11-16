@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchUserProfile]);
 
   useEffect(() => {
     if (!supabase) {
