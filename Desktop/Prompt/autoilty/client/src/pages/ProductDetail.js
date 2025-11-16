@@ -16,11 +16,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
 
-  useEffect(() => {
-    fetchProduct();
-  }, [id]);
-
-  const fetchProduct = async () => {
+  const fetchProduct = React.useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('products')
@@ -37,7 +33,11 @@ const ProductDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate, supabase]);
+
+  useEffect(() => {
+    fetchProduct();
+  }, [fetchProduct]);
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {

@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import axios from 'axios';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
@@ -29,6 +28,27 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
+  const checkUser = useCallback(async () => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setToken(session.access_token);
+        localStorage.setItem('token', session.access_token);
+        await fetchUserProfile(session.user.id);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error checking user:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!supabase) {
       setLoading(false);
@@ -54,28 +74,8 @@ export const AuthProvider = ({ children }) => {
     );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [checkUser]);
 
-  const checkUser = async () => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
-    
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setToken(session.access_token);
-        localStorage.setItem('token', session.access_token);
-        await fetchUserProfile(session.user.id);
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error checking user:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchUserProfile = async (userId) => {
     if (!supabase) return;

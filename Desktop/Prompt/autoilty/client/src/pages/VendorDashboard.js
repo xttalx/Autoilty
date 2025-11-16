@@ -16,11 +16,7 @@ const VendorDashboard = () => {
   });
   const [imageFiles, setImageFiles] = useState([]);
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  const fetchProducts = React.useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('products')
@@ -36,7 +32,11 @@ const VendorDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, supabase]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -112,7 +112,7 @@ const VendorDashboard = () => {
         status: 'pending', // Requires admin approval
       };
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('products')
         .insert([productData])
         .select()

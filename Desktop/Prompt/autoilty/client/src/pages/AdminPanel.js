@@ -8,16 +8,12 @@ const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const AdminPanel = () => {
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
   const [products, setProducts] = useState([]);
   const [filter, setFilter] = useState('pending');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [filter]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = React.useCallback(async () => {
     try {
       let query = supabase.from('products').select('*');
 
@@ -30,12 +26,17 @@ const AdminPanel = () => {
       if (error) throw error;
       setProducts(data || []);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const updateProductStatus = async (productId, status) => {
     try {

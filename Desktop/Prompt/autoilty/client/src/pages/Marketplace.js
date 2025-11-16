@@ -19,15 +19,7 @@ const Marketplace = () => {
 
   const categories = ['all', 'wax', 'tools', 'polish', 'interior', 'exterior', 'ceramic'];
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  useEffect(() => {
-    filterProducts();
-  }, [products, searchTerm, selectedCategory, priceRange]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = React.useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('products')
@@ -40,17 +32,17 @@ const Marketplace = () => {
       setProducts(data || []);
       setFilteredProducts(data || []);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const filterProducts = () => {
+  const filterProducts = React.useCallback(() => {
     let filtered = [...products];
-
-    // Search filter
+    
     if (searchTerm) {
       filtered = filtered.filter(
         (product) =>
@@ -59,20 +51,26 @@ const Marketplace = () => {
       );
     }
 
-    // Category filter
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(
-        (product) => product.category === selectedCategory
-      );
+      filtered = filtered.filter((product) => product.category === selectedCategory);
     }
 
-    // Price filter
     filtered = filtered.filter(
-      (product) => product.price >= priceRange.min && product.price <= priceRange.max
+      (product) =>
+        product.price >= priceRange.min && product.price <= priceRange.max
     );
 
     setFilteredProducts(filtered);
-  };
+  }, [products, searchTerm, selectedCategory, priceRange]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    filterProducts();
+  }, [filterProducts]);
+
 
   const handleAddToCart = (product) => {
     addToCart(product);

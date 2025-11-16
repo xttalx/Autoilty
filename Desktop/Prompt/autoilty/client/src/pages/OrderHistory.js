@@ -10,13 +10,7 @@ const OrderHistory = () => {
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchOrders();
-    }
-  }, [user]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = React.useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('orders')
@@ -63,7 +57,13 @@ const OrderHistory = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, supabase]);
+
+  useEffect(() => {
+    if (user) {
+      fetchOrders();
+    }
+  }, [user, fetchOrders]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
