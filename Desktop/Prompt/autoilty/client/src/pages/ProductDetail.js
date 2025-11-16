@@ -6,7 +6,9 @@ import toast from 'react-hot-toast';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -17,6 +19,13 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
 
   const fetchProduct = useCallback(async () => {
+    if (!supabase) {
+      toast.error('Supabase not configured. Please check environment variables.');
+      setLoading(false);
+      navigate('/marketplace');
+      return;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('products')

@@ -5,7 +5,9 @@ import toast from 'react-hot-toast';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 const AdminPanel = () => {
   const { user } = useAuth();
@@ -14,6 +16,12 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchProducts = useCallback(async () => {
+    if (!supabase) {
+      toast.error('Supabase not configured. Please check environment variables.');
+      setLoading(false);
+      return;
+    }
+    
     try {
       let query = supabase.from('products').select('*');
 
@@ -39,6 +47,11 @@ const AdminPanel = () => {
   }, [fetchProducts]);
 
   const updateProductStatus = async (productId, status) => {
+    if (!supabase) {
+      toast.error('Supabase not configured.');
+      return;
+    }
+    
     try {
       const { error } = await supabase
         .from('products')
@@ -58,6 +71,11 @@ const AdminPanel = () => {
 
   const handleDelete = async (productId) => {
     if (!window.confirm('Are you sure you want to delete this product?')) {
+      return;
+    }
+
+    if (!supabase) {
+      toast.error('Supabase not configured.');
       return;
     }
 
