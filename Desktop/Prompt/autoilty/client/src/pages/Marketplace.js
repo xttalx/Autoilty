@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { createClient } from '@supabase/supabase-js';
@@ -19,7 +19,7 @@ const Marketplace = () => {
 
   const categories = ['all', 'wax', 'tools', 'polish', 'interior', 'exterior', 'ceramic'];
 
-  const fetchProducts = React.useCallback(async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('products')
@@ -40,7 +40,7 @@ const Marketplace = () => {
     }
   }, []);
 
-  const filterProducts = React.useCallback(() => {
+  const filterProducts = useCallback(() => {
     let filtered = [...products];
     
     if (searchTerm) {

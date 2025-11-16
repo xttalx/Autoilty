@@ -76,29 +76,6 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, [checkUser]);
 
-
-  const fetchUserProfile = async (userId) => {
-    if (!supabase) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-
-      setUser({
-        ...data,
-        email: data.email || '',
-      });
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error fetching user profile:', error);
-    }
-  };
-
   const register = async (email, password, name, role = 'buyer') => {
     if (!supabase) {
       return { success: false, error: 'Supabase not configured' };

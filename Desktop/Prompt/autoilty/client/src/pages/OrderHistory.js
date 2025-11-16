@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -10,7 +10,7 @@ const OrderHistory = () => {
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState(null);
 
-  const fetchOrders = React.useCallback(async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('orders')

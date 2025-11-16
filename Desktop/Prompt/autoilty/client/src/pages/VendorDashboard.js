@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -16,7 +16,7 @@ const VendorDashboard = () => {
   });
   const [imageFiles, setImageFiles] = useState([]);
 
-  const fetchProducts = React.useCallback(async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('products')
@@ -27,6 +27,7 @@ const VendorDashboard = () => {
       if (error) throw error;
       setProducts(data || []);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
     } finally {
@@ -161,6 +162,7 @@ const VendorDashboard = () => {
       toast.success('Product deleted');
       fetchProducts();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error deleting product:', error);
       toast.error('Failed to delete product');
     }

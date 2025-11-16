@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { createClient } from '@supabase/supabase-js';
@@ -16,7 +16,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
 
-  const fetchProduct = React.useCallback(async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('products')
@@ -27,6 +27,7 @@ const ProductDetail = () => {
       if (error) throw error;
       setProduct(data);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error fetching product:', error);
       toast.error('Product not found');
       navigate('/marketplace');

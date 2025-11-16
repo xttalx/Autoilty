@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { createClient } from '@supabase/supabase-js';
 import toast from 'react-hot-toast';
@@ -13,7 +13,7 @@ const AdminPanel = () => {
   const [filter, setFilter] = useState('pending');
   const [loading, setLoading] = useState(true);
 
-  const fetchProducts = React.useCallback(async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       let query = supabase.from('products').select('*');
 
@@ -71,6 +71,7 @@ const AdminPanel = () => {
       toast.success('Product deleted');
       fetchProducts();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error deleting product:', error);
       toast.error('Failed to delete product');
     }
