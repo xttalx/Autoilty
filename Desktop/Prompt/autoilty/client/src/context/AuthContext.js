@@ -28,6 +28,28 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
+  const fetchUserProfile = useCallback(async (userId) => {
+    if (!supabase) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      setUser({
+        ...data,
+        email: data.email || '',
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching user profile:', error);
+    }
+  }, []);
+
   const checkUser = useCallback(async () => {
     if (!supabase) {
       setLoading(false);
@@ -74,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     );
 
     return () => subscription.unsubscribe();
-  }, [checkUser]);
+  }, [checkUser, fetchUserProfile]);
 
   const register = async (email, password, name, role = 'buyer') => {
     if (!supabase) {
@@ -114,7 +136,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  };
+  }, [fetchUserProfile]);
 
   const login = async (email, password) => {
     if (!supabase) {
