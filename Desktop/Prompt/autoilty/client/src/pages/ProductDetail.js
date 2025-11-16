@@ -34,7 +34,7 @@ const ProductDetail = () => {
     } finally {
       setLoading(false);
     }
-  }, [id, navigate, supabase]);
+  }, [id, navigate]);
 
   useEffect(() => {
     fetchProduct();

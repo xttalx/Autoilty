@@ -8,7 +8,7 @@ const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const AdminPanel = () => {
-  const { user: authUser } = useAuth();
+  const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [filter, setFilter] = useState('pending');
   const [loading, setLoading] = useState(true);
