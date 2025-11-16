@@ -50,6 +50,7 @@ const AdminPanel = () => {
       toast.success(`Product ${status}`);
       fetchProducts();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error updating product:', error);
       toast.error('Failed to update product');
     }

@@ -52,6 +52,7 @@ const OrderHistory = () => {
         setOrderItems(itemsByOrder);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error fetching orders:', error);
       toast.error('Failed to load orders');
     } finally {

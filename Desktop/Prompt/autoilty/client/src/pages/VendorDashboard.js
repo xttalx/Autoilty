@@ -67,7 +67,7 @@ const VendorDashboard = () => {
       const filePath = `products/${fileName}`;
 
       // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('product-images')
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -75,6 +75,7 @@ const VendorDashboard = () => {
         });
 
       if (error) {
+        // eslint-disable-next-line no-console
         console.error('Error uploading image:', error);
         throw error;
       }
@@ -141,6 +142,7 @@ const VendorDashboard = () => {
       
       fetchProducts();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error creating product:', error);
       toast.error(error.message || 'Failed to create product');
     }
