@@ -4,7 +4,10 @@
  * Search for local auto-related businesses
  */
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// API Base URL - uses window.API_URL if set, otherwise defaults
+const API_BASE_URL = (typeof window !== 'undefined' && window.API_URL) 
+  ? window.API_URL 
+  : 'http://localhost:5000/api';
 let userLocation = null;
 let distanceUnit = typeof window !== 'undefined' && window.distanceUnit ? window.distanceUnit : 'miles'; // Default to miles
 
