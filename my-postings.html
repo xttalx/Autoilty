@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Manage your postings - Autoilty Marketplace">
+  <title>My Postings - Autoilty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="marketplace.html" class="nav-link">Marketplace</a>
+          <a href="my-postings.html" class="nav-link active">My Postings</a>
+          <div class="user-menu">
+            <button class="user-menu-button" id="userMenuButton">
+              <span id="userMenuName">User</span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="user-menu-dropdown" id="userMenuDropdown">
+              <a href="my-postings.html" class="user-menu-item">
+                <i data-lucide="list" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                My Postings
+              </a>
+              <button class="user-menu-item danger" id="logoutButton" style="width: 100%; text-align: left; border: none; cursor: pointer;">
+                <i data-lucide="log-out" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- My Postings Page -->
+  <main class="my-postings-page">
+    <div class="container">
+      <div class="page-header-actions">
+        <div>
+          <h1 class="page-title">My Postings</h1>
+          <p class="page-subtitle">Manage your marketplace listings</p>
+        </div>
+        <button class="btn btn-primary" id="createPostingBtn">
+          <i data-lucide="plus" class="btn-icon"></i>
+          Create New Posting
+        </button>
+      </div>
+
+      <div id="postingsList" class="postings-list">
+        <!-- Postings loaded dynamically -->
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+
+      <div id="emptyPostings" class="empty-postings" style="display: none;">
+        <i data-lucide="inbox" class="empty-postings-icon"></i>
+        <h2>No postings yet</h2>
+        <p>Create your first posting to get started!</p>
+        <button class="btn btn-primary" style="margin-top: var(--spacing-md);" onclick="openPostingModal()">
+          <i data-lucide="plus" class="btn-icon"></i>
+          Create Posting
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Posting Form Modal -->
+  <div class="modal-overlay" id="postingModal" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Create New Posting</h2>
+        <button class="modal-close" id="modalClose" aria-label="Close modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="postingForm" class="modal-body">
+        <div class="form-group">
+          <label for="postingTitle" class="form-label">Title *</label>
+          <input 
+            type="text" 
+            id="postingTitle" 
+            name="title" 
+            class="form-input" 
+            placeholder="e.g., 2020 Honda Civic"
+            required
+            aria-required="true"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="postingDescription" class="form-label">Description *</label>
+          <textarea 
+            id="postingDescription" 
+            name="description" 
+            class="form-textarea" 
+            rows="4"
+            placeholder="Describe your item in detail..."
+            required
+            aria-required="true"
+          ></textarea>
+        </div>
+
+        <div class="form-group-row">
+          <div class="form-group" style="flex: 1;">
+            <label for="postingPrice" class="form-label">Price (CAD) *</label>
+            <input 
+              type="number" 
+              id="postingPrice" 
+              name="price" 
+              class="form-input" 
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+              required
+              aria-required="true"
+            >
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label for="postingCategory" class="form-label">Category *</label>
+            <select 
+              id="postingCategory" 
+              name="category" 
+              class="form-select" 
+              required
+              aria-required="true"
+            >
+              <option value="">Select category</option>
+              <option value="Cars">Cars</option>
+              <option value="Parts">Parts</option>
+              <option value="Services">Services</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="postingLocation" class="form-label">Location</label>
+          <input 
+            type="text" 
+            id="postingLocation" 
+            name="location" 
+            class="form-input" 
+            placeholder="e.g., Toronto, ON"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="postingImage" class="form-label">Image</label>
+          <input 
+            type="file" 
+            id="postingImage" 
+            name="image" 
+            class="form-input" 
+            accept="image/*"
+          >
+          <p class="form-hint">Upload an image (max 5MB, JPEG/PNG/GIF/WebP)</p>
+          <div id="imagePreview" style="margin-top: var(--spacing-sm); display: none;">
+            <img id="previewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: var(--radius); border: 1px solid var(--color-border);">
+          </div>
+        </div>
+
+        <div class="form-message" id="formMessage" style="display: none;"></div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i data-lucide="save" class="btn-icon"></i>
+            Save Posting
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Check authentication
+    if (!requireAuth()) {
+      // Redirecting to login
+    }
+
+    // Set user menu
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      document.getElementById('userMenuName').textContent = currentUser.username;
+    }
+
+    // User menu toggle
+    const userMenuButton = document.getElementById('userMenuButton');
+    const userMenuDropdown = document.getElementById('userMenuDropdown');
+    
+    userMenuButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      userMenuDropdown.classList.toggle('show');
+    });
+
+    document.addEventListener('click', () => {
+      userMenuDropdown.classList.remove('show');
+    });
+
+    // Logout
+    document.getElementById('logoutButton').addEventListener('click', () => {
+      if (confirm('Are you sure you want to logout?')) {
+        logout();
+      }
+    });
+
+    let editingPostingId = null;
+    let allPostings = [];
+
+    // Load postings
+    async function loadPostings() {
+      try {
+        const response = await authenticatedFetch('/postings/user/my-postings');
+        const data = await response.json();
+        allPostings = data.postings || [];
+        renderPostings();
+      } catch (error) {
+        console.error('Error loading postings:', error);
+        showNotification('Failed to load postings', 'error');
+      }
+    }
+
+    // Render postings
+    function renderPostings() {
+      const list = document.getElementById('postingsList');
+      const empty = document.getElementById('emptyPostings');
+
+      if (allPostings.length === 0) {
+        list.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+
+      list.style.display = 'block';
+      empty.style.display = 'none';
+
+      list.innerHTML = allPostings.map(posting => `
+        <div class="posting-card">
+          ${posting.image_url 
+            ? `<img src="http://localhost:5000${posting.image_url}" alt="${posting.title}" class="posting-card-image">`
+            : `<div class="posting-card-image" style="background-color: #f5f5f5; display: flex; align-items: center; justify-content: center; color: var(--color-text-light);">No Image</div>`
+          }
+          <div class="posting-card-content">
+            <span class="posting-card-category">${posting.category}</span>
+            <h3 class="posting-card-title">${posting.title}</h3>
+            <p class="posting-card-description">${posting.description}</p>
+            <div style="margin-top: auto; display: flex; align-items: baseline; gap: var(--spacing-md);">
+              <p class="posting-card-price">$${parseFloat(posting.price).toFixed(2)} CAD</p>
+              ${posting.location ? `<p class="posting-card-location"><i data-lucide="map-pin" style="width: 0.875rem; height: 0.875rem; display: inline-block; vertical-align: middle;"></i> ${posting.location}</p>` : ''}
+            </div>
+            <p class="posting-card-location" style="font-size: 0.75rem; color: var(--color-text-light);">
+              Created: ${new Date(posting.created_at).toLocaleDateString()}
+            </p>
+          </div>
+          <div class="posting-card-actions">
+            <button class="btn btn-secondary" onclick="editPosting(${posting.id})">
+              <i data-lucide="edit" class="btn-icon"></i>
+              Edit
+            </button>
+            <button class="btn btn-secondary" onclick="deletePosting(${posting.id}, '${posting.title.replace(/'/g, "\\'")}')">
+              <i data-lucide="trash-2" class="btn-icon"></i>
+              Delete
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // Open create modal
+    function openPostingModal() {
+      editingPostingId = null;
+      document.getElementById('modalTitle').textContent = 'Create New Posting';
+      document.getElementById('postingForm').reset();
+      document.getElementById('imagePreview').style.display = 'none';
+      document.getElementById('postingModal').style.display = 'flex';
+    }
+
+    // Edit posting
+    async function editPosting(id) {
+      const posting = allPostings.find(p => p.id === id);
+      if (!posting) return;
+
+      editingPostingId = id;
+      document.getElementById('modalTitle').textContent = 'Edit Posting';
+      document.getElementById('postingTitle').value = posting.title;
+      document.getElementById('postingDescription').value = posting.description;
+      document.getElementById('postingPrice').value = posting.price;
+      document.getElementById('postingCategory').value = posting.category;
+      document.getElementById('postingLocation').value = posting.location || '';
+
+      if (posting.image_url) {
+        document.getElementById('previewImg').src = `http://localhost:5000${posting.image_url}`;
+        document.getElementById('imagePreview').style.display = 'block';
+      }
+
+      document.getElementById('postingModal').style.display = 'flex';
+    }
+
+    // Delete posting
+    async function deletePosting(id, title) {
+      if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        const response = await authenticatedFetch(`/postings/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete posting');
+        }
+
+        showNotification('Posting deleted successfully', 'success');
+        await loadPostings();
+      } catch (error) {
+        console.error('Error deleting posting:', error);
+        showNotification('Failed to delete posting', 'error');
+      }
+    }
+
+    // Image preview
+    document.getElementById('postingImage').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('previewImg').src = e.target.result;
+          document.getElementById('imagePreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Form submission
+    document.getElementById('postingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const isEdit = editingPostingId !== null;
+      const url = isEdit 
+        ? `http://localhost:5000/api/postings/${editingPostingId}`
+        : 'http://localhost:5000/api/postings';
+
+      const submitBtn = document.getElementById('submitBtn');
+      const formMessage = document.getElementById('formMessage');
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i data-lucide="loader-2" class="btn-icon"></i> Saving...';
+      lucide.createIcons();
+      formMessage.style.display = 'none';
+
+      try {
+        const token = getAuthToken();
+        const headers = {
+          'Authorization': `Bearer ${token}`
+        };
+
+        const response = await fetch(url, {
+          method: isEdit ? 'PUT' : 'POST',
+          headers: headers,
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to save posting');
+        }
+
+        showNotification(isEdit ? 'Posting updated successfully!' : 'Posting created successfully!', 'success');
+        closePostingModal();
+        await loadPostings();
+      } catch (error) {
+        console.error('Error saving posting:', error);
+        formMessage.textContent = error.message || 'Failed to save posting. Please try again.';
+        formMessage.className = 'form-message form-message-error';
+        formMessage.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="save" class="btn-icon"></i> Save Posting';
+        lucide.createIcons();
+      }
+    });
+
+    // Close modal
+    function closePostingModal() {
+      document.getElementById('postingModal').style.display = 'none';
+      document.getElementById('postingForm').reset();
+      editingPostingId = null;
+    }
+
+    document.getElementById('modalClose').addEventListener('click', closePostingModal);
+    document.getElementById('cancelBtn').addEventListener('click', closePostingModal);
+    document.getElementById('createPostingBtn').addEventListener('click', openPostingModal);
+
+    // Close modal on overlay click
+    document.getElementById('postingModal').addEventListener('click', (e) => {
+      if (e.target.id === 'postingModal') {
+        closePostingModal();
+      }
+    });
+
+    // Notification function
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      notification.textContent = message;
+      notification.style.backgroundColor = type === 'success' ? '#155724' : '#c53030';
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    // Export functions globally
+    window.openPostingModal = openPostingModal;
+    window.editPosting = editPosting;
+    window.deletePosting = deletePosting;
+
+    // Load postings on page load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadPostings);
+    } else {
+      loadPostings();
+    }
+  </script>
+</body>
+</html>
+

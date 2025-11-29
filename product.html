@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Product details - Autoilty Marketplace">
+  <title>Product Details - Autoilty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="marketplace.html" class="nav-link">Marketplace</a>
+          <a href="create-listing.html" class="nav-link">Create Listing</a>
+          <button class="cart-toggle" aria-label="Shopping cart" id="cartToggle">
+            <i data-lucide="shopping-cart"></i>
+            <span class="cart-badge" id="cartBadge">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-container">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Home</a>
+        <i data-lucide="chevron-right" class="breadcrumb-separator"></i>
+        <a href="marketplace.html">Marketplace</a>
+        <i data-lucide="chevron-right" class="breadcrumb-separator"></i>
+        <span id="breadcrumbProduct">Product</span>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Product Detail -->
+  <main class="product-detail-container">
+    <div class="container">
+      <div id="loadingState" class="loading-state">
+        <div class="skeleton-product"></div>
+      </div>
+      
+      <div id="productContent" class="product-detail" style="display: none;">
+        <div class="product-detail-image">
+          <img id="productImage" src="" alt="" loading="lazy">
+        </div>
+        
+        <div class="product-detail-info">
+          <span class="product-detail-category" id="productCategory"></span>
+          <h1 class="product-detail-name" id="productName"></h1>
+          <p class="product-detail-price" id="productPrice"></p>
+          
+          <div class="product-detail-description" id="productDescription"></div>
+          
+          <!-- Size selector (clothing only) -->
+          <div class="size-selector" id="sizeSelector" style="display: none;">
+            <label class="size-label">Size</label>
+            <div class="size-options" id="sizeOptions"></div>
+          </div>
+          
+          <!-- Quantity -->
+          <div class="quantity-selector">
+            <label class="quantity-label">Quantity</label>
+            <div class="quantity-controls">
+              <button class="quantity-btn" id="quantityDecrease" aria-label="Decrease quantity">
+                <i data-lucide="minus"></i>
+              </button>
+              <input type="number" id="quantityInput" class="quantity-input" value="1" min="1" aria-label="Quantity">
+              <button class="quantity-btn" id="quantityIncrease" aria-label="Increase quantity">
+                <i data-lucide="plus"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="product-actions">
+            <button class="btn btn-primary btn-full" id="addToCartBtn">
+              Add to Cart
+            </button>
+            <button class="btn btn-secondary btn-full" id="buyNowBtn">
+              Buy Now
+            </button>
+          </div>
+          
+          <a href="marketplace.html" class="back-link">
+            <i data-lucide="arrow-left" class="back-icon"></i>
+            Back to Marketplace
+          </a>
+        </div>
+      </div>
+      
+      <div id="errorState" class="error-state" style="display: none;">
+        <h2>Product Not Found</h2>
+        <p>The product you're looking for doesn't exist.</p>
+        <a href="marketplace.html" class="btn btn-primary">Back to Marketplace</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Cart Drawer -->
+  <div class="cart-drawer" id="cartDrawer" aria-hidden="true">
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-content">
+      <div class="cart-header">
+        <h2>Your Cart</h2>
+        <button class="cart-close" id="cartClose" aria-label="Close cart">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="cart-items" id="cartItems">
+        <!-- Cart items loaded dynamically -->
+      </div>
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>Total:</span>
+          <span class="cart-total-amount" id="cartTotal">$0.00 CAD</span>
+        </div>
+        <a href="cart.html" class="btn btn-primary btn-full">Checkout</a>
+        <button class="btn btn-secondary btn-full" id="continueShopping">Continue Shopping</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js" defer></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Get product ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    
+    let currentProduct = null;
+    let selectedSize = null;
+    let quantity = 1;
+    
+    // Load product
+    async function loadProduct() {
+      if (!productId) {
+        showError();
+        return;
+      }
+      
+      const products = await getProducts();
+      currentProduct = products.find(p => p.id === productId);
+      
+      if (!currentProduct) {
+        showError();
+        return;
+      }
+      
+      // Render product
+      document.getElementById('productImage').src = currentProduct.image;
+      document.getElementById('productImage').alt = currentProduct.name;
+      document.getElementById('productName').textContent = currentProduct.name;
+      document.getElementById('productPrice').textContent = `$${currentProduct.price.toFixed(2)} CAD`;
+      document.getElementById('productCategory').textContent = currentProduct.category === 'auto' ? 'AUTO' : 'APPAREL';
+      document.getElementById('productDescription').textContent = currentProduct.description || 'No description available.';
+      document.getElementById('breadcrumbProduct').textContent = currentProduct.name;
+      
+      // Size selector (clothing only)
+      if (currentProduct.category === 'clothing' && currentProduct.sizes && currentProduct.sizes.length > 0) {
+        const sizeSelector = document.getElementById('sizeSelector');
+        const sizeOptions = document.getElementById('sizeOptions');
+        sizeSelector.style.display = 'block';
+        
+        sizeOptions.innerHTML = currentProduct.sizes.map(size => `
+          <button class="size-option" data-size="${size}">${size}</button>
+        `).join('');
+        
+        // Select first size by default
+        selectedSize = currentProduct.sizes[0];
+        sizeOptions.querySelector('.size-option').classList.add('active');
+        
+        sizeOptions.querySelectorAll('.size-option').forEach(btn => {
+          btn.addEventListener('click', () => {
+            sizeOptions.querySelectorAll('.size-option').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedSize = btn.dataset.size;
+          });
+        });
+      }
+      
+      // Quantity controls
+      document.getElementById('quantityDecrease').addEventListener('click', () => {
+        if (quantity > 1) {
+          quantity--;
+          document.getElementById('quantityInput').value = quantity;
+        }
+      });
+      
+      document.getElementById('quantityIncrease').addEventListener('click', () => {
+        quantity++;
+        document.getElementById('quantityInput').value = quantity;
+      });
+      
+      document.getElementById('quantityInput').addEventListener('change', (e) => {
+        quantity = Math.max(1, parseInt(e.target.value) || 1);
+        e.target.value = quantity;
+      });
+      
+      // Add to cart
+      document.getElementById('addToCartBtn').addEventListener('click', () => {
+        if (currentProduct.category === 'clothing' && !selectedSize) {
+          showNotification('Please select a size');
+          return;
+        }
+        
+        for (let i = 0; i < quantity; i++) {
+          const productToAdd = { ...currentProduct };
+          if (selectedSize) {
+            productToAdd.selectedSize = selectedSize;
+          }
+          addToCart(productToAdd);
+        }
+        
+        showNotification('Added to cart!');
+        updateCartUI();
+      });
+      
+      // Buy now
+      document.getElementById('buyNowBtn').addEventListener('click', async () => {
+        if (currentProduct.category === 'clothing' && !selectedSize) {
+          showNotification('Please select a size');
+          return;
+        }
+        
+        // Add to cart first
+        for (let i = 0; i < quantity; i++) {
+          const productToAdd = { ...currentProduct };
+          if (selectedSize) {
+            productToAdd.selectedSize = selectedSize;
+          }
+          addToCart(productToAdd);
+        }
+        
+        // Redirect to checkout
+        window.location.href = 'cart.html';
+      });
+      
+      // Hide loading, show content
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('productContent').style.display = 'grid';
+      lucide.createIcons();
+    }
+    
+    function showError() {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorState').style.display = 'block';
+    }
+    
+    // Load on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadProduct);
+    } else {
+      loadProduct();
+    }
+  </script>
+</body>
+</html>
+

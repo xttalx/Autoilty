@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/product",
+      "destination": "/product.html"
+    },
+    {
+      "source": "/cart",
+      "destination": "/cart.html"
+    },
+    {
+      "source": "/create-listing",
+      "destination": "/create-listing.html"
+    },
+    {
+      "source": "/api/checkout",
+      "destination": "/api/checkout.js"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "api/checkout.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
+

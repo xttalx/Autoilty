@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Register for Autoilty Marketplace">
+  <title>Register - Autoilty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="marketplace.html" class="nav-link">Marketplace</a>
+          <a href="login.html" class="nav-link">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Register Form -->
+  <main class="auth-page">
+    <div class="container">
+      <div class="auth-container">
+        <div class="auth-header">
+          <h1 class="auth-title">Create Account</h1>
+          <p class="auth-subtitle">Join Autoilty Marketplace today</p>
+        </div>
+
+        <form id="registerForm" class="auth-form">
+          <div class="form-group">
+            <label for="username" class="form-label">Username *</label>
+            <input 
+              type="text" 
+              id="username" 
+              name="username" 
+              class="form-input" 
+              placeholder="Choose a username"
+              required
+              autocomplete="username"
+              minlength="3"
+              aria-required="true"
+            >
+            <p class="form-hint">At least 3 characters</p>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email *</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              class="form-input" 
+              placeholder="your.email@example.com"
+              required
+              autocomplete="email"
+              aria-required="true"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password *</label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              class="form-input" 
+              placeholder="Create a password"
+              required
+              autocomplete="new-password"
+              minlength="6"
+              aria-required="true"
+            >
+            <p class="form-hint">At least 6 characters</p>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">Confirm Password *</label>
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              name="confirmPassword" 
+              class="form-input" 
+              placeholder="Confirm your password"
+              required
+              autocomplete="new-password"
+              aria-required="true"
+            >
+          </div>
+
+          <div class="form-message" id="formMessage" style="display: none;"></div>
+
+          <button type="submit" class="btn btn-primary btn-full" id="submitBtn">
+            <i data-lucide="user-plus" class="btn-icon"></i>
+            Create Account
+          </button>
+
+          <div class="auth-footer">
+            <p class="auth-text">
+              Already have an account? 
+              <a href="login.html" class="auth-link">Login here</a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script src="auth.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    const form = document.getElementById('registerForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const formMessage = document.getElementById('formMessage');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      // Validation
+      if (!username || !email || !password || !confirmPassword) {
+        showMessage('Please fill in all fields', 'error');
+        return;
+      }
+
+      if (username.length < 3) {
+        showMessage('Username must be at least 3 characters', 'error');
+        return;
+      }
+
+      if (password.length < 6) {
+        showMessage('Password must be at least 6 characters', 'error');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showMessage('Passwords do not match', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i data-lucide="loader-2" class="btn-icon"></i> Creating Account...';
+      lucide.createIcons();
+
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Registration failed');
+        }
+
+        // Save token and user data
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('auth_user', JSON.stringify(data.user));
+
+        showMessage('Account created successfully! Redirecting...', 'success');
+        
+        // Redirect to marketplace
+        setTimeout(() => {
+          window.location.href = 'marketplace.html';
+        }, 1000);
+
+      } catch (error) {
+        console.error('Register error:', error);
+        showMessage(error.message || 'Registration failed. Please try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="user-plus" class="btn-icon"></i> Create Account';
+        lucide.createIcons();
+      }
+    });
+
+    function showMessage(message, type) {
+      formMessage.textContent = message;
+      formMessage.className = `form-message form-message-${type}`;
+      formMessage.style.display = 'block';
+      formMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      if (type === 'success') {
+        setTimeout(() => {
+          formMessage.style.display = 'none';
+        }, 3000);
+      }
+    }
+
+    // Check if already logged in
+    if (isAuthenticated()) {
+      window.location.href = 'marketplace.html';
+    }
+  </script>
+</body>
+</html>
+

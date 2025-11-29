@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Shopping cart - Autoilty Marketplace">
+  <title>Cart - Autoilty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="marketplace.html" class="nav-link">Marketplace</a>
+          <a href="create-listing.html" class="nav-link">Create Listing</a>
+          <button class="cart-toggle active" aria-label="Shopping cart" id="cartToggle">
+            <i data-lucide="shopping-cart"></i>
+            <span class="cart-badge" id="cartBadge">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Cart Page -->
+  <main class="cart-page">
+    <div class="container">
+      <h1 class="page-title">Your Cart</h1>
+      
+      <div id="emptyCart" class="empty-cart" style="display: none;">
+        <i data-lucide="shopping-cart" class="empty-cart-icon"></i>
+        <h2>Your cart is empty</h2>
+        <p>Start shopping to add items to your cart.</p>
+        <a href="marketplace.html" class="btn btn-primary">Browse Marketplace</a>
+      </div>
+      
+      <div id="cartContent" class="cart-page-content">
+        <div class="cart-items-list" id="cartItemsList">
+          <!-- Cart items loaded dynamically -->
+        </div>
+        
+        <div class="cart-summary">
+          <h2 class="summary-title">Order Summary</h2>
+          
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span id="subtotal">$0.00 CAD</span>
+          </div>
+          
+          <div class="summary-row">
+            <span>Tax (estimate)</span>
+            <span id="tax">$0.00 CAD</span>
+          </div>
+          
+          <div class="summary-row summary-total">
+            <span>Total</span>
+            <span id="total">$0.00 CAD</span>
+          </div>
+          
+          <button class="btn btn-primary btn-full" id="checkoutBtn" disabled>
+            Proceed to Checkout
+          </button>
+          
+          <a href="marketplace.html" class="continue-shopping-link">
+            <i data-lucide="arrow-left" class="back-icon"></i>
+            Continue Shopping
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js" defer></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Load cart
+    function loadCart() {
+      const cart = getCart();
+      
+      if (cart.length === 0) {
+        document.getElementById('emptyCart').style.display = 'block';
+        document.getElementById('cartContent').style.display = 'none';
+        document.getElementById('checkoutBtn').disabled = true;
+        return;
+      }
+      
+      document.getElementById('emptyCart').style.display = 'none';
+      document.getElementById('cartContent').style.display = 'grid';
+      
+      // Render cart items
+      const itemsList = document.getElementById('cartItemsList');
+      itemsList.innerHTML = cart.map((item, index) => `
+        <div class="cart-item">
+          <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+          <div class="cart-item-info">
+            <h3 class="cart-item-name">${item.name}</h3>
+            ${item.selectedSize ? `<p class="cart-item-size">Size: ${item.selectedSize}</p>` : ''}
+            <p class="cart-item-price">$${item.price.toFixed(2)} CAD</p>
+          </div>
+          <div class="cart-item-controls">
+            <button class="cart-item-remove" data-index="${index}" aria-label="Remove ${item.name}">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      
+      lucide.createIcons();
+      
+      // Remove item handlers
+      document.querySelectorAll('.cart-item-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const index = parseInt(btn.dataset.index);
+          removeFromCart(index);
+          loadCart();
+          updateCartUI();
+        });
+      });
+      
+      // Calculate totals
+      const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+      const tax = subtotal * 0.13; // 13% HST estimate
+      const total = subtotal + tax;
+      
+      document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)} CAD`;
+      document.getElementById('tax').textContent = `$${tax.toFixed(2)} CAD`;
+      document.getElementById('total').textContent = `$${total.toFixed(2)} CAD`;
+      
+      document.getElementById('checkoutBtn').disabled = false;
+    }
+    
+    // Checkout
+    document.getElementById('checkoutBtn').addEventListener('click', async () => {
+      const cart = getCart();
+      if (cart.length === 0) return;
+      
+      const btn = document.getElementById('checkoutBtn');
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+      
+      try {
+        const response = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ cart }),
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('No checkout URL received');
+        }
+      } catch (error) {
+        console.error('Checkout error:', error);
+        alert('Checkout failed. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Proceed to Checkout';
+      }
+    });
+    
+    // Load on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadCart);
+    } else {
+      loadCart();
+    }
+  </script>
+</body>
+</html>
+

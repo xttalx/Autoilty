@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Autoilty Marketplace - Premium auto care products and branded gear for detailers. Quality automotive detailing supplies and apparel.">
+  <meta property="og:title" content="Autoilty Marketplace - Premium Auto Care & Branded Gear">
+  <meta property="og:description" content="Premium auto care. Branded gear. Built for detailers.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://autoilty.com">
+  <title>Autoilty Marketplace - Premium Auto Care & Branded Gear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link active">Home</a>
+          <a href="marketplace.html" class="nav-link">Marketplace</a>
+          <a href="create-listing.html" class="nav-link">Create Listing</a>
+          <button class="cart-toggle" aria-label="Shopping cart" id="cartToggle">
+            <i data-lucide="shopping-cart"></i>
+            <span class="cart-badge" id="cartBadge">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" aria-label="Hero section">
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="hero-title">Autoilty Marketplace</h1>
+        <p class="hero-subtitle">Premium auto care. Branded gear. Built for detailers.</p>
+        <a href="marketplace.html" class="btn btn-primary" aria-label="Explore marketplace">
+          Explore Marketplace
+          <i data-lucide="arrow-right" class="btn-icon"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Business Directory Search -->
+  <section class="directory-section" aria-label="Find local businesses">
+    <div class="container">
+      <h2 class="section-title">Find Local Auto Businesses</h2>
+      <p class="section-subtitle" style="text-align: center; color: var(--color-text-light); margin-bottom: var(--spacing-xl);">
+        Search for auto repair shops, detailers, parts stores, and more in your area
+      </p>
+
+      <div class="directory-search-container">
+        <form id="directorySearchForm" class="directory-search-form">
+          <div class="search-form-row">
+            <div class="form-group" style="flex: 1;">
+              <label for="searchKeyword" class="form-label">What are you looking for?</label>
+              <input 
+                type="text" 
+                id="searchKeyword" 
+                name="keyword" 
+                class="form-input" 
+                placeholder="e.g., detailing, tuning, auto parts"
+                autocomplete="off"
+              >
+            </div>
+
+            <div class="form-group" style="flex: 1;">
+              <label for="searchLocation" class="form-label">Location</label>
+              <input 
+                type="text" 
+                id="searchLocation" 
+                name="location" 
+                class="form-input" 
+                placeholder="City, ZIP, or use my location"
+                autocomplete="off"
+              >
+            </div>
+
+            <div class="form-group" style="flex: 0 0 120px;">
+              <label class="form-label" style="visibility: hidden;">Use Location</label>
+              <button type="button" class="btn btn-secondary" id="useLocationBtn" style="width: 100%;">
+                <i data-lucide="map-pin" class="btn-icon"></i>
+                Use My Location
+              </button>
+            </div>
+          </div>
+
+          <div class="search-form-row">
+            <div class="form-group" style="flex: 1;">
+              <label for="searchCategory" class="form-label">Category (Optional)</label>
+              <select id="searchCategory" name="category" class="form-select">
+                <option value="">All Categories</option>
+                <option value="Regular Maintenance">Regular Maintenance</option>
+                <option value="Detailing">Detailing</option>
+                <option value="Custom Builds">Custom Builds</option>
+                <option value="Tuning">Tuning</option>
+                <option value="Wheels and Tires">Wheels and Tires</option>
+                <option value="Auto Parts Yard">Auto Parts Yard</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="flex: 0 0 150px;">
+              <label for="distanceUnit" class="form-label">Distance Unit</label>
+              <select id="distanceUnit" name="unit" class="form-select">
+                <option value="miles">Miles</option>
+                <option value="km">Kilometers</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="flex: 0 0 150px;">
+              <label class="form-label" style="visibility: hidden;">Search</label>
+              <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <i data-lucide="search" class="btn-icon"></i>
+                Search
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div id="directoryLoading" class="loading-state" style="display: none;">
+          <div class="loading-spinner"></div>
+          <p>Searching for businesses...</p>
+        </div>
+
+        <div id="directoryError" class="error-state" style="display: none;"></div>
+
+        <div id="directoryResults" class="businesses-grid" style="display: none;">
+          <!-- Business cards loaded dynamically -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products -->
+  <section class="featured" aria-label="Featured products">
+    <div class="container">
+      <h2 class="section-title">Featured Products</h2>
+      <div class="products-grid" id="featuredProducts">
+        <!-- Products loaded dynamically -->
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 class="footer-title">Autoilty</h3>
+          <p class="footer-text">Premium automotive detailing products and branded gear.</p>
+        </div>
+        <div class="footer-section">
+          <h4 class="footer-heading">Links</h4>
+          <ul class="footer-links">
+            <li><a href="marketplace.html">Marketplace</a></li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><a href="mailto:contact@autoilty.com">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Autoilty. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cart Drawer -->
+  <div class="cart-drawer" id="cartDrawer" aria-hidden="true">
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-content">
+      <div class="cart-header">
+        <h2>Your Cart</h2>
+        <button class="cart-close" id="cartClose" aria-label="Close cart">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="cart-items" id="cartItems">
+        <!-- Cart items loaded dynamically -->
+      </div>
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>Total:</span>
+          <span class="cart-total-amount" id="cartTotal">$0.00 CAD</span>
+        </div>
+        <a href="cart.html" class="btn btn-primary btn-full">Checkout</a>
+        <button class="btn btn-secondary btn-full" id="continueShopping">Continue Shopping</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="directory.js"></script>
+  <script>
+    // Wait for script.js to load
+    async function loadFeaturedProducts() {
+      // Wait a bit for script.js to initialize
+      if (typeof getProducts === 'undefined') {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Initialize Lucide icons if available
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+      try {
+        const grid = document.getElementById('featuredProducts');
+        
+        // Show loading state
+        if (grid) {
+          grid.innerHTML = `
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          `;
+        }
+        
+        // Get products (this should always return fallback products)
+        let products = [];
+        try {
+          if (typeof getProducts === 'function') {
+            products = await getProducts();
+          } else {
+            // If getProducts isn't loaded yet, use fallback directly
+            products = window.FALLBACK_PRODUCTS || [];
+          }
+        } catch (error) {
+          console.warn('Error loading products, using fallback:', error);
+          products = window.FALLBACK_PRODUCTS || [];
+        }
+        
+        if (!products || products.length === 0) {
+          if (grid) {
+            grid.innerHTML = '<p class="empty-state">No products available. Please check your connection.</p>';
+          }
+          return;
+        }
+        
+        const featured = products.filter(p => p && p.featured).slice(0, 4);
+        
+        if (!grid) {
+          console.error('Featured products grid not found');
+          return;
+        }
+        
+        if (featured.length === 0) {
+          // If no featured products, show all products
+          const allProducts = products.slice(0, 4);
+          grid.innerHTML = allProducts.map(product => `
+            <div class="product-card" data-product-id="${product.id}">
+              <div class="product-image">
+                <img src="${product.image || 'https://via.placeholder.com/400'}" alt="${product.name || 'Product'}" loading="lazy" onerror="this.src='https://via.placeholder.com/400'">
+              </div>
+              <div class="product-info">
+                <span class="product-category">${product.category === 'auto' ? 'AUTO' : 'APPAREL'}</span>
+                <h3 class="product-name">${product.name || 'Unnamed Product'}</h3>
+                <p class="product-price">$${(product.price || 0).toFixed(2)} CAD</p>
+                <button class="btn-quick-add" data-product-id="${product.id}" aria-label="Add ${product.name} to cart">
+                  Quick Add
+                </button>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          grid.innerHTML = featured.map(product => `
+            <div class="product-card" data-product-id="${product.id}">
+              <div class="product-image">
+                <img src="${product.image || 'https://via.placeholder.com/400'}" alt="${product.name || 'Product'}" loading="lazy" onerror="this.src='https://via.placeholder.com/400'">
+              </div>
+              <div class="product-info">
+                <span class="product-category">${product.category === 'auto' ? 'AUTO' : 'APPAREL'}</span>
+                <h3 class="product-name">${product.name || 'Unnamed Product'}</h3>
+                <p class="product-price">$${(product.price || 0).toFixed(2)} CAD</p>
+                <button class="btn-quick-add" data-product-id="${product.id}" aria-label="Add ${product.name} to cart">
+                  Quick Add
+                </button>
+              </div>
+            </div>
+          `).join('');
+        }
+        
+        // Re-initialize icons for dynamically added content
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+        
+        // Add click handlers
+        document.querySelectorAll('.product-card').forEach(card => {
+          card.addEventListener('click', (e) => {
+            if (!e.target.closest('.btn-quick-add')) {
+              const productId = card.dataset.productId;
+              if (productId) {
+                window.location.href = `product.html?id=${productId}`;
+              }
+            }
+          });
+        });
+        
+        document.querySelectorAll('.btn-quick-add').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const productId = btn.dataset.productId;
+            const product = products.find(p => p && p.id === productId);
+            if (product) {
+              if (typeof addToCart === 'function') {
+                addToCart(product);
+              }
+              if (typeof showNotification === 'function') {
+                showNotification('Added to cart!');
+              }
+            }
+          });
+        });
+      } catch (error) {
+        console.error('Error loading featured products:', error);
+        const grid = document.getElementById('featuredProducts');
+        if (grid) {
+          grid.innerHTML = '<p class="empty-state">Error loading products. Please refresh the page.</p>';
+        }
+      }
+    }
+    
+    // Load on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadFeaturedProducts);
+    } else {
+      loadFeaturedProducts();
+    }
+
+    // ============================================
+    // BUSINESS DIRECTORY SEARCH
+    // ============================================
+    
+    const directoryForm = document.getElementById('directorySearchForm');
+    const directoryResults = document.getElementById('directoryResults');
+    const directoryLoading = document.getElementById('directoryLoading');
+    const directoryError = document.getElementById('directoryError');
+    const useLocationBtn = document.getElementById('useLocationBtn');
+    const distanceUnitSelect = document.getElementById('distanceUnit');
+
+    // Set distance unit
+    if (typeof window.distanceUnit !== 'undefined') {
+      distanceUnit = window.distanceUnit;
+    }
+
+    // Update distance unit
+    distanceUnitSelect.addEventListener('change', (e) => {
+      distanceUnit = e.target.value;
+      window.distanceUnit = distanceUnit;
+      // Re-render results if they exist
+      const existingBusinesses = window.currentBusinesses;
+      if (existingBusinesses && existingBusinesses.length > 0) {
+        renderBusinessGrid(existingBusinesses, directoryResults);
+      }
+    });
+
+    // Use location button
+    useLocationBtn.addEventListener('click', async () => {
+      const locationInput = document.getElementById('searchLocation');
+      useLocationBtn.disabled = true;
+      useLocationBtn.innerHTML = '<i data-lucide="loader-2" class="btn-icon"></i> Getting Location...';
+      lucide.createIcons();
+
+      try {
+        const location = await getUserLocation();
+        locationInput.value = `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+        locationInput.placeholder = 'Using your location';
+        showNotification('Location detected!');
+      } catch (error) {
+        console.error('Geolocation error:', error);
+        showNotification('Unable to get your location. Please enter a city or ZIP code.', 'error');
+      } finally {
+        useLocationBtn.disabled = false;
+        useLocationBtn.innerHTML = '<i data-lucide="map-pin" class="btn-icon"></i> Use My Location';
+        lucide.createIcons();
+      }
+    });
+
+    // Form submission
+    directoryForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const keyword = document.getElementById('searchKeyword').value.trim();
+      const location = document.getElementById('searchLocation').value.trim();
+      const category = document.getElementById('searchCategory').value;
+      distanceUnit = distanceUnitSelect.value;
+
+      // Validation
+      if (!keyword && !category) {
+        showError('Please enter a keyword or select a category');
+        return;
+      }
+
+      if (!location) {
+        // Try to use geolocation
+        try {
+          await getUserLocation();
+        } catch (error) {
+          showError('Please enter a location or click "Use My Location"');
+          return;
+        }
+      }
+
+      // Hide previous results and errors
+      directoryResults.style.display = 'none';
+      directoryError.style.display = 'none';
+      directoryLoading.style.display = 'block';
+
+      try {
+        const searchParams = {
+          keyword,
+          location,
+          category
+        };
+
+        const result = await searchBusinesses(searchParams);
+
+        directoryLoading.style.display = 'none';
+
+        if (!result.businesses || result.businesses.length === 0) {
+          showError(result.message || 'No businesses found. Try adjusting your search criteria.');
+          return;
+        }
+
+        // Store businesses for re-rendering with different units
+        window.currentBusinesses = result.businesses;
+
+        // Render results
+        renderBusinessGrid(result.businesses, directoryResults);
+        directoryResults.style.display = 'grid';
+
+        // Scroll to results
+        directoryResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      } catch (error) {
+        console.error('Search error:', error);
+        directoryLoading.style.display = 'none';
+        showError(error.message || 'Failed to search businesses. Please try again.');
+      }
+    });
+
+    function showError(message) {
+      directoryError.textContent = message;
+      directoryError.style.display = 'block';
+      directoryError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  </script>
+</body>
+</html>

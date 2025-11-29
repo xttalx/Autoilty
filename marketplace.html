@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse Autoilty's complete marketplace - automotive detailing products and branded apparel for professionals.">
+  <meta property="og:title" content="Autoilty Marketplace - Browse All Products">
+  <meta property="og:description" content="Complete selection of premium auto care products and branded gear.">
+  <meta property="og:type" content="website">
+  <title>Marketplace - Autoilty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="marketplace.html" class="nav-link active">Marketplace</a>
+          <a href="my-postings.html" class="nav-link" id="myPostingsLink" style="display: none;">My Postings</a>
+          <a href="my-postings.html" class="btn btn-secondary" id="createPostingBtn" style="display: none;">
+            <i data-lucide="plus" class="btn-icon"></i>
+            Create Posting
+          </a>
+          <a href="login.html?return=marketplace.html" class="btn btn-secondary" id="createPostingLoginBtn">
+            <i data-lucide="plus" class="btn-icon"></i>
+            Create Posting
+          </a>
+          <div class="user-menu" id="userMenu" style="display: none;">
+            <button class="user-menu-button" id="userMenuButton">
+              <span id="userMenuName">User</span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="user-menu-dropdown" id="userMenuDropdown">
+              <a href="my-postings.html" class="user-menu-item">
+                <i data-lucide="list" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                My Postings
+              </a>
+              <button class="user-menu-item danger" id="logoutButton" style="width: 100%; text-align: left; border: none; cursor: pointer;">
+                <i data-lucide="log-out" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+          <a href="login.html?return=marketplace.html" class="nav-link" id="loginLink">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sticky Search Bar -->
+  <div class="search-bar-container" role="search">
+    <div class="container">
+      <div class="search-bar">
+        <i data-lucide="search" class="search-icon"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          class="search-input" 
+          placeholder="Search products..."
+          aria-label="Search products"
+          autocomplete="off"
+        >
+        <button class="search-clear" id="searchClear" aria-label="Clear search" style="display: none;">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <section class="filters-section">
+    <div class="container">
+      <div class="filter-tabs" role="tablist">
+        <button class="filter-tab active" data-filter="all" role="tab" aria-selected="true">All</button>
+        <button class="filter-tab" data-filter="Cars" role="tab" aria-selected="false">Cars</button>
+        <button class="filter-tab" data-filter="Parts" role="tab" aria-selected="false">Parts</button>
+        <button class="filter-tab" data-filter="Services" role="tab" aria-selected="false">Services</button>
+        <button class="filter-tab" data-filter="Other" role="tab" aria-selected="false">Other</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Create Posting CTA -->
+  <section class="cta-section" style="padding: var(--spacing-xl) 0; border-bottom: 1px solid var(--color-border); background-color: #fafafa;">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md);">
+        <div>
+          <h3 style="margin-bottom: var(--spacing-xs);">Have something to sell?</h3>
+          <p style="color: var(--color-text-light); margin: 0;">Create a listing and reach buyers in your area</p>
+        </div>
+        <button class="btn btn-primary" id="createPostingCtaBtn">
+          <i data-lucide="plus" class="btn-icon"></i>
+          Create Posting
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Grid -->
+  <main class="main-content">
+    <div class="container">
+      <div class="products-grid" id="productsGrid">
+        <!-- Products loaded dynamically -->
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <p>No products found. Try adjusting your filters.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Floating Cart Button -->
+  <button class="floating-cart-btn" id="floatingCartBtn" aria-label="Open shopping cart">
+    <i data-lucide="shopping-cart"></i>
+    <span class="floating-cart-badge" id="floatingCartBadge">0</span>
+  </button>
+
+  <!-- Cart Drawer -->
+  <div class="cart-drawer" id="cartDrawer" aria-hidden="true">
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-content">
+      <div class="cart-header">
+        <h2>Your Cart</h2>
+        <button class="cart-close" id="cartClose" aria-label="Close cart">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="cart-items" id="cartItems">
+        <!-- Cart items loaded dynamically -->
+      </div>
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>Total:</span>
+          <span class="cart-total-amount" id="cartTotal">$0.00 CAD</span>
+        </div>
+        <a href="cart.html" class="btn btn-primary btn-full">Checkout</a>
+        <button class="btn btn-secondary btn-full" id="continueShopping">Continue Shopping</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="marketplace-api.js"></script>
+  <script src="script.js" defer></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Setup user menu and navigation based on auth status
+    const currentUser = getCurrentUser();
+    const userMenu = document.getElementById('userMenu');
+    const loginLink = document.getElementById('loginLink');
+    const myPostingsLink = document.getElementById('myPostingsLink');
+    const createPostingBtn = document.getElementById('createPostingBtn');
+    const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
+    
+    if (currentUser && isAuthenticated()) {
+      // User is logged in - show user menu and create posting button
+      userMenu.style.display = 'block';
+      loginLink.style.display = 'none';
+      myPostingsLink.style.display = 'block';
+      createPostingBtn.style.display = 'inline-flex';
+      createPostingLoginBtn.style.display = 'none';
+      
+      document.getElementById('userMenuName').textContent = currentUser.username;
+      
+      // User menu toggle
+      document.getElementById('userMenuButton').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('userMenuDropdown').classList.toggle('show');
+      });
+      
+      document.addEventListener('click', () => {
+        document.getElementById('userMenuDropdown').classList.remove('show');
+      });
+      
+      // Logout
+      document.getElementById('logoutButton').addEventListener('click', () => {
+        if (confirm('Are you sure you want to logout?')) {
+          logout();
+        }
+      });
+
+      // Create posting CTA button - redirects to my-postings
+      document.getElementById('createPostingCtaBtn').addEventListener('click', () => {
+        window.location.href = 'my-postings.html';
+      });
+    } else {
+      // User is not logged in - show login link and create posting button that redirects to login
+      userMenu.style.display = 'none';
+      loginLink.style.display = 'block';
+      myPostingsLink.style.display = 'none';
+      createPostingBtn.style.display = 'none';
+      createPostingLoginBtn.style.display = 'inline-flex';
+
+      // Create posting CTA button - redirects to login
+      document.getElementById('createPostingCtaBtn').addEventListener('click', () => {
+        window.location.href = 'login.html?return=my-postings.html';
+      });
+    }
+
+    // Create posting button in nav - redirects based on auth status
+    if (createPostingBtn) {
+      createPostingBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'my-postings.html';
+      });
+    }
+    
+    let allPostings = [];
+    let filteredPostings = [];
+    let searchTimeout;
+    let currentPage = 1;
+    let totalPages = 1;
+    
+    // Load all postings from API
+    async function loadPostings() {
+      try {
+        const grid = document.getElementById('productsGrid');
+        grid.innerHTML = `
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        `;
+        
+        const data = await fetchPostings({ page: currentPage, limit: 20 });
+        allPostings = data.postings || [];
+        filteredPostings = [...allPostings];
+        totalPages = data.pagination?.totalPages || 1;
+        renderPostings();
+      } catch (error) {
+        console.error('Error loading postings:', error);
+        document.getElementById('productsGrid').innerHTML = '<p class="empty-state">Error loading postings. Please refresh the page.</p>';
+      }
+    }
+    
+    // Render postings
+    function renderPostings() {
+      const grid = document.getElementById('productsGrid');
+      const emptyState = document.getElementById('emptyState');
+      
+      if (filteredPostings.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+      
+      grid.style.display = 'grid';
+      emptyState.style.display = 'none';
+      
+      renderPostingsAsProducts(filteredPostings, grid);
+    }
+    
+    // Notification helper
+    function showNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+    
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const searchClear = document.getElementById('searchClear');
+    
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      const query = e.target.value.toLowerCase().trim();
+      
+      if (query) {
+        searchClear.style.display = 'block';
+      } else {
+        searchClear.style.display = 'none';
+      }
+      
+      searchTimeout = setTimeout(() => {
+        applyFilters();
+      }, 300);
+    });
+    
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      searchClear.style.display = 'none';
+      applyFilters();
+    });
+    
+    // Filter tabs
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    let activeFilter = 'all';
+    
+    filterTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        filterTabs.forEach(t => {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        activeFilter = tab.dataset.filter;
+        applyFilters();
+      });
+    });
+    
+    // Apply filters
+    async function applyFilters() {
+      const query = searchInput.value.trim();
+      const category = activeFilter === 'all' ? null : activeFilter;
+      
+      try {
+        const data = await fetchPostings({ 
+          category: category, 
+          search: query || undefined,
+          page: 1,
+          limit: 20
+        });
+        allPostings = data.postings || [];
+        filteredPostings = [...allPostings];
+        totalPages = data.pagination?.totalPages || 1;
+        currentPage = 1;
+        renderPostings();
+      } catch (error) {
+        console.error('Error applying filters:', error);
+        showNotification('Error applying filters');
+      }
+    }
+    
+    // Load on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadPostings);
+    } else {
+      loadPostings();
+    }
+  </script>
+</body>
+</html>
+
