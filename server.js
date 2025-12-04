@@ -897,9 +897,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Root endpoint (for Railway health checks)
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    service: 'Autoilty Marketplace API',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
   console.log(`📁 Database: ${dbPath}`);
   console.log(`📸 Uploads: ${UPLOAD_DIR}`);
 });
