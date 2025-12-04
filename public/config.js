@@ -24,10 +24,8 @@ window.API_URL = window.API_URL || (() => {
     return 'http://localhost:5000/api';
   }
   
-  // ⚠️ PRODUCTION: Replace this with your Railway backend URL
-  // Example: return 'https://autoilty-backend-production.up.railway.app/api';
-  // Example: return 'https://api.yourdomain.com/api';
-  return 'YOUR_RAILWAY_BACKEND_URL/api';  // 👈 UPDATE THIS!
+  // ⚠️ PRODUCTION: Railway backend URL
+  return 'https://autoilty-production.up.railway.app/api';
 })();
 
 console.log('API URL configured:', window.API_URL);
