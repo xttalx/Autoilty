@@ -1,5 +1,4 @@
 {
-  "version": 2,
   "rewrites": [
     {
       "source": "/product",
@@ -14,8 +13,20 @@
       "destination": "/create-listing.html"
     },
     {
-      "source": "/api/checkout",
-      "destination": "/api/checkout.js"
+      "source": "/marketplace",
+      "destination": "/marketplace.html"
+    },
+    {
+      "source": "/my-postings",
+      "destination": "/my-postings.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/login.html"
+    },
+    {
+      "source": "/register",
+      "destination": "/register.html"
     }
   ],
   "headers": [
@@ -29,10 +40,6 @@
       ]
     }
   ],
-  "functions": {
-    "api/checkout.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  "trailingSlash": false
 }
 
