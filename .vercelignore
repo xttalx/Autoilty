@@ -1,0 +1,9 @@
+# Ignore backend files for Vercel (frontend only)
+server.js
+seed-database.js
+database.sqlite
+uploads/
+*.sqlite
+*.log
+node_modules/
+
