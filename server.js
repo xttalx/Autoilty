@@ -947,17 +947,17 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
-  console.log(`📁 Database: ${dbPath}`);
-  console.log(`📸 Uploads: ${UPLOAD_DIR}`);
-  console.log(`🌍 Environment: ${NODE_ENV}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server successfully running on port ${PORT}`);
+  console.log(`Database: ${dbPath}`);
+  console.log(`Environment: ${NODE_ENV}`);
   if (isProduction) {
     console.log('✅ Production mode: Security features enabled');
   } else {
     console.log('⚠️  Development mode: Some security features disabled');
   }
 });
+
 
 // Graceful shutdown
 process.on('SIGINT', () => {
