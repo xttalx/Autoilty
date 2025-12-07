@@ -21,7 +21,17 @@ const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const isProduction = NODE_ENV === 'production';
+
+// JWT_SECRET is required in production for security
+const JWT_SECRET = process.env.JWT_SECRET || (isProduction ? null : 'development-secret-key');
+if (isProduction && !JWT_SECRET) {
+  console.error('❌ ERROR: JWT_SECRET environment variable is required in production!');
+  console.error('Please set JWT_SECRET in your Railway environment variables.');
+  process.exit(1);
+}
+
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 
@@ -50,8 +60,21 @@ app.use(cors({
   },
   credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Security headers (production)
+if (isProduction) {
+  app.use((req, res, next) => {
+    // Prevent XSS attacks
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    // Prevent MIME type sniffing
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    next();
+  });
+}
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(UPLOAD_DIR));
 
 // Ensure upload directory exists
@@ -888,7 +911,10 @@ app.get('/api/directory/business/:placeId', async (req, res) => {
 
   } catch (error) {
     console.error('Business details error:', error);
-    res.status(500).json({ error: 'Internal server error', message: error.message });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      ...(isProduction ? {} : { message: error.message })
+    });
   }
 });
 
@@ -906,11 +932,31 @@ app.get('/', (req, res) => {
   });
 });
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ 
+    error: 'Internal server error',
+    ...(isProduction ? {} : { details: err.message })
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
   console.log(`📁 Database: ${dbPath}`);
   console.log(`📸 Uploads: ${UPLOAD_DIR}`);
+  console.log(`🌍 Environment: ${NODE_ENV}`);
+  if (isProduction) {
+    console.log('✅ Production mode: Security features enabled');
+  } else {
+    console.log('⚠️  Development mode: Some security features disabled');
+  }
 });
 
 // Graceful shutdown
