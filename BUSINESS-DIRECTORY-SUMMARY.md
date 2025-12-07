@@ -263,3 +263,4 @@ Potential improvements:
 
 The business directory feature is fully implemented and integrated with the existing Autoilty marketplace. Follow the setup instructions in `DIRECTORY-SETUP.md` to configure the Google Places API key and start searching for local businesses!
 
+

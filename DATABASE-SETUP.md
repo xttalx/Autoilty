@@ -321,3 +321,4 @@ CREATE TABLE postings (
 
 **Summary**: The database is **automatically created** when you start the server. No manual setup required! Just run `npm start` and you're good to go. 🚀
 
+
