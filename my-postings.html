@@ -250,10 +250,13 @@
       list.style.display = 'block';
       empty.style.display = 'none';
 
+      // Get base URL for images (remove /api from API_URL)
+      const baseUrl = (window.API_URL || 'https://autoilty-production.up.railway.app/api').replace('/api', '');
+      
       list.innerHTML = allPostings.map(posting => `
         <div class="posting-card">
           ${posting.image_url 
-            ? `<img src="http://localhost:5000${posting.image_url}" alt="${posting.title}" class="posting-card-image">`
+            ? `<img src="${baseUrl}${posting.image_url}" alt="${posting.title}" class="posting-card-image">`
             : `<div class="posting-card-image" style="background-color: #f5f5f5; display: flex; align-items: center; justify-content: center; color: var(--color-text-light);">No Image</div>`
           }
           <div class="posting-card-content">
@@ -307,7 +310,8 @@
       document.getElementById('postingLocation').value = posting.location || '';
 
       if (posting.image_url) {
-        document.getElementById('previewImg').src = `http://localhost:5000${posting.image_url}`;
+        const baseUrl = (window.API_URL || 'https://autoilty-production.up.railway.app/api').replace('/api', '');
+        document.getElementById('previewImg').src = `${baseUrl}${posting.image_url}`;
         document.getElementById('imagePreview').style.display = 'block';
       }
 
@@ -356,9 +360,10 @@
 
       const formData = new FormData(e.target);
       const isEdit = editingPostingId !== null;
+      const apiUrl = window.API_URL || 'https://autoilty-production.up.railway.app/api';
       const url = isEdit 
-        ? `http://localhost:5000/api/postings/${editingPostingId}`
-        : 'http://localhost:5000/api/postings';
+        ? `${apiUrl}/postings/${editingPostingId}`
+        : `${apiUrl}/postings`;
 
       const submitBtn = document.getElementById('submitBtn');
       const formMessage = document.getElementById('formMessage');

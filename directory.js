@@ -7,7 +7,7 @@
 // API Base URL - uses window.API_URL if set, otherwise defaults
 const API_BASE_URL = (typeof window !== 'undefined' && window.API_URL) 
   ? window.API_URL 
-  : 'http://localhost:5000/api';
+  : 'https://autoilty-production.up.railway.app/api';
 let userLocation = null;
 let distanceUnit = typeof window !== 'undefined' && window.distanceUnit ? window.distanceUnit : 'miles'; // Default to miles
 

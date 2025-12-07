@@ -7,7 +7,7 @@
 // API Base URL - uses window.API_URL if set, otherwise defaults
 const API_BASE_URL = (typeof window !== 'undefined' && window.API_URL) 
   ? window.API_URL 
-  : 'http://localhost:5000/api';
+  : 'https://autoilty-production.up.railway.app/api';
 
 /**
  * Fetch all postings from API
@@ -55,13 +55,20 @@ async function fetchPosting(id) {
  * Convert posting to product format for compatibility
  */
 function postingToProduct(posting) {
+  // Get base URL (without /api) for image URLs
+  const baseUrl = (typeof window !== 'undefined' && window.API_URL) 
+    ? window.API_URL.replace('/api', '')
+    : 'https://autoilty-production.up.railway.app';
+  
   return {
     id: posting.id,
     name: posting.title,
     title: posting.title,
     price: parseFloat(posting.price),
     category: posting.category.toLowerCase(),
-    image: posting.image_url ? `http://localhost:5000${posting.image_url}` : 'https://via.placeholder.com/400',
+    image: posting.image_url 
+      ? `${baseUrl}${posting.image_url}` 
+      : 'https://via.placeholder.com/400',
     description: posting.description,
     location: posting.location,
     username: posting.username,

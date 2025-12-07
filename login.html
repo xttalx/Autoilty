@@ -108,7 +108,8 @@
       lucide.createIcons();
 
       try {
-        const response = await fetch('http://localhost:5000/api/auth/login', {
+        const apiUrl = window.API_URL || 'https://autoilty-production.up.railway.app/api';
+        const response = await fetch(`${apiUrl}/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
