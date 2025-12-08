@@ -18,9 +18,8 @@ const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs').promises;
 const axios = require('axios');
-
 const app = express();
-//const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isProduction = NODE_ENV === 'production';
 
@@ -952,11 +951,7 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server successfully running on port ${PORT}`);
   console.log(`Database: ${dbPath}`);
   console.log(`Environment: ${NODE_ENV}`);
-  if (isProduction) {
-    console.log('✅ Production mode: Security features enabled');
-  } else {
-    console.log('⚠️  Development mode: Some security features disabled');
-  }
+  console.log(`Visit: https://autoilty-production.up.railway.app`);
 });
 
 
