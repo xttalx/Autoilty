@@ -12,7 +12,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const path = require('path');
 const cors = require('cors');
 const multer = require('multer');
@@ -113,71 +113,104 @@ const upload = multer({
   }
 });
 
-// Database setup
-const dbPath = path.join(__dirname, 'database.sqlite');
-const db = new sqlite3.Database(dbPath);
+// Database setup - PostgreSQL (Supabase)
+// Note: Password contains @ which should be URL encoded as %40
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:J_%40sra%401996@db.nyrpzeygxzfsbkslmzar.supabase.co:5432/postgres';
 
-// Initialize database
-db.serialize(() => {
-  // Users table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // Postings table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS postings (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      title TEXT NOT NULL,
-      description TEXT NOT NULL,
-      price DECIMAL(10, 2) NOT NULL,
-      category TEXT NOT NULL CHECK (category IN ('Cars', 'Parts', 'Services', 'Other')),
-      image_url TEXT,
-      location TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    )
-  `);
-
-  // Create index for better query performance
-  db.run(`CREATE INDEX IF NOT EXISTS idx_postings_user_id ON postings(user_id)`);
-  db.run(`CREATE INDEX IF NOT EXISTS idx_postings_category ON postings(category)`);
+// Create PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false // Required for Supabase
+  }
 });
 
-// Helper: Promisify database queries
-const dbGet = (query, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.get(query, params, (err, row) => {
-      if (err) reject(err);
-      else resolve(row);
-    });
-  });
+// Test database connection
+pool.on('connect', () => {
+  console.log('✅ Connected to PostgreSQL database');
+});
+
+pool.on('error', (err) => {
+  console.error('❌ PostgreSQL pool error:', err);
+});
+
+// Initialize database tables (idempotent - safe to run multiple times)
+async function initializeDatabase() {
+  try {
+    // Users table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Postings table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS postings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        price DECIMAL(10, 2) NOT NULL,
+        category TEXT NOT NULL CHECK (category IN ('Cars', 'Parts', 'Services', 'Other')),
+        image_url TEXT,
+        location TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Create indexes for better query performance
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_postings_user_id ON postings(user_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_postings_category ON postings(category)`);
+    
+    console.log('✅ Database tables initialized');
+  } catch (error) {
+    console.error('❌ Database initialization error:', error);
+  }
+}
+
+// Initialize database on startup
+initializeDatabase();
+
+// Helper functions for database queries
+const dbGet = async (query, params = []) => {
+  try {
+    const result = await pool.query(query, params);
+    return result.rows[0] || null;
+  } catch (error) {
+    console.error('Database query error:', error);
+    throw error;
+  }
 };
 
-const dbAll = (query, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.all(query, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows || []);
-    });
-  });
+const dbAll = async (query, params = []) => {
+  try {
+    const result = await pool.query(query, params);
+    return result.rows || [];
+  } catch (error) {
+    console.error('Database query error:', error);
+    throw error;
+  }
 };
 
-const dbRun = (query, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.run(query, params, function(err) {
-      if (err) reject(err);
-      else resolve({ id: this.lastID, changes: this.changes });
-    });
-  });
+const dbRun = async (query, params = []) => {
+  try {
+    const result = await pool.query(query, params);
+    // PostgreSQL returns rows for INSERT, UPDATE, DELETE
+    // For INSERT, get the last inserted ID from RETURNING clause if available
+    const lastID = result.rows[0]?.id || null;
+    const changes = result.rowCount || 0;
+    return { id: lastID, changes };
+  } catch (error) {
+    console.error('Database query error:', error);
+    throw error;
+  }
 };
 
 // Authentication middleware
@@ -218,7 +251,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Check if user exists
     const existingUser = await dbGet(
-      'SELECT id FROM users WHERE username = ? OR email = ?',
+      'SELECT id FROM users WHERE username = $1 OR email = $2',
       [username, email]
     );
 
@@ -229,15 +262,17 @@ app.post('/api/auth/register', async (req, res) => {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create user
-    const result = await dbRun(
-      'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
+    // Create user - PostgreSQL returns the id with RETURNING
+    const result = await pool.query(
+      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id',
       [username, email, passwordHash]
     );
 
+    const userId = result.rows[0].id;
+
     // Generate JWT token
     const token = jwt.sign(
-      { id: result.id, username, email },
+      { id: userId, username, email },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -268,8 +303,8 @@ app.post('/api/auth/login', async (req, res) => {
 
     // Find user
     const user = await dbGet(
-      'SELECT * FROM users WHERE username = ? OR email = ?',
-      [username, username]
+      'SELECT * FROM users WHERE username = $1 OR email = $1',
+      [username]
     );
 
     if (!user) {
@@ -309,7 +344,7 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
   try {
     const user = await dbGet(
-      'SELECT id, username, email, created_at FROM users WHERE id = ?',
+      'SELECT id, username, email, created_at FROM users WHERE id = $1',
       [req.user.id]
     );
 
@@ -342,18 +377,23 @@ app.get('/api/postings', async (req, res) => {
     `;
     const params = [];
 
+    let paramCount = 0;
     if (category) {
-      query += ' AND p.category = ?';
+      paramCount++;
+      query += ` AND p.category = $${paramCount}`;
       params.push(category);
     }
 
     if (search) {
-      query += ' AND (p.title LIKE ? OR p.description LIKE ?)';
       const searchTerm = `%${search}%`;
+      paramCount++;
+      query += ` AND (p.title LIKE $${paramCount} OR p.description LIKE $${paramCount + 1})`;
       params.push(searchTerm, searchTerm);
+      paramCount++;
     }
 
-    query += ' ORDER BY p.created_at DESC LIMIT ? OFFSET ?';
+    paramCount++;
+    query += ` ORDER BY p.created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
     params.push(parseInt(limit), parseInt(offset));
 
     const postings = await dbAll(query, params);
@@ -361,20 +401,23 @@ app.get('/api/postings', async (req, res) => {
     // Get total count for pagination
     let countQuery = 'SELECT COUNT(*) as total FROM postings WHERE 1=1';
     const countParams = [];
+    let countParamNum = 0;
     
     if (category) {
-      countQuery += ' AND category = ?';
+      countParamNum++;
+      countQuery += ` AND category = $${countParamNum}`;
       countParams.push(category);
     }
     
     if (search) {
-      countQuery += ' AND (title LIKE ? OR description LIKE ?)';
       const searchTerm = `%${search}%`;
+      countParamNum++;
+      countQuery += ` AND (title LIKE $${countParamNum} OR description LIKE $${countParamNum + 1})`;
       countParams.push(searchTerm, searchTerm);
     }
 
     const countResult = await dbGet(countQuery, countParams);
-    const total = countResult.total;
+    const total = parseInt(countResult.total);
 
     res.json({
       postings: postings.map(p => ({
@@ -402,7 +445,7 @@ app.get('/api/postings/:id', async (req, res) => {
       `SELECT p.*, u.username 
        FROM postings p
        JOIN users u ON p.user_id = u.id
-       WHERE p.id = ?`,
+       WHERE p.id = $1`,
       [req.params.id]
     );
 
@@ -425,7 +468,7 @@ app.get('/api/postings/:id', async (req, res) => {
 app.get('/api/postings/user/my-postings', authenticateToken, async (req, res) => {
   try {
     const postings = await dbAll(
-      'SELECT * FROM postings WHERE user_id = ? ORDER BY created_at DESC',
+      'SELECT * FROM postings WHERE user_id = $1 ORDER BY created_at DESC',
       [req.user.id]
     );
 
@@ -459,15 +502,17 @@ app.post('/api/postings', authenticateToken, upload.single('image'), async (req,
 
     const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
-    // Create posting
-    const result = await dbRun(
+    // Create posting - PostgreSQL returns the id with RETURNING
+    const result = await pool.query(
       `INSERT INTO postings (user_id, title, description, price, category, image_url, location)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
       [req.user.id, title, description, parseFloat(price), category, imageUrl, location || null]
     );
 
+    const postingId = result.rows[0].id;
+
     // Fetch created posting
-    const posting = await dbGet('SELECT * FROM postings WHERE id = ?', [result.id]);
+    const posting = await dbGet('SELECT * FROM postings WHERE id = $1', [postingId]);
 
     res.status(201).json({
       message: 'Posting created successfully',
@@ -487,7 +532,7 @@ app.post('/api/postings', authenticateToken, upload.single('image'), async (req,
 app.put('/api/postings/:id', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     // Check if posting exists and belongs to user
-    const existing = await dbGet('SELECT * FROM postings WHERE id = ?', [req.params.id]);
+    const existing = await dbGet('SELECT * FROM postings WHERE id = $1', [req.params.id]);
 
     if (!existing) {
       return res.status(404).json({ error: 'Posting not found' });
@@ -502,25 +547,31 @@ app.put('/api/postings/:id', authenticateToken, upload.single('image'), async (r
     // Update fields
     const updates = [];
     const params = [];
+    let paramNum = 0;
 
     if (title) {
-      updates.push('title = ?');
+      paramNum++;
+      updates.push(`title = $${paramNum}`);
       params.push(title);
     }
     if (description) {
-      updates.push('description = ?');
+      paramNum++;
+      updates.push(`description = $${paramNum}`);
       params.push(description);
     }
     if (price) {
-      updates.push('price = ?');
+      paramNum++;
+      updates.push(`price = $${paramNum}`);
       params.push(parseFloat(price));
     }
     if (category) {
-      updates.push('category = ?');
+      paramNum++;
+      updates.push(`category = $${paramNum}`);
       params.push(category);
     }
     if (location !== undefined) {
-      updates.push('location = ?');
+      paramNum++;
+      updates.push(`location = $${paramNum}`);
       params.push(location || null);
     }
     if (req.file) {
@@ -535,20 +586,22 @@ app.put('/api/postings/:id', authenticateToken, upload.single('image'), async (r
           console.warn('Could not delete old image:', err);
         }
       }
-      updates.push('image_url = ?');
+      paramNum++;
+      updates.push(`image_url = $${paramNum}`);
       params.push(`/uploads/${req.file.filename}`);
     }
 
     updates.push('updated_at = CURRENT_TIMESTAMP');
+    paramNum++;
     params.push(req.params.id);
 
-    await dbRun(
-      `UPDATE postings SET ${updates.join(', ')} WHERE id = ?`,
+    await pool.query(
+      `UPDATE postings SET ${updates.join(', ')} WHERE id = $${paramNum}`,
       params
     );
 
     // Fetch updated posting
-    const posting = await dbGet('SELECT * FROM postings WHERE id = ?', [req.params.id]);
+    const posting = await dbGet('SELECT * FROM postings WHERE id = $1', [req.params.id]);
 
     res.json({
       message: 'Posting updated successfully',
@@ -568,7 +621,7 @@ app.put('/api/postings/:id', authenticateToken, upload.single('image'), async (r
 app.delete('/api/postings/:id', authenticateToken, async (req, res) => {
   try {
     // Check if posting exists and belongs to user
-    const posting = await dbGet('SELECT * FROM postings WHERE id = ?', [req.params.id]);
+    const posting = await dbGet('SELECT * FROM postings WHERE id = $1', [req.params.id]);
 
     if (!posting) {
       return res.status(404).json({ error: 'Posting not found' });
@@ -591,7 +644,7 @@ app.delete('/api/postings/:id', authenticateToken, async (req, res) => {
     }
 
     // Delete posting
-    await dbRun('DELETE FROM postings WHERE id = ?', [req.params.id]);
+    await pool.query('DELETE FROM postings WHERE id = $1', [req.params.id]);
 
     res.json({ message: 'Posting deleted successfully' });
   } catch (error) {
@@ -946,10 +999,9 @@ app.use((req, res) => {
 });
 
 // Start server
-//const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server successfully running on port ${PORT}`);
-  console.log(`Database: ${dbPath}`);
+  console.log(`Database: PostgreSQL (Supabase)`);
   console.log(`Environment: ${NODE_ENV}`);
   console.log(`Visit: https://autoilty-production.up.railway.app`);
 });
