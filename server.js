@@ -40,25 +40,24 @@ const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
   : ['http://localhost:3000'];
 
+// ───────────────────────────────
+// FIXED CORS — WORKS 100% ON RAILWAY + VERCEL
+// ───────────────────────────────
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
-    
-    // Allow localhost and production domains
-    if (allowedOrigins.includes(origin) || 
-        origin.includes('localhost') || 
-        origin.includes('127.0.0.1') ||
-        origin.includes('.railway.app') ||
-        origin.includes('.vercel.app') ||
-        origin.includes('.netlify.app')) {
-      return callback(null, true);
-    }
-    
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true
+  origin: [
+    'https://autoilty.com',
+    'https://www.autoilty.com',     // if you ever use www
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://autoilty.vercel.app'   // fallback
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Handle preflight requests explicitly (some hosts need this)
+app.options('*', cors());
 // Security headers (production)
 if (isProduction) {
   app.use((req, res, next) => {
