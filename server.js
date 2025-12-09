@@ -115,6 +115,7 @@ const upload = multer({
 
 // Database setup - PostgreSQL (Supabase)
 // Note: Password contains @ which should be URL encoded as %40
+// Format: postgresql://postgres:PASSWORD@HOST:5432/postgres
 const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:J_%40sra%401996@db.nyrpzeygxzfsbkslmzar.supabase.co:5432/postgres';
 
 // Create PostgreSQL connection pool
