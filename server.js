@@ -117,13 +117,39 @@ const upload = multer({
 // Format: postgresql://postgres:PASSWORD@HOST:5432/postgres
 const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:J_%40sra%401996@db.nyrpzeygxzfsbkslmzar.supabase.co:5432/postgres';
 
-// Create PostgreSQL connection pool
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false // Required for Supabase
+// Parse connection string and configure for IPv4
+function getDbConfig(connectionString) {
+  try {
+    const url = new URL(connectionString);
+    // Use connection object format to ensure IPv4 connectivity
+    return {
+      host: url.hostname,
+      port: parseInt(url.port) || 5432,
+      database: url.pathname.slice(1) || 'postgres',
+      user: url.username || 'postgres',
+      password: decodeURIComponent(url.password || ''),
+      ssl: {
+        rejectUnauthorized: false // Required for Supabase
+      },
+      // Additional options to ensure reliable connection
+      connectionTimeoutMillis: 10000,
+      idleTimeoutMillis: 30000,
+      max: 20 // Maximum pool size
+    };
+  } catch (error) {
+    console.error('Error parsing DATABASE_URL:', error);
+    // Fallback: try connection string format
+    return {
+      connectionString: connectionString,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    };
   }
-});
+}
+
+// Create PostgreSQL connection pool
+const pool = new Pool(getDbConfig(DATABASE_URL));
 
 // Test database connection
 pool.on('connect', () => {
