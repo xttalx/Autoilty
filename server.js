@@ -34,12 +34,6 @@ if (isProduction && !JWT_SECRET) {
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 
-// Middleware
-// Allow multiple origins for CORS (local dev + production)
-const allowedOrigins = process.env.FRONTEND_URL 
-  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
-  : ['http://localhost:3000'];
-
 // ───────────────────────────────
 // FIXED CORS — WORKS 100% ON RAILWAY + VERCEL
 // ───────────────────────────────
