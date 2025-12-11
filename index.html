@@ -351,15 +351,13 @@
     const useLocationBtn = document.getElementById('useLocationBtn');
     const distanceUnitSelect = document.getElementById('distanceUnit');
 
-    // Set distance unit
-    if (typeof window.distanceUnit !== 'undefined') {
-      distanceUnit = window.distanceUnit;
-    }
+    // Set distance unit - use the one from directory.js if available
+    let currentUnit = typeof window.distanceUnit !== 'undefined' ? window.distanceUnit : 'miles';
 
     // Update distance unit
     distanceUnitSelect.addEventListener('change', (e) => {
-      distanceUnit = e.target.value;
-      window.distanceUnit = distanceUnit;
+      currentUnit = e.target.value;
+      window.distanceUnit = currentUnit;
       // Re-render results if they exist
       const existingBusinesses = window.currentBusinesses;
       if (existingBusinesses && existingBusinesses.length > 0) {
@@ -396,7 +394,8 @@
       const keyword = document.getElementById('searchKeyword').value.trim();
       const location = document.getElementById('searchLocation').value.trim();
       const category = document.getElementById('searchCategory').value;
-      distanceUnit = distanceUnitSelect.value;
+      currentUnit = distanceUnitSelect.value;
+      window.distanceUnit = currentUnit;
 
       // Validation
       if (!keyword && !category) {

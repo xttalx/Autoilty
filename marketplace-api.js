@@ -5,9 +5,17 @@
  */
 
 // API Base URL - uses window.API_URL if set, otherwise defaults
+// Avoid redeclaration if already defined
 const API_BASE_URL = (typeof window !== 'undefined' && window.API_URL) 
   ? window.API_URL 
+  : (typeof window !== 'undefined' && window.API_BASE_URL)
+  ? window.API_BASE_URL
   : 'https://autoilty-production.up.railway.app/api';
+  
+// Store for reuse
+if (typeof window !== 'undefined') {
+  window.API_BASE_URL = API_BASE_URL;
+}
 
 /**
  * Fetch all postings from API

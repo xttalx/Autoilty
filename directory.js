@@ -5,9 +5,18 @@
  */
 
 // API Base URL - uses window.API_URL if set, otherwise defaults
+// Avoid redeclaration if already defined
 const API_BASE_URL = (typeof window !== 'undefined' && window.API_URL) 
   ? window.API_URL 
+  : (typeof window !== 'undefined' && window.API_BASE_URL)
+  ? window.API_BASE_URL
   : 'https://autoilty-production.up.railway.app/api';
+  
+// Store for reuse
+if (typeof window !== 'undefined') {
+  window.API_BASE_URL = API_BASE_URL;
+}
+
 let userLocation = null;
 let distanceUnit = typeof window !== 'undefined' && window.distanceUnit ? window.distanceUnit : 'miles'; // Default to miles
 
@@ -64,11 +73,14 @@ async function searchBusinesses(searchParams) {
       }
     }
 
+    // Get current distance unit from global scope
+    const currentUnit = (typeof window !== 'undefined' && window.distanceUnit) || distanceUnit || 'miles';
+    
     const requestBody = {
       keyword: keyword || '',
       location: location || '',
       category: category || '',
-      unit: distanceUnit,
+      unit: currentUnit,
       ...(userCoordinates && {
         userLat: userCoordinates.lat,
         userLng: userCoordinates.lng
@@ -128,7 +140,6 @@ function getPhotoUrl(photoReference, apiKey) {
  */
 function formatDistance(business, unit = null) {
   const currentUnit = unit || (typeof window !== 'undefined' && window.distanceUnit) || 'miles';
-  const currentUnit = unit || (typeof window !== 'undefined' && window.distanceUnit) || 'miles';
   const distance = currentUnit === 'miles' ? business.distance_miles : business.distance_km;
   
   if (!distance) {
@@ -178,7 +189,8 @@ function renderBusinessCard(business, photoApiKey = null) {
     ? getPhotoUrl(business.photo_reference, photoApiKey)
     : 'https://via.placeholder.com/400x250?text=No+Image';
   
-  const distance = formatDistance(business, distanceUnit);
+  const currentUnit = (typeof window !== 'undefined' && window.distanceUnit) || distanceUnit || 'miles';
+  const distance = formatDistance(business, currentUnit);
   
   return `
     <div class="business-card" data-place-id="${business.id}">
