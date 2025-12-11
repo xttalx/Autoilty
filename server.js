@@ -66,6 +66,7 @@ const corsOptions = {
 };
 
 // Handle preflight OPTIONS requests FIRST - before CORS middleware
+// This must handle ALL OPTIONS requests, including wildcard
 app.options('*', (req, res) => {
   const origin = req.headers.origin;
   
@@ -91,6 +92,11 @@ app.options('*', (req, res) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Max-Age', '86400');
+  } else if (!origin) {
+    // Allow requests without origin (same-origin, Postman, etc.)
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   }
   
   return res.status(200).end();
