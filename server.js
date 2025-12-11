@@ -37,21 +37,38 @@ const UPLOAD_DIR = path.join(__dirname, 'uploads');
 // ───────────────────────────────
 // FIXED CORS — WORKS 100% ON RAILWAY + VERCEL
 // ───────────────────────────────
-app.use(cors({
-  origin: [
-    'https://autoilty.com',
-    'https://www.autoilty.com',     // if you ever use www
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'https://autoilty.vercel.app'   // fallback
-  ],
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, or same-origin requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'https://autoilty.com',
+      'https://www.autoilty.com',
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:5000',
+      'https://autoilty.vercel.app',
+      'https://autoilty-production.up.railway.app'
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('.vercel.app') || origin.includes('.railway.app')) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all origins for now - adjust if needed
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
 
-// Handle preflight requests explicitly (some hosts need this)
-app.options('*', cors());
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly with the same config
+app.options('*', cors(corsOptions));
 // Security headers (production)
 if (isProduction) {
   app.use((req, res, next) => {
