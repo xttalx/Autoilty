@@ -339,9 +339,11 @@ const authenticateToken = (req, res, next) => {
 
 // Register
 app.post('/api/auth/register', async (req, res) => {
-  // Set CORS headers manually as backup
+  // Set CORS headers manually as backup - production origins only
   const origin = req.headers.origin;
-  if (origin && (origin.includes('autoilty.com') || origin.includes('vercel.app') || origin.includes('railway.app'))) {
+  const allowedOrigins = ['https://autoilty.com', 'https://www.autoilty.com'];
+  
+  if (origin && allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
   }
