@@ -35,74 +35,70 @@ const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 
 // ───────────────────────────────
-// FIXED CORS — WORKS 100% ON RAILWAY + VERCEL
+// CORS CONFIGURATION - PRODUCTION ONLY
 // ───────────────────────────────
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, Postman, or same-origin requests)
-    if (!origin) return callback(null, true);
-    
+    // Production allowed origins only
     const allowedOrigins = [
       'https://autoilty.com',
-      'https://www.autoilty.com',
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-      'http://localhost:5000',
-      'https://autoilty.vercel.app',
-      'https://autoilty-production.up.railway.app'
+      'https://www.autoilty.com'
     ];
     
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('.vercel.app') || origin.includes('.railway.app')) {
+    // Allow requests with no origin (server-to-server, Postman, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(null, true); // Allow all origins for now - adjust if needed
+      // Reject unauthorized origins
+      console.warn('❌ CORS: Origin not allowed:', origin);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+  optionsSuccessStatus: 200
 };
 
 // Handle OPTIONS requests FIRST - before CORS middleware
-// This ensures preflight requests are handled correctly
+// Production-only origins
 app.options('*', (req, res, next) => {
   const origin = req.headers.origin;
-  console.log('🔍 OPTIONS preflight request:', { origin, path: req.path, method: req.method });
   
   const allowedOrigins = [
     'https://autoilty.com',
-    'https://www.autoilty.com',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:5000',
-    'https://autoilty.vercel.app',
-    'https://autoilty-production.up.railway.app'
+    'https://www.autoilty.com'
   ];
   
-  const isAllowed = !origin || 
-    allowedOrigins.includes(origin) || 
-    (origin && (origin.includes('.vercel.app') || origin.includes('.railway.app')));
+  // Allow requests with no origin
+  if (!origin) {
+    return next();
+  }
   
-  if (isAllowed && origin) {
+  // Check if origin is allowed
+  if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Max-Age', '86400');
-    console.log('✅ OPTIONS: CORS headers set for origin:', origin);
     return res.status(200).end();
   }
   
-  // If not allowed, still let cors middleware handle it
+  // Let CORS middleware handle rejection
   next();
 });
 
 // Apply CORS middleware - handles all requests including OPTIONS
 app.use(cors(corsOptions));
 
-// Backup CORS headers middleware - ensures headers are always set on non-OPTIONS requests
+// Backup CORS headers middleware - production origins only
 app.use((req, res, next) => {
   // Skip OPTIONS - already handled
   if (req.method === 'OPTIONS') {
@@ -110,22 +106,13 @@ app.use((req, res, next) => {
   }
   
   const origin = req.headers.origin;
-  
   const allowedOrigins = [
     'https://autoilty.com',
-    'https://www.autoilty.com',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:5000',
-    'https://autoilty.vercel.app',
-    'https://autoilty-production.up.railway.app'
+    'https://www.autoilty.com'
   ];
   
-  const isAllowed = !origin || 
-    allowedOrigins.includes(origin) || 
-    (origin && (origin.includes('.vercel.app') || origin.includes('.railway.app')));
-  
-  if (isAllowed && origin && !res.getHeader('Access-Control-Allow-Origin')) {
+  // Only set headers if origin is allowed and not already set
+  if (origin && allowedOrigins.includes(origin) && !res.getHeader('Access-Control-Allow-Origin')) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
   }
