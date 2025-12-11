@@ -67,8 +67,34 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Handle preflight requests explicitly with the same config
-app.options('*', cors(corsOptions));
+// Explicit preflight handler - MUST be before routes
+app.options('*', (req, res) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://autoilty.com',
+    'https://www.autoilty.com',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5000',
+    'https://autoilty.vercel.app',
+    'https://autoilty-production.up.railway.app'
+  ];
+  
+  const isAllowed = !origin || 
+    allowedOrigins.includes(origin) || 
+    origin.includes('.vercel.app') || 
+    origin.includes('.railway.app');
+  
+  if (isAllowed) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400'); // 24 hours
+  }
+  
+  res.status(200).end();
+});
 // Security headers (production)
 if (isProduction) {
   app.use((req, res, next) => {
@@ -283,6 +309,13 @@ const authenticateToken = (req, res, next) => {
 
 // Register
 app.post('/api/auth/register', async (req, res) => {
+  // Set CORS headers manually as backup
+  const origin = req.headers.origin;
+  if (origin && (origin.includes('autoilty.com') || origin.includes('vercel.app') || origin.includes('railway.app'))) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  
   try {
     const { username, email, password } = req.body;
 
