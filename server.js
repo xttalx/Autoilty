@@ -65,11 +65,10 @@ const corsOptions = {
   optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 };
 
-app.use(cors(corsOptions));
-
-// Explicit preflight handler - MUST be before routes
+// Handle preflight OPTIONS requests FIRST - before CORS middleware
 app.options('*', (req, res) => {
   const origin = req.headers.origin;
+  
   const allowedOrigins = [
     'https://autoilty.com',
     'https://www.autoilty.com',
@@ -82,28 +81,65 @@ app.options('*', (req, res) => {
   
   const isAllowed = !origin || 
     allowedOrigins.includes(origin) || 
-    origin.includes('.vercel.app') || 
-    origin.includes('.railway.app');
+    (origin && (origin.includes('.vercel.app') || origin.includes('.railway.app')));
   
-  if (isAllowed) {
-    res.header('Access-Control-Allow-Origin', origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Max-Age', '86400'); // 24 hours
+  if (isAllowed && origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400');
   }
   
-  res.status(200).end();
+  return res.status(200).send();
 });
-// Security headers (production)
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Backup CORS headers middleware - ensures headers are always set
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  const allowedOrigins = [
+    'https://autoilty.com',
+    'https://www.autoilty.com',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5000',
+    'https://autoilty.vercel.app',
+    'https://autoilty-production.up.railway.app'
+  ];
+  
+  const isAllowed = !origin || 
+    allowedOrigins.includes(origin) || 
+    (origin && (origin.includes('.vercel.app') || origin.includes('.railway.app')));
+  
+  if (isAllowed && origin) {
+    // Set CORS headers if not already set
+    if (!res.getHeader('Access-Control-Allow-Origin')) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+  }
+  
+  next();
+});
+
+// Security headers (production) - but don't override CORS headers
 if (isProduction) {
   app.use((req, res, next) => {
-    // Prevent XSS attacks
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    // Prevent MIME type sniffing
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    // Only set security headers if they don't conflict with CORS
+    if (!res.getHeader('Access-Control-Allow-Origin')) {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    } else {
+      // Still set these, but they shouldn't conflict
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
+    }
     next();
   });
 }
