@@ -352,12 +352,13 @@
     const distanceUnitSelect = document.getElementById('distanceUnit');
 
     // Set distance unit - use the one from directory.js if available
-    let currentUnit = typeof window.distanceUnit !== 'undefined' ? window.distanceUnit : 'miles';
+    // Use a different variable name to avoid conflicts
+    let localDistanceUnit = typeof window.distanceUnit !== 'undefined' ? window.distanceUnit : 'miles';
 
     // Update distance unit
     distanceUnitSelect.addEventListener('change', (e) => {
-      currentUnit = e.target.value;
-      window.distanceUnit = currentUnit;
+      localDistanceUnit = e.target.value;
+      window.distanceUnit = localDistanceUnit;
       // Re-render results if they exist
       const existingBusinesses = window.currentBusinesses;
       if (existingBusinesses && existingBusinesses.length > 0) {
@@ -394,8 +395,8 @@
       const keyword = document.getElementById('searchKeyword').value.trim();
       const location = document.getElementById('searchLocation').value.trim();
       const category = document.getElementById('searchCategory').value;
-      currentUnit = distanceUnitSelect.value;
-      window.distanceUnit = currentUnit;
+      localDistanceUnit = distanceUnitSelect.value;
+      window.distanceUnit = localDistanceUnit;
 
       // Validation
       if (!keyword && !category) {
