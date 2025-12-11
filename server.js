@@ -65,11 +65,42 @@ const corsOptions = {
   optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 };
 
-// Apply CORS middleware FIRST - it handles OPTIONS automatically
-app.use(cors(corsOptions));
+// Handle OPTIONS requests FIRST - before CORS middleware
+// This ensures preflight requests are handled correctly
+app.options('*', (req, res, next) => {
+  const origin = req.headers.origin;
+  console.log('🔍 OPTIONS preflight request:', { origin, path: req.path, method: req.method });
+  
+  const allowedOrigins = [
+    'https://autoilty.com',
+    'https://www.autoilty.com',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5000',
+    'https://autoilty.vercel.app',
+    'https://autoilty-production.up.railway.app'
+  ];
+  
+  const isAllowed = !origin || 
+    allowedOrigins.includes(origin) || 
+    (origin && (origin.includes('.vercel.app') || origin.includes('.railway.app')));
+  
+  if (isAllowed && origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    console.log('✅ OPTIONS: CORS headers set for origin:', origin);
+    return res.status(200).end();
+  }
+  
+  // If not allowed, still let cors middleware handle it
+  next();
+});
 
-// Explicit OPTIONS handler as backup - must use cors() with same config
-app.options('*', cors(corsOptions));
+// Apply CORS middleware - handles all requests including OPTIONS
+app.use(cors(corsOptions));
 
 // Backup CORS headers middleware - ensures headers are always set on non-OPTIONS requests
 app.use((req, res, next) => {
