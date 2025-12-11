@@ -84,12 +84,9 @@ app.options('*', (req, res) => {
     allowedOrigins.includes(origin) || 
     (origin && (origin.includes('.vercel.app') || origin.includes('.railway.app')));
   
-  if (isAllowed) {
-    if (origin) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-      res.setHeader('Access-Control-Allow-Origin', '*');
-    }
+  if (isAllowed && origin) {
+    // MUST use specific origin, not '*' when credentials: true
+    res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
