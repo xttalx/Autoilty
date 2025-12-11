@@ -22,7 +22,7 @@ window.API_URL = window.API_URL || (() => {
   
   // Local development - automatically uses localhost
   if (isLocal) {
-    return 'http://localhost:5000/api';
+    return 'http://localhost:5000/api/auth';
   }
   
   // Production: Railway backend URL (always HTTPS in production)
