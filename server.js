@@ -79,19 +79,24 @@ app.options('*', (req, res) => {
     'https://autoilty-production.up.railway.app'
   ];
   
+  // Always allow if origin is in allowed list or matches pattern
   const isAllowed = !origin || 
     allowedOrigins.includes(origin) || 
     (origin && (origin.includes('.vercel.app') || origin.includes('.railway.app')));
   
-  if (isAllowed && origin) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
+  if (isAllowed) {
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Max-Age', '86400');
   }
   
-  return res.status(200).send();
+  return res.status(200).end();
 });
 
 // Apply CORS middleware
