@@ -7,7 +7,7 @@
 // API Base URL - uses window.API_URL if set, otherwise defaults
 const API_BASE_URL = (typeof window !== 'undefined' && window.API_URL) 
   ? window.API_URL 
-  : 'https://autoilty-production.up.railway.app/api/auth';
+  : 'https://autoilty-production.up.railway.app/api';
 
 /**
  * Check if user is authenticated
@@ -80,7 +80,7 @@ async function authenticatedFetch(endpoint, options = {}) {
  */
 async function verifyAuth() {
   try {
-    const response = await authenticatedFetch('/me');
+    const response = await authenticatedFetch('/auth/me');
     if (!response.ok) {
       throw new Error('Invalid token');
     }

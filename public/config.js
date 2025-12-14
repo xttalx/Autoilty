@@ -22,12 +22,12 @@ window.API_URL = window.API_URL || (() => {
   
   // Local development - automatically uses localhost
   if (isLocal) {
-    return 'http://localhost:5000/api/auth';
+    return 'http://localhost:5000/api';
   }
   
   // Production: Railway backend URL (always HTTPS in production)
   // This is the production backend URL - update if your Railway URL changes
-  const productionBackendUrl = 'https://autoilty-production.up.railway.app/api/auth';
+  const productionBackendUrl = 'https://autoilty-production.up.railway.app/api';
   
   // Ensure HTTPS in production
   if (protocol === 'https:' || hostname.includes('.railway.app') || hostname.includes('.vercel.app') || hostname.includes('.netlify.app')) {

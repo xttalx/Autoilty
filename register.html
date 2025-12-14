@@ -158,13 +158,19 @@
       lucide.createIcons();
 
       try {
-        const apiUrl = window.API_URL || 'https://autoilty-production.up.railway.app/api/auth';
-        const response = await fetch(`${apiUrl}/register`, {
+        const apiUrl = window.API_URL || 'https://autoilty-production.up.railway.app/api';
+        const registerUrl = `${apiUrl}/auth/register`;
+        console.log('📡 Register URL:', registerUrl);
+        console.log('🌍 Origin:', window.location.origin);
+        console.log('🔧 API_URL:', window.API_URL);
+        
+        const response = await fetch(registerUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ username, email, password })
+          body: JSON.stringify({ username, email, password }),
+          credentials: 'include'
         });
 
         const data = await response.json();
