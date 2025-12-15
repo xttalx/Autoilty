@@ -1110,7 +1110,10 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+// DYNAMIC PORT FOR RAILWAY - THIS IS THE FIX
+// ───────────────────────────────
+const PORT = process.env.PORT || 8080;  // Railway overrides with random port
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server successfully running on port ${PORT}`);
   console.log(`Database: PostgreSQL (Supabase)`);
