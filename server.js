@@ -408,6 +408,7 @@ app.get('/api/postings', async (req, res) => {
     const { category, search, page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
     
+    // Build base query - returns ALL postings from ALL users (public endpoint)
     let query = `
       SELECT p.*, u.username 
       FROM postings p
@@ -435,7 +436,12 @@ app.get('/api/postings', async (req, res) => {
     query += ` ORDER BY p.created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
     params.push(parseInt(limit), parseInt(offset));
 
+    console.log('🔍 GET /api/postings - Query:', query);
+    console.log('🔍 GET /api/postings - Params:', params);
+    
     const postings = await dbAll(query, params);
+    
+    console.log(`📦 GET /api/postings - Found ${postings.length} postings`);
 
     // Get total count for pagination
     let countQuery = 'SELECT COUNT(*) as total FROM postings WHERE 1=1';
