@@ -459,7 +459,9 @@ app.get('/api/postings', async (req, res) => {
       const searchTerm = `%${search}%`;
       countParamNum++;
       countQuery += ` AND (title LIKE $${countParamNum} OR description LIKE $${countParamNum + 1})`;
-      countParams.push(searchTerm, searchTerm);
+      countParams.push(searchTerm);
+      countParamNum++;
+      countParams.push(searchTerm);
     }
 
     const countResult = await dbGet(countQuery, countParams);
