@@ -19,7 +19,6 @@ const multer = require('multer');
 const fs = require('fs').promises;
 const axios = require('axios');
 const app = express();
-//const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isProduction = NODE_ENV === 'production';
 
@@ -35,27 +34,23 @@ const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 
 // ───────────────────────────────
-// CORS CONFIGURATION - PRODUCTION ONLY
+// CORS CONFIGURATION - SIMPLIFIED
 // ───────────────────────────────
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Production allowed origins only
+  origin: (origin, callback) => {
     const allowedOrigins = [
       'https://autoilty.com',
-      'https://www.autoilty.com'
+      'https://www.autoilty.com',
+      'http://localhost:3000',
+      'http://localhost:5000',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5000'
     ];
     
     // Allow requests with no origin (server-to-server, Postman, etc.)
-    if (!origin) {
-      return callback(null, true);
-    }
-    
-    // Check if origin is in allowed list
-    if (allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      // Reject unauthorized origins
-      console.warn('❌ CORS: Origin not allowed:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -66,74 +61,16 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 
-// Handle OPTIONS requests FIRST - before CORS middleware
-// Production-only origins
-app.options('*', (req, res, next) => {
-  const origin = req.headers.origin;
-  
-  const allowedOrigins = [
-    'https://autoilty.com',
-    'https://www.autoilty.com'
-  ];
-  
-  // Allow requests with no origin
-  if (!origin) {
-    return next();
-  }
-  
-  // Check if origin is allowed
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Max-Age', '86400');
-    return res.status(200).end();
-  }
-  
-  // Let CORS middleware handle rejection
-  next();
-});
-
-// Apply CORS middleware - handles all requests including OPTIONS
+// Apply CORS middleware - handles all requests including OPTIONS preflight
 app.use(cors(corsOptions));
 
-// Backup CORS headers middleware - production origins only
-app.use((req, res, next) => {
-  // Skip OPTIONS - already handled
-  if (req.method === 'OPTIONS') {
-    return next();
-  }
-  
-  const origin = req.headers.origin;
-  const allowedOrigins = [
-    'https://autoilty.com',
-    'https://www.autoilty.com'
-  ];
-  
-  // Only set headers if origin is allowed and not already set
-  if (origin && allowedOrigins.includes(origin) && !res.getHeader('Access-Control-Allow-Origin')) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  }
-  
-  next();
-});
-
-// Security headers (production) - but don't override CORS headers
+// Security headers (production)
 if (isProduction) {
   app.use((req, res, next) => {
-    // Only set security headers if they don't conflict with CORS
-    if (!res.getHeader('Access-Control-Allow-Origin')) {
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('X-Frame-Options', 'DENY');
-      res.setHeader('X-XSS-Protection', '1; mode=block');
-      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-    } else {
-      // Still set these, but they shouldn't conflict
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('X-XSS-Protection', '1; mode=block');
-    }
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     next();
   });
 }
@@ -339,15 +276,6 @@ const authenticateToken = (req, res, next) => {
 
 // Register
 app.post('/api/auth/register', async (req, res) => {
-  // Set CORS headers manually as backup - production origins only
-  const origin = req.headers.origin;
-  const allowedOrigins = ['https://autoilty.com', 'https://www.autoilty.com'];
-  
-  if (origin && allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-  }
-  
   try {
     const { username, email, password } = req.body;
 
@@ -1110,28 +1038,38 @@ app.use((req, res) => {
 });
 
 // Start server
-// DYNAMIC PORT FOR RAILWAY - THIS IS THE FIX
-// ───────────────────────────────
-const PORT = process.env.PORT || 8080;  // Railway overrides with random port
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server successfully running on port ${PORT}`);
-  console.log(`Database: PostgreSQL (Supabase)`);
-  console.log(`Environment: ${NODE_ENV}`);
-  console.log(`Visit: https://autoilty-production.up.railway.app`);
+  console.log(`🚀 Server successfully running on port ${PORT}`);
+  console.log(`📁 Database: PostgreSQL (Supabase)`);
+  console.log(`🌍 Environment: ${NODE_ENV}`);
+  console.log(`🔗 Visit: https://autoilty-production.up.railway.app`);
 });
-
 
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('\n👋 Shutting down gracefully...');
-  db.close((err) => {
-    if (err) {
-      console.error('Error closing database:', err);
-    } else {
-      console.log('✅ Database closed');
-    }
-    process.exit(0);
-  });
+  pool.end()
+    .then(() => {
+      console.log('✅ Database pool closed');
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error('❌ Error closing database pool:', err);
+      process.exit(1);
+    });
 });
 
+process.on('SIGTERM', () => {
+  console.log('\n👋 SIGTERM received, shutting down gracefully...');
+  pool.end()
+    .then(() => {
+      console.log('✅ Database pool closed');
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error('❌ Error closing database pool:', err);
+      process.exit(1);
+    });
+});
