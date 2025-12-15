@@ -428,8 +428,9 @@ app.get('/api/postings', async (req, res) => {
       const searchTerm = `%${search}%`;
       paramCount++;
       query += ` AND (p.title LIKE $${paramCount} OR p.description LIKE $${paramCount + 1})`;
-      params.push(searchTerm, searchTerm);
+      params.push(searchTerm);
       paramCount++;
+      params.push(searchTerm);
     }
 
     paramCount++;
