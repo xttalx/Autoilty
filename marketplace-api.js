@@ -1,11 +1,4 @@
-// AUTOILTY MARKETPLACE - API INTEGRATION
-  
- //Handles marketplace postings from backend API
- 
 
-// API Base URL - uses window.API_URL if set, otherwise defaults
-// Avoid redeclaration if already defined
-// Safe API_BASE_URL configuration - no redeclaration issues
 let API_BASE_URL = 'https://autoilty-production.up.railway.app/api';  // Default fallback
 
 if (typeof window !== 'undefined') {
