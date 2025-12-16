@@ -1,8 +1,7 @@
-/**
- * AUTOILTY MARKETPLACE - API INTEGRATION
- * 
- * Handles marketplace postings from backend API
- */
+// AUTOILTY MARKETPLACE - API INTEGRATION
+  
+ //Handles marketplace postings from backend API
+ 
 
 // API Base URL - uses window.API_URL if set, otherwise defaults
 // Avoid redeclaration if already defined
