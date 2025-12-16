@@ -117,8 +117,14 @@
         <div class="skeleton-card"></div>
         <div class="skeleton-card"></div>
       </div>
-      <div id="emptyState" class="empty-state" style="display: none;">
-        <p>No products found. Try adjusting your filters.</p>
+      <div id="emptyState" class="empty-state" style="display: none; grid-column: 1 / -1; text-align: center; padding: var(--spacing-xxl);">
+        <i data-lucide="package" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
+        <h3 style="margin-bottom: var(--spacing-xs);">No postings found</h3>
+        <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">Try adjusting your filters or be the first to create a posting!</p>
+        <a href="my-postings.html" class="btn btn-primary" style="display: inline-flex;">
+          <i data-lucide="plus" class="btn-icon"></i>
+          Create Posting
+        </a>
       </div>
     </div>
   </main>
@@ -231,21 +237,42 @@
     async function loadPostings() {
       try {
         const grid = document.getElementById('productsGrid');
+        const emptyState = document.getElementById('emptyState');
         grid.innerHTML = `
           <div class="skeleton-card"></div>
           <div class="skeleton-card"></div>
           <div class="skeleton-card"></div>
           <div class="skeleton-card"></div>
         `;
+        emptyState.style.display = 'none';
         
+        console.log('🔄 Loading postings from API...');
         const data = await fetchPostings({ page: currentPage, limit: 20 });
+        console.log('✅ Received postings data:', data);
+        
         allPostings = data.postings || [];
         filteredPostings = [...allPostings];
         totalPages = data.pagination?.totalPages || 1;
+        
+        console.log(`📦 Loaded ${allPostings.length} postings (total: ${data.pagination?.total || 0})`);
         renderPostings();
       } catch (error) {
-        console.error('Error loading postings:', error);
-        document.getElementById('productsGrid').innerHTML = '<p class="empty-state">Error loading postings. Please refresh the page.</p>';
+        console.error('❌ Error loading postings:', error);
+        const grid = document.getElementById('productsGrid');
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: var(--spacing-xxl);">
+            <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-error); display: block;"></i>
+            <h3 style="margin-bottom: var(--spacing-xs);">Error loading postings</h3>
+            <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">Please refresh the page or try again later.</p>
+            <button class="btn btn-primary" onclick="location.reload()" style="display: inline-flex;">
+              <i data-lucide="refresh-cw" class="btn-icon"></i>
+              Refresh Page
+            </button>
+          </div>
+        `;
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
       }
     }
     
@@ -257,6 +284,10 @@
       if (filteredPostings.length === 0) {
         grid.style.display = 'none';
         emptyState.style.display = 'block';
+        // Re-initialize icons for empty state
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
         return;
       }
       
@@ -327,20 +358,32 @@
       const category = activeFilter === 'all' ? null : activeFilter;
       
       try {
+        const grid = document.getElementById('productsGrid');
+        grid.innerHTML = `
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        `;
+        
+        console.log('🔍 Applying filters - Category:', category, 'Search:', query);
         const data = await fetchPostings({ 
           category: category, 
           search: query || undefined,
           page: 1,
           limit: 20
         });
+        console.log('✅ Filter results:', data.postings?.length || 0, 'postings');
+        
         allPostings = data.postings || [];
         filteredPostings = [...allPostings];
         totalPages = data.pagination?.totalPages || 1;
         currentPage = 1;
         renderPostings();
       } catch (error) {
-        console.error('Error applying filters:', error);
+        console.error('❌ Error applying filters:', error);
         showNotification('Error applying filters');
+        renderPostings(); // Show current state even on error
       }
     }
     

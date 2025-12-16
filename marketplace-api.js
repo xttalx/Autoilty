@@ -89,7 +89,21 @@ function postingToProduct(posting) {
  */
 function renderPostingsAsProducts(postings, container) {
   if (!postings || postings.length === 0) {
-    container.innerHTML = '<p class="empty-state">No postings found. Try adjusting your filters.</p>';
+    container.innerHTML = `
+      <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: var(--spacing-xxl);">
+        <i data-lucide="package" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
+        <h3 style="margin-bottom: var(--spacing-xs);">No postings yet</h3>
+        <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">Be the first to create one!</p>
+        <a href="my-postings.html" class="btn btn-primary" style="display: inline-flex;">
+          <i data-lucide="plus" class="btn-icon"></i>
+          Create Posting
+        </a>
+      </div>
+    `;
+    // Re-initialize icons for the empty state
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
     return;
   }
 

@@ -409,6 +409,7 @@ app.get('/api/postings', async (req, res) => {
     const offset = (page - 1) * limit;
     
     // Build base query - returns ALL postings from ALL users (public endpoint)
+    // No user filtering - this is a public endpoint showing all postings
     let query = `
       SELECT p.*, u.username 
       FROM postings p
@@ -416,23 +417,25 @@ app.get('/api/postings', async (req, res) => {
       WHERE 1=1
     `;
     const params = [];
-
     let paramCount = 0;
-    if (category) {
+
+    // Add category filter if provided
+    if (category && category !== 'all') {
       paramCount++;
       query += ` AND p.category = $${paramCount}`;
       params.push(category);
     }
 
-    if (search) {
-      const searchTerm = `%${search}%`;
+    // Add search filter if provided (case-insensitive)
+    if (search && search.trim()) {
+      const searchTerm = `%${search.trim()}%`;
       paramCount++;
-      query += ` AND (p.title LIKE $${paramCount} OR p.description LIKE $${paramCount + 1})`;
-      params.push(searchTerm);
-      paramCount++;
-      params.push(searchTerm);
+      query += ` AND (p.title ILIKE $${paramCount} OR p.description ILIKE $${paramCount + 1})`;
+      params.push(searchTerm, searchTerm);
+      paramCount++; // Increment for second parameter
     }
 
+    // Add ordering, limit, and offset
     paramCount++;
     query += ` ORDER BY p.created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
     params.push(parseInt(limit), parseInt(offset));
@@ -444,45 +447,50 @@ app.get('/api/postings', async (req, res) => {
     
     console.log(`📦 GET /api/postings - Found ${postings.length} postings`);
 
-    // Get total count for pagination
-    let countQuery = 'SELECT COUNT(*) as total FROM postings WHERE 1=1';
+    // Get total count for pagination (matching the same filters)
+    let countQuery = `
+      SELECT COUNT(*) as total 
+      FROM postings p
+      WHERE 1=1
+    `;
     const countParams = [];
     let countParamNum = 0;
     
-    if (category) {
+    if (category && category !== 'all') {
       countParamNum++;
-      countQuery += ` AND category = $${countParamNum}`;
+      countQuery += ` AND p.category = $${countParamNum}`;
       countParams.push(category);
     }
     
-    if (search) {
-      const searchTerm = `%${search}%`;
+    if (search && search.trim()) {
+      const searchTerm = `%${search.trim()}%`;
       countParamNum++;
-      countQuery += ` AND (title LIKE $${countParamNum} OR description LIKE $${countParamNum + 1})`;
-      countParams.push(searchTerm);
-      countParamNum++;
-      countParams.push(searchTerm);
+      countQuery += ` AND (p.title ILIKE $${countParamNum} OR p.description ILIKE $${countParamNum + 1})`;
+      countParams.push(searchTerm, searchTerm);
+      countParamNum++; // Increment for second parameter
     }
 
     const countResult = await dbGet(countQuery, countParams);
-    const total = parseInt(countResult.total);
+    const total = parseInt(countResult.total) || 0;
+
+    console.log(`📊 GET /api/postings - Total postings: ${total}, Page: ${page}, Limit: ${limit}`);
 
     res.json({
       postings: postings.map(p => ({
         ...p,
-        price: parseFloat(p.price),
+        price: parseFloat(p.price) || 0,
         image_url: p.image_url ? `/uploads/${path.basename(p.image_url)}` : null
       })),
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / parseInt(limit))
       }
     });
   } catch (error) {
-    console.error('Get postings error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Get postings error:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
 
