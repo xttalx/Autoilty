@@ -5,9 +5,7 @@ if (typeof window !== 'undefined') {
     API_BASE_URL = window.API_URL;
   } else if (window.API_BASE_URL) {
     API_BASE_URL = window.API_BASE_URL;
-  }
-  // Store for reuse (safe assignment, no redeclaration)
-  window.API_BASE_URL = API_BASE_URL;
+  } window.API_BASE_URL = API_BASE_URL;
 }
 /**
  * Fetch all postings from API
