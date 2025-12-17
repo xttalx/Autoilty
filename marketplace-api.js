@@ -1,4 +1,4 @@
-let API_BASE_URL = 'https://autoilty-production.up.railway.app/api';  // Default fallback
+const API_BASE_URL = 'https://autoilty-production.up.railway.app/api';  // Default fallback
 
 if (typeof window !== 'undefined') {
   if (window.API_URL) {
