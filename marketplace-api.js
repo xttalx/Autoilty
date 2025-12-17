@@ -1,4 +1,3 @@
-// SAFE API_BASE_URL - FIXED (the missing } was killing the whole script)
 if (typeof window !== 'undefined' && !window.API_BASE_URL_SET) {
   let API_BASE_URL = 'https://autoilty-production.up.railway.app/api';  // Default
 
