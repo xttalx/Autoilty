@@ -1,14 +1,21 @@
-let API_BASE_URL = 'https://autoilty-production.up.railway.app/api';  // Default fallback
-if (typeof window !== 'undefined') {
+// SAFE API_BASE_URL - FIXED (the missing } was killing the whole script)
+if (typeof window !== 'undefined' && !window.API_BASE_URL_SET) {
+  let API_BASE_URL = 'https://autoilty-production.up.railway.app/api';  // Default
+
   if (window.API_URL) {
     API_BASE_URL = window.API_URL;
   } else if (window.API_BASE_URL) {
     API_BASE_URL = window.API_BASE_URL;
-  } window.API_BASE_URL = API_BASE_URL;
+  }
+
+  window.API_BASE_URL = API_BASE_URL;
+  window.API_BASE_URL_SET = true;  // Prevent re-running
 }
-/**
- * Fetch all postings from API
- */
+
+// Now safely use it
+const API_BASE_URL = window.API_BASE_URL;
+// * Fetch all postings from API
+ 
 async function fetchPostings(filters = {}) {
   try {
     const params = new URLSearchParams();
