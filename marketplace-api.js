@@ -1,5 +1,5 @@
+/* eslint-env browser */  
 // SAFE API_BASE_URL - NO REDECLARATION ERROR
-
 if (typeof window !== 'undefined') {
 
   if (!window.API_BASE_URL_SET) {
