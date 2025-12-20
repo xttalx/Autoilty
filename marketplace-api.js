@@ -31,8 +31,10 @@ if (typeof window !== 'undefined') {
 
 
 // Use the safe global value - no const redeclaration
-
-const API_BASE_URL = window.API_BASE_URL;
+// Access window.API_BASE_URL directly to avoid redeclaration errors on multiple script loads
+function getApiBaseUrl() {
+  return window.API_BASE_URL || 'https://autoilty-production.up.railway.app/api';
+}
 
 
 
@@ -58,7 +60,7 @@ async function fetchPostings(filters = {}) {
 
 
 
-    const url = `${API_BASE_URL}/postings${params.toString() ? '?' + params.toString() : ''}`;
+    const url = `${getApiBaseUrl()}/postings${params.toString() ? '?' + params.toString() : ''}`;
 
     const response = await fetch(url);
 
@@ -98,7 +100,7 @@ async function fetchPosting(id) {
 
   try {
 
-    const response = await fetch(`${API_BASE_URL}/postings/${id}`);
+    const response = await fetch(`${getApiBaseUrl()}/postings/${id}`);
 
     if (!response.ok) {
 
