@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="View posting details on Autoilty marketplace">
+  <title>Posting Details - Autoilty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="public/config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="marketplace.html" class="nav-link">Marketplace</a>
+          <a href="my-postings.html" class="nav-link" id="myPostingsLink" style="display: none;">My Postings</a>
+          <a href="my-postings.html" class="btn btn-secondary" id="createPostingBtn" style="display: none;">
+            <i data-lucide="plus" class="btn-icon"></i>
+            Create Posting
+          </a>
+          <a href="login.html?return=posting-detail.html" class="btn btn-secondary" id="createPostingLoginBtn">
+            <i data-lucide="plus" class="btn-icon"></i>
+            Create Posting
+          </a>
+          <div class="user-menu" id="userMenu" style="display: none;">
+            <button class="user-menu-button" id="userMenuButton">
+              <span id="userMenuName">User</span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="user-menu-dropdown" id="userMenuDropdown">
+              <a href="my-postings.html" class="user-menu-item">
+                <i data-lucide="list" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                My Postings
+              </a>
+              <button class="user-menu-item danger" id="logoutButton" style="width: 100%; text-align: left; border: none; cursor: pointer;">
+                <i data-lucide="log-out" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+          <a href="login.html?return=posting-detail.html" class="nav-link" id="loginLink">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Posting Detail -->
+  <main class="main-content">
+    <div class="container" style="max-width: 1200px; padding: var(--spacing-xl) var(--spacing-md);">
+      
+      <!-- Back Button -->
+      <a href="marketplace.html" class="btn btn-secondary" style="display: inline-flex; align-items: center; margin-bottom: var(--spacing-lg);">
+        <i data-lucide="arrow-left" class="btn-icon" style="margin-right: var(--spacing-xs);"></i>
+        Back to Marketplace
+      </a>
+
+      <!-- Loading State -->
+      <div id="loadingState" style="text-align: center; padding: var(--spacing-2xl);">
+        <div class="skeleton-card" style="height: 600px; margin-bottom: var(--spacing-lg);"></div>
+        <div class="skeleton-card" style="height: 200px;"></div>
+      </div>
+
+      <!-- Error State -->
+      <div id="errorState" style="display: none; text-align: center; padding: var(--spacing-2xl);">
+        <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-error); display: block;"></i>
+        <h2 style="margin-bottom: var(--spacing-sm);">Posting Not Found</h2>
+        <p style="color: var(--color-text-light); margin-bottom: var(--spacing-lg);">The posting you're looking for doesn't exist or has been removed.</p>
+        <a href="marketplace.html" class="btn btn-primary">
+          <i data-lucide="arrow-left" class="btn-icon"></i>
+          Back to Marketplace
+        </a>
+      </div>
+
+      <!-- Posting Content -->
+      <div id="postingContent" style="display: none;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl); margin-bottom: var(--spacing-xl);">
+          
+          <!-- Image Section -->
+          <div>
+            <div style="border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; background-color: #f5f5f5;">
+              <img id="postingImage" src="" alt="" style="width: 100%; height: auto; display: block; min-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/600'">
+            </div>
+          </div>
+
+          <!-- Details Section -->
+          <div>
+            <div style="margin-bottom: var(--spacing-md);">
+              <span id="postingCategory" class="product-category" style="display: inline-block; margin-bottom: var(--spacing-sm);"></span>
+            </div>
+            <h1 id="postingTitle" style="font-size: 2rem; margin-bottom: var(--spacing-md);"></h1>
+            <div id="postingPrice" style="font-size: 2.5rem; font-weight: 600; margin-bottom: var(--spacing-lg);"></div>
+            
+            <div style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+              <div style="display: flex; align-items: center; margin-bottom: var(--spacing-md); color: var(--color-text-light);">
+                <i data-lucide="map-pin" style="width: 1.25rem; height: 1.25rem; margin-right: var(--spacing-xs);"></i>
+                <span id="postingLocation"></span>
+              </div>
+              <div style="display: flex; align-items: center; color: var(--color-text-light);">
+                <i data-lucide="user" style="width: 1.25rem; height: 1.25rem; margin-right: var(--spacing-xs);"></i>
+                <span>Posted by <strong id="postingUsername"></strong></span>
+              </div>
+              <div style="display: flex; align-items: center; margin-top: var(--spacing-sm); color: var(--color-text-light);">
+                <i data-lucide="calendar" style="width: 1.25rem; height: 1.25rem; margin-right: var(--spacing-xs);"></i>
+                <span id="postingDate"></span>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-full" style="padding: var(--spacing-md); font-size: 1.125rem; margin-bottom: var(--spacing-md);">
+              <i data-lucide="message-circle" class="btn-icon"></i>
+              Contact Seller
+            </button>
+            <button class="btn btn-secondary btn-full" style="padding: var(--spacing-md);">
+              <i data-lucide="heart" class="btn-icon"></i>
+              Save Posting
+            </button>
+          </div>
+        </div>
+
+        <!-- Description Section -->
+        <div style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-xl);">
+          <h2 style="font-size: 1.5rem; margin-bottom: var(--spacing-md);">Description</h2>
+          <div id="postingDescription" style="color: var(--color-text); line-height: 1.8; white-space: pre-wrap;"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="auth.js"></script>
+  <script src="marketplace-api.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Setup user menu and navigation based on auth status
+    const currentUser = getCurrentUser();
+    const userMenu = document.getElementById('userMenu');
+    const loginLink = document.getElementById('loginLink');
+    const myPostingsLink = document.getElementById('myPostingsLink');
+    const createPostingBtn = document.getElementById('createPostingBtn');
+    const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
+    
+    if (currentUser && isAuthenticated()) {
+      userMenu.style.display = 'block';
+      loginLink.style.display = 'none';
+      myPostingsLink.style.display = 'block';
+      createPostingBtn.style.display = 'inline-flex';
+      createPostingLoginBtn.style.display = 'none';
+      
+      document.getElementById('userMenuName').textContent = currentUser.username;
+      
+      document.getElementById('userMenuButton').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('userMenuDropdown').classList.toggle('show');
+      });
+      
+      document.addEventListener('click', () => {
+        document.getElementById('userMenuDropdown').classList.remove('show');
+      });
+      
+      document.getElementById('logoutButton').addEventListener('click', () => {
+        if (confirm('Are you sure you want to logout?')) {
+          logout();
+        }
+      });
+    } else {
+      userMenu.style.display = 'none';
+      loginLink.style.display = 'block';
+      myPostingsLink.style.display = 'none';
+      createPostingBtn.style.display = 'none';
+      createPostingLoginBtn.style.display = 'inline-flex';
+    }
+
+    // Get posting ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const postingId = urlParams.get('id');
+
+    if (!postingId) {
+      showError('No posting ID provided');
+      return;
+    }
+
+    // Load posting details
+    async function loadPosting() {
+      const loadingState = document.getElementById('loadingState');
+      const errorState = document.getElementById('errorState');
+      const postingContent = document.getElementById('postingContent');
+
+      try {
+        loadingState.style.display = 'block';
+        errorState.style.display = 'none';
+        postingContent.style.display = 'none';
+
+        console.log('🔄 Loading posting:', postingId);
+        const posting = await fetchPosting(postingId);
+        console.log('✅ Received posting:', posting);
+
+        if (!posting) {
+          throw new Error('Posting not found');
+        }
+
+        // Convert posting to product format for consistent image URL handling
+        const product = postingToProduct(posting);
+
+        // Get base URL for images
+        const getBaseUrl = () => {
+          if (typeof window !== 'undefined' && window.API_URL) {
+            return window.API_URL.replace('/api', '');
+          }
+          return 'https://autoilty-production.up.railway.app';
+        };
+        const baseUrl = getBaseUrl();
+
+        // Set image
+        const imageUrl = posting.image_url 
+          ? `${baseUrl}${posting.image_url.startsWith('/') ? posting.image_url : `/uploads/${posting.image_url}`}`
+          : 'https://via.placeholder.com/600';
+        
+        document.getElementById('postingImage').src = imageUrl;
+        document.getElementById('postingImage').alt = posting.title;
+
+        // Set details
+        document.getElementById('postingCategory').textContent = (posting.category || 'Other').toUpperCase();
+        document.getElementById('postingTitle').textContent = posting.title;
+        document.getElementById('postingPrice').textContent = `$${parseFloat(posting.price).toFixed(2)} CAD`;
+        document.getElementById('postingLocation').textContent = posting.location || 'Location not specified';
+        document.getElementById('postingUsername').textContent = posting.username || 'Unknown';
+        document.getElementById('postingDescription').textContent = posting.description || 'No description provided.';
+
+        // Format date
+        if (posting.created_at) {
+          const date = new Date(posting.created_at);
+          document.getElementById('postingDate').textContent = date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+        }
+
+        // Update page title
+        document.title = `${posting.title} - Autoilty`;
+
+        loadingState.style.display = 'none';
+        postingContent.style.display = 'block';
+
+        // Re-initialize icons after content is loaded
+        lucide.createIcons();
+
+      } catch (error) {
+        console.error('❌ Error loading posting:', error);
+        loadingState.style.display = 'none';
+        errorState.style.display = 'block';
+        postingContent.style.display = 'none';
+        lucide.createIcons();
+      }
+    }
+
+    function showError(message) {
+      const loadingState = document.getElementById('loadingState');
+      const errorState = document.getElementById('errorState');
+      loadingState.style.display = 'none';
+      errorState.style.display = 'block';
+      errorState.querySelector('h2').textContent = message;
+      lucide.createIcons();
+    }
+
+    // Load posting on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadPosting);
+    } else {
+      loadPosting();
+    }
+  </script>
+</body>
+</html>
+

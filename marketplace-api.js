@@ -130,13 +130,26 @@ async function fetchPosting(id) {
 
 function postingToProduct(posting) {
 
-  const baseUrl = (typeof window !== 'undefined' && window.API_URL) 
+  // Get base URL for images (backend serves uploads at root level)
+  const getBaseUrl = () => {
+    if (typeof window !== 'undefined' && window.API_URL) {
+      // Remove /api suffix to get base URL
+      return window.API_URL.replace('/api', '');
+    }
+    return 'https://autoilty-production.up.railway.app';
+  };
 
-    ? window.API_URL.replace('/api', '')
+  const baseUrl = getBaseUrl();
 
-    : 'https://autoilty-production.up.railway.app';
-
-  
+  // Construct full image URL - backend returns image_url as /uploads/filename
+  let imageUrl = 'https://via.placeholder.com/400';
+  if (posting.image_url) {
+    // Ensure image_url starts with /uploads/ (backend returns it this way)
+    const imagePath = posting.image_url.startsWith('/') 
+      ? posting.image_url 
+      : `/uploads/${posting.image_url}`;
+    imageUrl = `${baseUrl}${imagePath}`;
+  }
 
   return {
 
@@ -150,11 +163,7 @@ function postingToProduct(posting) {
 
     category: posting.category.toLowerCase(),
 
-    image: posting.image_url 
-
-      ? `${baseUrl}${posting.image_url}` 
-
-      : 'https://via.placeholder.com/400',
+    image: imageUrl,
 
     description: posting.description,
 
@@ -260,11 +269,18 @@ function renderPostingsAsProducts(postings, container) {
 
   container.querySelectorAll('.product-card').forEach(card => {
 
+    card.style.cursor = 'pointer';
     card.addEventListener('click', () => {
 
       const productId = card.dataset.productId;
 
-      showNotification('View posting details (feature coming soon)');
+      if (productId) {
+
+        // Navigate to posting detail page
+
+        window.location.href = `posting-detail.html?id=${productId}`;
+
+      }
 
     });
 
