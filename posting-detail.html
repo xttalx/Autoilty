@@ -202,20 +202,24 @@
       navToggle.addEventListener('click', () => {
         navLinks.classList.toggle('active');
         const icon = navToggle.querySelector('i');
-        if (navLinks.classList.contains('active')) {
-          icon.setAttribute('data-lucide', 'x');
-        } else {
-          icon.setAttribute('data-lucide', 'menu');
+        if (icon) {
+          if (navLinks.classList.contains('active')) {
+            icon.setAttribute('data-lucide', 'x');
+          } else {
+            icon.setAttribute('data-lucide', 'menu');
+          }
+          lucide.createIcons();
         }
-        lucide.createIcons();
       });
       
       document.addEventListener('click', (e) => {
         if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
           navLinks.classList.remove('active');
           const icon = navToggle.querySelector('i');
-          icon.setAttribute('data-lucide', 'menu');
-          lucide.createIcons();
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            lucide.createIcons();
+          }
         }
       });
       
@@ -223,8 +227,10 @@
         link.addEventListener('click', () => {
           navLinks.classList.remove('active');
           const icon = navToggle.querySelector('i');
-          icon.setAttribute('data-lucide', 'menu');
-          lucide.createIcons();
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            lucide.createIcons();
+          }
         });
       });
     }
@@ -238,6 +244,11 @@
       const createPostingBtn = document.getElementById('createPostingBtn');
       const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
       
+      if (!userMenu || !loginLink || !myPostingsLink || !createPostingBtn || !createPostingLoginBtn) {
+        console.warn('Navigation elements not found');
+        return;
+      }
+      
       if (currentUser && isAuthenticated()) {
         userMenu.style.display = 'block';
         loginLink.style.display = 'none';
@@ -245,22 +256,37 @@
         createPostingBtn.style.display = 'inline-flex';
         createPostingLoginBtn.style.display = 'none';
         
-        document.getElementById('userMenuName').textContent = currentUser.username;
+        const userMenuName = document.getElementById('userMenuName');
+        if (userMenuName) {
+          userMenuName.textContent = currentUser.username;
+        }
         
-        document.getElementById('userMenuButton').addEventListener('click', (e) => {
-          e.stopPropagation();
-          document.getElementById('userMenuDropdown').classList.toggle('show');
-        });
+        const userMenuButton = document.getElementById('userMenuButton');
+        if (userMenuButton) {
+          userMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const userMenuDropdown = document.getElementById('userMenuDropdown');
+            if (userMenuDropdown) {
+              userMenuDropdown.classList.toggle('show');
+            }
+          });
+        }
         
         document.addEventListener('click', () => {
-          document.getElementById('userMenuDropdown').classList.remove('show');
-        });
-        
-        document.getElementById('logoutButton').addEventListener('click', () => {
-          if (confirm('Are you sure you want to logout?')) {
-            logout();
+          const userMenuDropdown = document.getElementById('userMenuDropdown');
+          if (userMenuDropdown) {
+            userMenuDropdown.classList.remove('show');
           }
         });
+        
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+          logoutButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+              logout();
+            }
+          });
+        }
       } else {
         userMenu.style.display = 'none';
         loginLink.style.display = 'block';
@@ -274,13 +300,16 @@
       const loadingState = document.getElementById('loadingState');
       const errorState = document.getElementById('errorState');
       const postingContent = document.getElementById('postingContent');
-      loadingState.style.display = 'none';
-      errorState.style.display = 'block';
-      postingContent.style.display = 'none';
-      const errorTitle = errorState.querySelector('h2');
-      if (errorTitle) {
-        errorTitle.textContent = message;
+      
+      if (loadingState) loadingState.style.display = 'none';
+      if (errorState) {
+        errorState.style.display = 'block';
+        const errorTitle = errorState.querySelector('h2');
+        if (errorTitle) {
+          errorTitle.textContent = message || 'Posting Not Found';
+        }
       }
+      if (postingContent) postingContent.style.display = 'none';
       lucide.createIcons();
     }
 
@@ -289,6 +318,11 @@
       const loadingState = document.getElementById('loadingState');
       const errorState = document.getElementById('errorState');
       const postingContent = document.getElementById('postingContent');
+
+      if (!loadingState || !errorState || !postingContent) {
+        console.error('Required DOM elements not found');
+        return;
+      }
 
       try {
         loadingState.style.display = 'block';
@@ -305,14 +339,25 @@
 
         // Handle multiple images (up to 3) or single image
         const getImageUrl = (imgUrl) => {
-          if (typeof getPostingImageUrl !== 'undefined') {
-            return getPostingImageUrl(imgUrl);
-          }
           if (!imgUrl) {
             return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
           }
-          const baseUrl = typeof getImageBaseUrl !== 'undefined' ? getImageBaseUrl() : 'https://autoilty-production.up.railway.app';
-          return `${baseUrl}${imgUrl.startsWith('/') ? imgUrl : `/uploads/${imgUrl}`}`;
+          
+          // If already a full URL, return as is
+          if (imgUrl.startsWith('http://') || imgUrl.startsWith('https://')) {
+            return imgUrl;
+          }
+          
+          // Construct full URL
+          const baseUrl = 'https://autoilty-production.up.railway.app';
+          // Ensure image_url starts with /uploads/ or add it
+          if (imgUrl.startsWith('/uploads/')) {
+            return `${baseUrl}${imgUrl}`;
+          } else if (imgUrl.startsWith('/')) {
+            return `${baseUrl}${imgUrl}`;
+          } else {
+            return `${baseUrl}/uploads/${imgUrl}`;
+          }
         };
 
         // Get images array (if backend supports multiple images) or use single image_url
@@ -328,6 +373,10 @@
         const postingImage = document.getElementById('postingImage');
         const imageThumbnails = document.getElementById('imageThumbnails');
         
+        if (!postingImage) {
+          throw new Error('Posting image element not found');
+        }
+        
         if (images.length > 0) {
           // Set main image
           const mainImageUrl = getImageUrl(images[0]);
@@ -339,43 +388,55 @@
           };
 
           // Show thumbnails if multiple images
-          if (images.length > 1) {
+          if (images.length > 1 && imageThumbnails) {
             imageThumbnails.style.display = 'grid';
             imageThumbnails.innerHTML = images.map((imgUrl, index) => {
               const thumbUrl = getImageUrl(imgUrl);
               return `
                 <div style="border: 2px solid ${index === 0 ? 'var(--color-primary)' : 'var(--color-border)'}; border-radius: var(--radius); overflow: hidden; cursor: pointer; aspect-ratio: 1;">
                   <img src="${thumbUrl}" alt="Image ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;" 
-                    onclick="document.getElementById('postingImage').src='${thumbUrl}'; document.querySelectorAll('#imageThumbnails img').forEach((img, i) => { img.parentElement.style.borderColor = i === ${index} ? 'var(--color-primary)' : 'var(--color-border)'; });">
+                    onclick="const mainImg = document.getElementById('postingImage'); if (mainImg) { mainImg.src='${thumbUrl}'; } const thumbs = document.querySelectorAll('#imageThumbnails img'); thumbs.forEach((img, i) => { if (img.parentElement) { img.parentElement.style.borderColor = i === ${index} ? 'var(--color-primary)' : 'var(--color-border)'; } });">
                 </div>
               `;
             }).join('');
-          } else {
+          } else if (imageThumbnails) {
             imageThumbnails.style.display = 'none';
           }
         } else {
           // No images - use placeholder
           postingImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
           postingImage.alt = 'No image available';
-          imageThumbnails.style.display = 'none';
+          if (imageThumbnails) {
+            imageThumbnails.style.display = 'none';
+          }
         }
 
-        // Set details
-        document.getElementById('postingCategory').textContent = (posting.category || 'Other').toUpperCase();
-        document.getElementById('postingTitle').textContent = posting.title;
-        document.getElementById('postingPrice').textContent = `$${parseFloat(posting.price).toFixed(2)} CAD`;
-        document.getElementById('postingLocation').textContent = posting.location || 'Location not specified';
-        document.getElementById('postingUsername').textContent = posting.username || 'Unknown';
-        document.getElementById('postingDescription').textContent = posting.description || 'No description provided.';
+        // Set details with null checks
+        const categoryEl = document.getElementById('postingCategory');
+        const titleEl = document.getElementById('postingTitle');
+        const priceEl = document.getElementById('postingPrice');
+        const locationEl = document.getElementById('postingLocation');
+        const usernameEl = document.getElementById('postingUsername');
+        const descriptionEl = document.getElementById('postingDescription');
+        const dateEl = document.getElementById('postingDate');
+        
+        if (categoryEl) categoryEl.textContent = (posting.category || 'Other').toUpperCase();
+        if (titleEl) titleEl.textContent = posting.title || 'Untitled';
+        if (priceEl) priceEl.textContent = `$${parseFloat(posting.price || 0).toFixed(2)} CAD`;
+        if (locationEl) locationEl.textContent = posting.location || 'Location not specified';
+        if (usernameEl) usernameEl.textContent = posting.username || 'Unknown';
+        if (descriptionEl) descriptionEl.textContent = posting.description || 'No description provided.';
 
         // Format date
-        if (posting.created_at) {
+        if (posting.created_at && dateEl) {
           const date = new Date(posting.created_at);
-          document.getElementById('postingDate').textContent = date.toLocaleDateString('en-US', { 
+          dateEl.textContent = date.toLocaleDateString('en-US', { 
             year: 'numeric', 
             month: 'long', 
             day: 'numeric' 
           });
+        } else if (dateEl) {
+          dateEl.textContent = 'Date not available';
         }
 
         // Store posting data for Contact Seller button
@@ -397,9 +458,19 @@
 
       } catch (error) {
         console.error('❌ Error loading posting:', error);
-        loadingState.style.display = 'none';
-        errorState.style.display = 'block';
-        postingContent.style.display = 'none';
+        if (loadingState) loadingState.style.display = 'none';
+        if (errorState) {
+          errorState.style.display = 'block';
+          const errorTitle = errorState.querySelector('h2');
+          if (errorTitle) {
+            if (error.message && error.message.includes('not found')) {
+              errorTitle.textContent = 'Posting Not Found';
+            } else {
+              errorTitle.textContent = 'Error Loading Posting';
+            }
+          }
+        }
+        if (postingContent) postingContent.style.display = 'none';
         lucide.createIcons();
       }
     }
@@ -428,14 +499,20 @@
       const postingIdInput = document.getElementById('contactPostingId');
       const toUserIdInput = document.getElementById('contactToUserId');
       
+      if (!modal || !postingTitle || !postingIdInput || !toUserIdInput) {
+        console.error('Contact modal elements not found');
+        return;
+      }
+      
       postingTitle.textContent = `About: ${data.postingTitle}`;
       postingIdInput.value = data.postingId;
       toUserIdInput.value = data.toUserId;
       
       // Pre-fill name and email if user is logged in
       const currentUser = getCurrentUser();
-      if (currentUser) {
-        document.getElementById('contactName').value = currentUser.username || '';
+      const contactName = document.getElementById('contactName');
+      if (currentUser && contactName) {
+        contactName.value = currentUser.username || '';
       }
       
       modal.style.display = 'block';
@@ -445,77 +522,111 @@
     
     function closeContactModal() {
       const modal = document.getElementById('contactSellerModal');
-      modal.style.display = 'none';
+      const form = document.getElementById('contactSellerForm');
+      const errorDiv = document.getElementById('contactFormError');
+      
+      if (modal) {
+        modal.style.display = 'none';
+      }
       document.body.style.overflow = '';
-      document.getElementById('contactSellerForm').reset();
-      document.getElementById('contactFormError').style.display = 'none';
+      if (form) form.reset();
+      if (errorDiv) errorDiv.style.display = 'none';
     }
     
     // Contact Seller button handler
-    document.getElementById('contactSellerBtn').addEventListener('click', () => {
-      if (window.currentPosting) {
-        openContactModal({
-          postingId: window.currentPosting.id,
-          postingTitle: window.currentPosting.title,
-          toUserId: window.currentPosting.userId,
-          sellerUsername: window.currentPosting.username
-        });
-      }
-    });
+    const contactSellerBtn = document.getElementById('contactSellerBtn');
+    if (contactSellerBtn) {
+      contactSellerBtn.addEventListener('click', () => {
+        if (window.currentPosting) {
+          openContactModal({
+            postingId: window.currentPosting.id,
+            postingTitle: window.currentPosting.title,
+            toUserId: window.currentPosting.userId,
+            sellerUsername: window.currentPosting.username
+          });
+        }
+      });
+    }
     
     // Modal event listeners
-    document.getElementById('contactModalOverlay').addEventListener('click', closeContactModal);
-    document.getElementById('contactModalClose').addEventListener('click', closeContactModal);
-    document.getElementById('contactModalCancel').addEventListener('click', closeContactModal);
+    const contactModalOverlay = document.getElementById('contactModalOverlay');
+    const contactModalClose = document.getElementById('contactModalClose');
+    const contactModalCancel = document.getElementById('contactModalCancel');
+    
+    if (contactModalOverlay) {
+      contactModalOverlay.addEventListener('click', closeContactModal);
+    }
+    if (contactModalClose) {
+      contactModalClose.addEventListener('click', closeContactModal);
+    }
+    if (contactModalCancel) {
+      contactModalCancel.addEventListener('click', closeContactModal);
+    }
     
     // Form submission
-    document.getElementById('contactSellerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const errorDiv = document.getElementById('contactFormError');
-      errorDiv.style.display = 'none';
-      
-      // Pre-fill name/email if user is logged in
-      const currentUser = getCurrentUser();
-      const nameInput = document.getElementById('contactName');
-      const emailInput = document.getElementById('contactEmail');
-      
-      if (currentUser && isAuthenticated()) {
-        if (!nameInput.value.trim()) {
-          nameInput.value = currentUser.username || '';
-        }
-        if (!emailInput.value.trim()) {
-          emailInput.value = currentUser.email || '';
-        }
-      }
-      
-      const formData = {
-        postingId: parseInt(document.getElementById('contactPostingId').value),
-        toUserId: parseInt(document.getElementById('contactToUserId').value),
-        name: nameInput.value.trim(),
-        email: emailInput.value.trim(),
-        phone: document.getElementById('contactPhone').value.trim() || null,
-        message: document.getElementById('contactMessage').value.trim()
-      };
-      
-      try {
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
+    const contactSellerForm = document.getElementById('contactSellerForm');
+    if (contactSellerForm) {
+      contactSellerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        await sendMessage(formData);
+        const errorDiv = document.getElementById('contactFormError');
+        const postingIdInput = document.getElementById('contactPostingId');
+        const toUserIdInput = document.getElementById('contactToUserId');
+        const nameInput = document.getElementById('contactName');
+        const emailInput = document.getElementById('contactEmail');
+        const phoneInput = document.getElementById('contactPhone');
+        const messageInput = document.getElementById('contactMessage');
         
-        alert('Message sent successfully!');
-        closeContactModal();
-      } catch (error) {
-        errorDiv.textContent = error.message || 'Failed to send message. Please try again.';
-        errorDiv.style.display = 'block';
-      } finally {
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Send Message';
-      }
-    });
+        if (!errorDiv || !postingIdInput || !toUserIdInput || !nameInput || !emailInput || !messageInput) {
+          console.error('Contact form elements not found');
+          return;
+        }
+        
+        errorDiv.style.display = 'none';
+        
+        // Pre-fill name/email if user is logged in
+        const currentUser = getCurrentUser();
+        if (currentUser && isAuthenticated()) {
+          if (!nameInput.value.trim()) {
+            nameInput.value = currentUser.username || '';
+          }
+          if (!emailInput.value.trim()) {
+            emailInput.value = currentUser.email || '';
+          }
+        }
+        
+        const formData = {
+          postingId: parseInt(postingIdInput.value),
+          toUserId: parseInt(toUserIdInput.value),
+          name: nameInput.value.trim(),
+          email: emailInput.value.trim(),
+          phone: phoneInput ? phoneInput.value.trim() || null : null,
+          message: messageInput.value.trim()
+        };
+        
+        try {
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+          }
+          
+          await sendMessage(formData);
+          
+          alert('Message sent successfully!');
+          closeContactModal();
+        } catch (error) {
+          errorDiv.textContent = error.message || 'Failed to send message. Please try again.';
+          errorDiv.style.display = 'block';
+        } finally {
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Message';
+          }
+        }
+      });
+    }
 
     // Load posting on page ready
     if (document.readyState === 'loading') {
