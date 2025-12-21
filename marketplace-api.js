@@ -163,6 +163,10 @@ function postingToProduct(posting) {
  */
 
 function renderPostingsAsProducts(postings, container) {
+  // Store postings globally for Contact Seller button access
+  if (typeof window !== 'undefined') {
+    window.currentPostings = postings;
+  }
 
   if (!postings || postings.length === 0) {
 
@@ -206,7 +210,7 @@ function renderPostingsAsProducts(postings, container) {
 
     return `
 
-      <div class="product-card" data-product-id="${product.id}">
+      <div class="product-card" data-product-id="${product.id}" data-posting-user-id="${posting.user_id}">
 
         <div class="product-image">
 
@@ -224,7 +228,12 @@ function renderPostingsAsProducts(postings, container) {
 
           <p class="product-price">$${product.price.toFixed(2)} CAD</p>
 
-          <p style="font-size: 0.875rem; color: var(--color-text-light);">by ${product.username}</p>
+          <p style="font-size: 0.875rem; color: var(--color-text-light); margin-bottom: var(--spacing-sm);">by ${product.username}</p>
+
+          <button class="btn btn-primary btn-full contact-seller-btn" data-posting-id="${product.id}" data-seller-username="${product.username}" style="margin-top: var(--spacing-sm); padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.875rem;">
+            <i data-lucide="message-circle" class="btn-icon"></i>
+            Contact Seller
+          </button>
 
         </div>
 
@@ -247,7 +256,12 @@ function renderPostingsAsProducts(postings, container) {
   container.querySelectorAll('.product-card').forEach(card => {
 
     card.style.cursor = 'pointer';
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => {
+
+      // Don't navigate if clicking the Contact Seller button
+      if (e.target.closest('.contact-seller-btn')) {
+        return;
+      }
 
       const productId = card.dataset.productId;
 
@@ -261,6 +275,35 @@ function renderPostingsAsProducts(postings, container) {
 
     });
 
+  });
+
+  // Add Contact Seller button handlers
+  container.querySelectorAll('.contact-seller-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const postingId = btn.dataset.postingId;
+      const sellerUsername = btn.dataset.sellerUsername;
+      
+      // Get posting details from stored postings or card data
+      const card = btn.closest('.product-card');
+      if (card && typeof window.openContactModal === 'function') {
+        const postingUserId = card.dataset.postingUserId;
+        const postingTitle = card.querySelector('.product-name')?.textContent || 'Posting';
+        
+        // Try to get full posting data from stored postings
+        let posting = null;
+        if (typeof window.currentPostings !== 'undefined' && Array.isArray(window.currentPostings)) {
+          posting = window.currentPostings.find(p => p.id == postingId);
+        }
+        
+        window.openContactModal({
+          postingId: postingId,
+          postingTitle: posting ? posting.title : postingTitle,
+          toUserId: posting ? posting.user_id : postingUserId,
+          sellerUsername: posting ? posting.username : sellerUsername
+        });
+      }
+    });
   });
 
 }

@@ -4,7 +4,8 @@
  * Client-side authentication utilities
  */
 
-// API Base URL - uses window.API_URL if set, otherwise defaults
+// SAFE API_BASE_URL - prevents redeclaration when script loads multiple times
+// Uses window.API_URL if already set by config.js, otherwise defaults
 const API_BASE_URL = (typeof window !== 'undefined' && window.API_URL) 
   ? window.API_URL 
   : 'https://autoilty-production.up.railway.app/api';

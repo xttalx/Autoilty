@@ -18,6 +18,7 @@ const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs').promises;
 const axios = require('axios');
+const nodemailer = require('nodemailer');
 const app = express();
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isProduction = NODE_ENV === 'production';
@@ -32,6 +33,83 @@ if (isProduction && !JWT_SECRET) {
 
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
+
+// ───────────────────────────────
+// EMAIL CONFIGURATION
+// ───────────────────────────────
+// Configure nodemailer transporter
+// Supports SMTP (Gmail, SendGrid, etc.) or SendGrid API
+function createEmailTransporter() {
+  // Try SendGrid API first (if SENDGRID_API_KEY is set)
+  if (process.env.SENDGRID_API_KEY) {
+    return nodemailer.createTransport({
+      service: 'SendGrid',
+      auth: {
+        user: 'apikey',
+        pass: process.env.SENDGRID_API_KEY
+      }
+    });
+  }
+  
+  // Fallback to SMTP (Gmail, custom SMTP, etc.)
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
+  }
+  
+  // Development: Use Ethereal (fake SMTP for testing)
+  if (!isProduction) {
+    console.warn('⚠️  No email config found - using Ethereal for development');
+    return null; // Will create on-demand
+  }
+  
+  console.warn('⚠️  No email configuration found - emails will not be sent');
+  return null;
+}
+
+let emailTransporter = createEmailTransporter();
+
+// Helper function to send email
+async function sendEmail(to, subject, html, text) {
+  try {
+    // If no transporter in dev, log instead
+    if (!emailTransporter && !isProduction) {
+      console.log('📧 [DEV] Email would be sent to:', to);
+      console.log('📧 [DEV] Subject:', subject);
+      console.log('📧 [DEV] Body:', text || html);
+      return { success: true, message: 'Email logged (dev mode)' };
+    }
+    
+    if (!emailTransporter) {
+      throw new Error('Email transporter not configured');
+    }
+    
+    const fromEmail = process.env.FROM_EMAIL || 'noreply@autoilty.com';
+    const fromName = process.env.FROM_NAME || 'Autolity Marketplace';
+    
+    const mailOptions = {
+      from: `"${fromName}" <${fromEmail}>`,
+      to: to,
+      subject: subject,
+      text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML for text version
+      html: html
+    };
+    
+    const info = await emailTransporter.sendMail(mailOptions);
+    console.log('✅ Email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('❌ Error sending email:', error);
+    throw error;
+  }
+}
 
 // ───────────────────────────────
 // CORS CONFIGURATION - SIMPLIFIED
@@ -204,9 +282,31 @@ async function initializeDatabase() {
       )
     `);
 
+    // Messages table (supports anonymous messages - from_user_id can be null)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        from_user_id INTEGER,
+        to_user_id INTEGER NOT NULL,
+        posting_id INTEGER NOT NULL,
+        from_name TEXT NOT NULL,
+        from_email TEXT NOT NULL,
+        from_phone TEXT,
+        message TEXT NOT NULL,
+        read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (posting_id) REFERENCES postings(id) ON DELETE CASCADE
+      )
+    `);
+
     // Create indexes for better query performance
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_postings_user_id ON postings(user_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_postings_category ON postings(category)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_to_user_id ON messages(to_user_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_posting_id ON messages(posting_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at DESC)`);
     
     console.log('✅ Database tables initialized');
   } catch (error) {
@@ -705,6 +805,203 @@ app.delete('/api/postings/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Posting deleted successfully' });
   } catch (error) {
     console.error('Delete posting error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ============================================
+// MESSAGES ROUTES
+// ============================================
+
+// Create message (public - allows anonymous messages)
+app.post('/api/messages', async (req, res) => {
+  try {
+    const { postingId, toUserId, name, email, phone, message } = req.body;
+
+    // Validation
+    if (!postingId || !toUserId || !name || !email || !message) {
+      return res.status(400).json({ error: 'Posting ID, recipient user ID, name, email, and message are required' });
+    }
+
+    // Get posting details
+    const posting = await dbGet(
+      `SELECT p.*, u.username, u.email as seller_email 
+       FROM postings p 
+       JOIN users u ON p.user_id = u.id 
+       WHERE p.id = $1`,
+      [postingId]
+    );
+
+    if (!posting) {
+      return res.status(404).json({ error: 'Posting not found' });
+    }
+
+    // Verify toUserId matches posting owner
+    if (posting.user_id !== parseInt(toUserId)) {
+      return res.status(400).json({ error: 'Recipient user ID does not match posting owner' });
+    }
+
+    // Get sender user ID if authenticated (optional)
+    let fromUserId = null;
+    try {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
+      if (token) {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        fromUserId = decoded.id;
+        
+        // Prevent sending message to yourself
+        if (fromUserId === parseInt(toUserId)) {
+          return res.status(400).json({ error: 'Cannot send message to yourself' });
+        }
+      }
+    } catch (authError) {
+      // Not authenticated - allow anonymous message
+      fromUserId = null;
+    }
+
+    // Create message in database (from_user_id can be null for anonymous)
+    const result = await pool.query(
+      `INSERT INTO messages (from_user_id, to_user_id, posting_id, from_name, from_email, from_phone, message)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      [fromUserId, toUserId, postingId, name, email, phone || null, message]
+    );
+
+    const messageId = result.rows[0].id;
+
+    // No email sending - pure in-app messaging
+
+    res.status(201).json({
+      message: 'Message sent successfully',
+      messageId: messageId
+    });
+  } catch (error) {
+    console.error('Create message error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get inbox messages (protected - messages received by logged-in user)
+app.get('/api/messages/inbox', authenticateToken, async (req, res) => {
+  try {
+    const messages = await dbAll(
+      `SELECT m.*, 
+              p.title as posting_title, 
+              p.price as posting_price,
+              p.image_url as posting_image,
+              u_from.username as from_username
+       FROM messages m
+       JOIN postings p ON m.posting_id = p.id
+       LEFT JOIN users u_from ON m.from_user_id = u_from.id
+       WHERE m.to_user_id = $1
+       ORDER BY m.created_at DESC`,
+      [req.user.id]
+    );
+
+    res.json({
+      messages: messages.map(m => ({
+        id: m.id,
+        postingId: m.posting_id,
+        postingTitle: m.posting_title,
+        postingPrice: parseFloat(m.posting_price),
+        postingImage: m.posting_image,
+        fromUserId: m.from_user_id,
+        fromUsername: m.from_username || null,
+        fromEmail: m.from_email,
+        fromName: m.from_name,
+        fromPhone: m.from_phone,
+        message: m.message,
+        read: m.read || false,
+        createdAt: m.created_at
+      }))
+    });
+  } catch (error) {
+    console.error('Get inbox error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get conversation for a specific posting (protected)
+app.get('/api/messages/conversation/:postingId', authenticateToken, async (req, res) => {
+  try {
+    const { postingId } = req.params;
+
+    // Verify user owns the posting or is part of the conversation
+    const posting = await dbGet('SELECT * FROM postings WHERE id = $1', [postingId]);
+    if (!posting) {
+      return res.status(404).json({ error: 'Posting not found' });
+    }
+
+    // Get all messages for this posting where user is either sender or receiver
+    const messages = await dbAll(
+      `SELECT m.*, 
+              u_from.username as from_username,
+              u_to.username as to_username
+       FROM messages m
+       LEFT JOIN users u_from ON m.from_user_id = u_from.id
+       JOIN users u_to ON m.to_user_id = u_to.id
+       WHERE m.posting_id = $1 
+         AND (m.from_user_id = $2 OR m.to_user_id = $2)
+       ORDER BY m.created_at ASC`,
+      [postingId, req.user.id]
+    );
+
+      // Mark messages as read if they were sent to the current user
+      await pool.query(
+        `UPDATE messages SET read = TRUE 
+         WHERE posting_id = $1 AND to_user_id = $2 AND read = FALSE`,
+        [postingId, req.user.id]
+      );
+
+      res.json({
+        posting: {
+          id: posting.id,
+          title: posting.title,
+          price: parseFloat(posting.price),
+          imageUrl: posting.image_url
+        },
+        messages: messages.map(m => ({
+          id: m.id,
+          fromUserId: m.from_user_id,
+          fromUsername: m.from_username || null,
+          fromName: m.from_name,
+          fromEmail: m.from_email,
+          fromPhone: m.from_phone,
+          toUserId: m.to_user_id,
+          toUsername: m.to_username,
+          message: m.message,
+          createdAt: m.created_at,
+          isFromMe: m.from_user_id === req.user.id,
+          read: true // Mark as read when viewing conversation
+        }))
+      });
+  } catch (error) {
+    console.error('Get conversation error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Mark message as read (protected)
+app.put('/api/messages/:id/read', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verify message belongs to user (they received it)
+    const message = await dbGet('SELECT * FROM messages WHERE id = $1', [id]);
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    if (message.to_user_id !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to mark this message as read' });
+    }
+
+    // Mark as read
+    await pool.query('UPDATE messages SET read = TRUE WHERE id = $1', [id]);
+
+    res.json({ message: 'Message marked as read' });
+  } catch (error) {
+    console.error('Mark message as read error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

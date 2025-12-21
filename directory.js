@@ -4,26 +4,30 @@
  * Search for local auto-related businesses
  */
 
-// API Base URL - uses window.API_URL if set, otherwise defaults
-// Avoid redeclaration if already defined
-const API_BASE_URL = (typeof window !== 'undefined' && window.API_URL) 
-  ? window.API_URL 
-  : (typeof window !== 'undefined' && window.API_BASE_URL)
-  ? window.API_BASE_URL
-  : 'https://autoilty-production.up.railway.app/api';
-  
-// Store for reuse
-if (typeof window !== 'undefined') {
+// SAFE API_BASE_URL - prevents redeclaration when script loads multiple times
+if (typeof window !== 'undefined' && !window.API_BASE_URL_SET) {
+  let API_BASE_URL = 'https://autoilty-production.up.railway.app/api';  // Default
+
+  if (window.API_URL) {
+    API_BASE_URL = window.API_URL;
+  } else if (window.API_BASE_URL) {
+    API_BASE_URL = window.API_BASE_URL;
+  }
+
   window.API_BASE_URL = API_BASE_URL;
+  window.API_BASE_URL_SET = true;  // Prevent re-running
 }
+
+// Now safely use it
+const API_BASE_URL = window.API_BASE_URL || 'https://autoilty-production.up.railway.app/api';
 
 let userLocation = null;
-let distanceUnit = typeof window !== 'undefined' && window.distanceUnit ? window.distanceUnit : 'miles'; // Default to miles
 
-// Make distanceUnit global
-if (typeof window !== 'undefined') {
-  window.distanceUnit = distanceUnit;
+// SAFE distanceUnit - prevents redeclaration
+if (typeof window !== 'undefined' && window.distanceUnit === undefined) {
+  window.distanceUnit = 'miles';  // Default to miles
 }
+const distanceUnit = (typeof window !== 'undefined' && window.distanceUnit) || 'miles';
 
 /**
  * Get user's geolocation

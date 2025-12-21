@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="View your messages on Autolity marketplace">
+  <title>Messages - Autoilty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="public/config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" style="display: none;">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="nav-links" id="navLinks">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="marketplace.html" class="nav-link">Marketplace</a>
+          <a href="my-postings.html" class="nav-link" id="myPostingsLink" style="display: none;">My Postings</a>
+          <a href="messages.html" class="nav-link active" id="messagesLink" style="display: none;">Messages</a>
+          <a href="my-postings.html" class="btn btn-secondary" id="createPostingBtn" style="display: none;">
+            <i data-lucide="plus" class="btn-icon"></i>
+            Create Posting
+          </a>
+          <a href="login.html?return=messages.html" class="btn btn-secondary" id="createPostingLoginBtn">
+            <i data-lucide="plus" class="btn-icon"></i>
+            Create Posting
+          </a>
+          <div class="user-menu" id="userMenu" style="display: none;">
+            <button class="user-menu-button" id="userMenuButton">
+              <span id="userMenuName">User</span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="user-menu-dropdown" id="userMenuDropdown">
+              <a href="my-postings.html" class="user-menu-item">
+                <i data-lucide="list" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                My Postings
+              </a>
+              <a href="messages.html" class="user-menu-item">
+                <i data-lucide="mail" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Messages
+              </a>
+              <button class="user-menu-item danger" id="logoutButton" style="width: 100%; text-align: left; border: none; cursor: pointer;">
+                <i data-lucide="log-out" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+          <a href="login.html?return=messages.html" class="nav-link" id="loginLink">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Messages Page -->
+  <main class="main-content">
+    <div class="container" style="max-width: 1200px; padding: var(--spacing-xl) var(--spacing-md);">
+      
+      <h1 style="margin-bottom: var(--spacing-xl);">Messages</h1>
+
+      <!-- Loading State -->
+      <div id="loadingState" style="text-align: center; padding: var(--spacing-2xl);">
+        <div class="skeleton-card" style="height: 200px; margin-bottom: var(--spacing-md);"></div>
+        <div class="skeleton-card" style="height: 200px;"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" style="display: none; text-align: center; padding: var(--spacing-2xl);">
+        <i data-lucide="mail" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
+        <h3 style="margin-bottom: var(--spacing-xs);">No messages yet</h3>
+        <p style="color: var(--color-text-light);">You haven't received any messages about your postings.</p>
+      </div>
+
+      <!-- Messages List -->
+      <div id="messagesList" style="display: none;">
+        <!-- Messages will be loaded here -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Chat Modal -->
+  <div class="modal" id="chatModal" aria-hidden="true" style="display: none;">
+    <div class="modal-overlay" id="chatModalOverlay"></div>
+    <div class="modal-content" style="max-width: 600px; height: 80vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="flex-shrink: 0;">
+        <h2 id="chatModalTitle">Conversation</h2>
+        <button class="modal-close" id="chatModalClose" aria-label="Close modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+        <div id="chatMessages" style="flex: 1; overflow-y: auto; margin-bottom: var(--spacing-md);">
+          <!-- Messages will be loaded here -->
+        </div>
+        <form id="chatReplyForm" style="flex-shrink: 0; display: flex; gap: var(--spacing-sm);">
+          <input type="hidden" id="chatPostingId" name="postingId">
+          <input type="hidden" id="chatToUserId" name="toUserId">
+          <textarea id="chatReplyMessage" name="message" class="form-input" rows="2" placeholder="Type your reply..." required style="flex: 1;"></textarea>
+          <button type="submit" class="btn btn-primary" style="align-self: flex-end;">
+            <i data-lucide="send" class="btn-icon"></i>
+            Send
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="messages-api.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Mobile hamburger menu toggle
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    
+    if (navToggle && navLinks) {
+      navToggle.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        const icon = navToggle.querySelector('i');
+        if (navLinks.classList.contains('active')) {
+          icon.setAttribute('data-lucide', 'x');
+        } else {
+          icon.setAttribute('data-lucide', 'menu');
+        }
+        lucide.createIcons();
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
+          navLinks.classList.remove('active');
+          const icon = navToggle.querySelector('i');
+          icon.setAttribute('data-lucide', 'menu');
+          lucide.createIcons();
+        }
+      });
+      
+      navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.classList.remove('active');
+          const icon = navToggle.querySelector('i');
+          icon.setAttribute('data-lucide', 'menu');
+          lucide.createIcons();
+        });
+      });
+    }
+    
+    // Setup user menu and navigation based on auth status
+    const currentUser = getCurrentUser();
+    const userMenu = document.getElementById('userMenu');
+    const loginLink = document.getElementById('loginLink');
+    const myPostingsLink = document.getElementById('myPostingsLink');
+    const messagesLink = document.getElementById('messagesLink');
+    const createPostingBtn = document.getElementById('createPostingBtn');
+    const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
+    
+    if (currentUser && isAuthenticated()) {
+      userMenu.style.display = 'block';
+      loginLink.style.display = 'none';
+      myPostingsLink.style.display = 'block';
+      messagesLink.style.display = 'block';
+      createPostingBtn.style.display = 'inline-flex';
+      createPostingLoginBtn.style.display = 'none';
+      
+      document.getElementById('userMenuName').textContent = currentUser.username;
+      
+      document.getElementById('userMenuButton').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('userMenuDropdown').classList.toggle('show');
+      });
+      
+      document.addEventListener('click', () => {
+        document.getElementById('userMenuDropdown').classList.remove('show');
+      });
+      
+      document.getElementById('logoutButton').addEventListener('click', () => {
+        if (confirm('Are you sure you want to logout?')) {
+          logout();
+        }
+      });
+    } else {
+      userMenu.style.display = 'none';
+      loginLink.style.display = 'block';
+      myPostingsLink.style.display = 'none';
+      messagesLink.style.display = 'none';
+      createPostingBtn.style.display = 'none';
+      createPostingLoginBtn.style.display = 'inline-flex';
+      
+      // Redirect to login if not authenticated
+      window.location.href = 'login.html?return=messages.html';
+    }
+
+    // Load inbox messages
+    async function loadMessages() {
+      const loadingState = document.getElementById('loadingState');
+      const emptyState = document.getElementById('emptyState');
+      const messagesList = document.getElementById('messagesList');
+
+      try {
+        loadingState.style.display = 'block';
+        emptyState.style.display = 'none';
+        messagesList.style.display = 'none';
+
+        const data = await getInboxMessages();
+        const messages = data.messages || [];
+
+        if (messages.length === 0) {
+          loadingState.style.display = 'none';
+          emptyState.style.display = 'block';
+          lucide.createIcons();
+          return;
+        }
+
+        // Group messages by posting
+        const messagesByPosting = {};
+        messages.forEach(msg => {
+          if (!messagesByPosting[msg.postingId]) {
+            messagesByPosting[msg.postingId] = {
+              postingId: msg.postingId,
+              postingTitle: msg.postingTitle,
+              postingPrice: msg.postingPrice,
+              postingImage: msg.postingImage,
+              messages: []
+            };
+          }
+          messagesByPosting[msg.postingId].messages.push(msg);
+        });
+
+        // Render messages
+        messagesList.innerHTML = Object.values(messagesByPosting).map(group => {
+          const latestMessage = group.messages[0];
+          const messageCount = group.messages.length;
+          const imageUrl = group.postingImage 
+            ? (typeof getPostingImageUrl !== 'undefined' 
+              ? getPostingImageUrl(group.postingImage)
+              : `https://autoilty-production.up.railway.app${group.postingImage}`)
+            : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+          
+          return `
+            <div class="message-card" style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--spacing-md); margin-bottom: var(--spacing-md); cursor: pointer; transition: var(--transition);" 
+                 onclick="openChat(${group.postingId})">
+              <div style="display: flex; gap: var(--spacing-md);">
+                <img src="${imageUrl}" alt="${group.postingTitle}" style="width: 100px; height: 100px; object-fit: cover; border-radius: var(--radius);">
+                <div style="flex: 1;">
+                  <h3 style="margin-bottom: var(--spacing-xs);">${group.postingTitle}</h3>
+                  <p style="color: var(--color-text-light); font-size: 0.875rem; margin-bottom: var(--spacing-xs);">
+                    From: ${latestMessage.fromName} (${latestMessage.fromEmail})
+                  </p>
+                  <p style="color: var(--color-text); margin-bottom: var(--spacing-xs);">
+                    ${latestMessage.message.substring(0, 100)}${latestMessage.message.length > 100 ? '...' : ''}
+                  </p>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-sm);">
+                    <span style="color: var(--color-text-light); font-size: 0.875rem;">
+                      ${new Date(latestMessage.createdAt).toLocaleDateString()}
+                    </span>
+                    ${messageCount > 1 ? `<span style="background: var(--color-primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">${messageCount}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        loadingState.style.display = 'none';
+        messagesList.style.display = 'block';
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Error loading messages:', error);
+        loadingState.style.display = 'none';
+        messagesList.innerHTML = `
+          <div style="text-align: center; padding: var(--spacing-xl);">
+            <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-error); display: block;"></i>
+            <h3>Error loading messages</h3>
+            <p style="color: var(--color-text-light);">${error.message || 'Please try again later.'}</p>
+          </div>
+        `;
+        messagesList.style.display = 'block';
+        lucide.createIcons();
+      }
+    }
+
+    // Open chat modal
+    async function openChat(postingId) {
+      const modal = document.getElementById('chatModal');
+      const chatMessages = document.getElementById('chatMessages');
+      const chatTitle = document.getElementById('chatModalTitle');
+      
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      chatMessages.innerHTML = '<div style="text-align: center; padding: var(--spacing-lg);">Loading conversation...</div>';
+      
+      try {
+        const data = await getConversation(postingId);
+        chatTitle.textContent = `Conversation: ${data.posting.title}`;
+        
+        document.getElementById('chatPostingId').value = postingId;
+        // Find the other user (not current user) - handle anonymous messages
+        const otherUser = data.messages.find(m => m.fromUserId !== currentUser.id && m.fromUserId !== null) || 
+                         data.messages.find(m => !m.isFromMe) || 
+                         data.messages[0];
+        // For replies, we need to send to the original sender
+        // If message is from anonymous user, we'll use their email/name
+        if (otherUser) {
+          if (otherUser.fromUserId === currentUser.id) {
+            document.getElementById('chatToUserId').value = otherUser.toUserId;
+          } else if (otherUser.fromUserId) {
+            document.getElementById('chatToUserId').value = otherUser.fromUserId;
+          } else {
+            // Anonymous message - we'll need to reply using email
+            document.getElementById('chatToUserId').value = posting.user_id; // Reply to posting owner
+          }
+        }
+        
+        // Render messages
+        chatMessages.innerHTML = data.messages.map(msg => {
+          const isFromMe = msg.isFromMe;
+          return `
+            <div style="margin-bottom: var(--spacing-md); display: flex; ${isFromMe ? 'justify-content: flex-end' : 'justify-content: flex-start'}">
+              <div style="max-width: 70%; background: ${isFromMe ? 'var(--color-primary)' : '#f5f5f5'}; color: ${isFromMe ? 'white' : 'var(--color-text)'}; padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius);">
+                <p style="font-size: 0.75rem; margin-bottom: var(--spacing-xs); opacity: 0.8;">${msg.fromName}</p>
+                <p style="margin: 0;">${msg.message}</p>
+                <p style="font-size: 0.75rem; margin-top: var(--spacing-xs); opacity: 0.8;">${new Date(msg.createdAt).toLocaleString()}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        lucide.createIcons();
+      } catch (error) {
+        chatMessages.innerHTML = `
+          <div style="text-align: center; padding: var(--spacing-lg);">
+            <p style="color: var(--color-error);">Error loading conversation: ${error.message}</p>
+          </div>
+        `;
+      }
+    }
+    
+    function closeChatModal() {
+      const modal = document.getElementById('chatModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      document.getElementById('chatReplyForm').reset();
+    }
+    
+    // Make openChat globally available
+    window.openChat = openChat;
+    
+    // Modal event listeners
+    document.getElementById('chatModalOverlay').addEventListener('click', closeChatModal);
+    document.getElementById('chatModalClose').addEventListener('click', closeChatModal);
+    
+    // Reply form submission
+    document.getElementById('chatReplyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = {
+        postingId: parseInt(document.getElementById('chatPostingId').value),
+        toUserId: parseInt(document.getElementById('chatToUserId').value),
+        name: currentUser.username,
+        email: currentUser.email || '',
+        phone: null,
+        message: document.getElementById('chatReplyMessage').value.trim()
+      };
+      
+      try {
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        
+        await sendMessage(formData);
+        
+        // Reload conversation
+        await openChat(formData.postingId);
+        document.getElementById('chatReplyMessage').value = '';
+      } catch (error) {
+        alert('Failed to send reply: ' + error.message);
+      } finally {
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Load messages on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadMessages);
+    } else {
+      loadMessages();
+    }
+  </script>
+</body>
+</html>
+

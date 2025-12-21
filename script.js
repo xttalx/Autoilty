@@ -12,7 +12,8 @@
 // ============================================
 // SUPABASE CONFIGURATION
 // ============================================
-let supabaseClient = null;
+// SAFE supabaseClient - prevents redeclaration when script loads multiple times
+let supabaseClient = (typeof window !== 'undefined' && window.supabaseClient) || null;
 
 // Try multiple methods to get environment variables
 function getSupabaseConfig() {
@@ -39,15 +40,21 @@ function getSupabaseConfig() {
   return { url: null, key: null };
 }
 
-// Initialize Supabase client
-try {
-  const config = getSupabaseConfig();
-  
-  if (config.url && config.key && typeof supabase !== 'undefined') {
-    supabaseClient = supabase.createClient(config.url, config.key);
+// Initialize Supabase client (only if not already initialized)
+if (!supabaseClient) {
+  try {
+    const config = getSupabaseConfig();
+    
+    if (config.url && config.key && typeof supabase !== 'undefined') {
+      supabaseClient = supabase.createClient(config.url, config.key);
+      // Store on window to prevent re-initialization
+      if (typeof window !== 'undefined') {
+        window.supabaseClient = supabaseClient;
+      }
+    }
+  } catch (error) {
+    console.warn('Supabase not configured, using fallback products:', error);
   }
-} catch (error) {
-  console.warn('Supabase not configured, using fallback products:', error);
 }
 
 // ============================================
