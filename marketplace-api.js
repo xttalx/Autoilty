@@ -129,52 +129,18 @@ async function fetchPosting(id) {
  */
 
 function postingToProduct(posting) {
-
-  // Get base URL for images (backend serves uploads at root level)
-  const getBaseUrl = () => {
-    if (typeof window !== 'undefined' && window.API_URL) {
-      // Remove /api suffix to get base URL
-      return window.API_URL.replace('/api', '');
-    }
-    return 'https://autoilty-production.up.railway.app';
-  };
-
-  const baseUrl = getBaseUrl();
-
-  // Construct full image URL - backend returns image_url as /uploads/filename
-  let imageUrl = 'https://via.placeholder.com/400';
-  if (posting.image_url) {
-    // Ensure image_url starts with /uploads/ (backend returns it this way)
-    const imagePath = posting.image_url.startsWith('/') 
-      ? posting.image_url 
-      : `/uploads/${posting.image_url}`;
-    imageUrl = `${baseUrl}${imagePath}`;
-  }
-
   return {
-
     id: posting.id,
-
     name: posting.title,
-
     title: posting.title,
-
     price: parseFloat(posting.price),
-
     category: posting.category.toLowerCase(),
-
-    image: imageUrl,
-
+    image: getPostingImageUrl(posting.image_url),
     description: posting.description,
-
     location: posting.location,
-
     username: posting.username,
-
     created_at: posting.created_at
-
   };
-
 }
 
 
@@ -233,7 +199,7 @@ function renderPostingsAsProducts(postings, container) {
 
         <div class="product-image">
 
-          <img src="${product.image}" alt="${product.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/400'">
+          <img src="${product.image}" alt="${product.name}" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
 
         </div>
 
@@ -301,5 +267,9 @@ if (typeof window !== 'undefined') {
   window.postingToProduct = postingToProduct;
 
   window.renderPostingsAsProducts = renderPostingsAsProducts;
+
+  window.getPostingImageUrl = getPostingImageUrl;
+
+  window.getImageBaseUrl = getImageBaseUrl;
 
 }

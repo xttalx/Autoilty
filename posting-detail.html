@@ -86,9 +86,11 @@
           
           <!-- Image Section -->
           <div>
-            <div style="border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; background-color: #f5f5f5;">
-              <img id="postingImage" src="" alt="" style="width: 100%; height: auto; display: block; min-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/600'">
+            <div id="imageGallery" style="border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; background-color: #f5f5f5;">
+              <img id="postingImage" src="" alt="" style="width: 100%; height: auto; display: block; min-height: 400px; object-fit: cover;">
             </div>
+            <!-- Thumbnail gallery for multiple images -->
+            <div id="imageThumbnails" style="display: none; margin-top: var(--spacing-md); display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-sm);"></div>
           </div>
 
           <!-- Details Section -->
@@ -142,55 +144,62 @@
     lucide.createIcons();
     
     // Setup user menu and navigation based on auth status
-    const currentUser = getCurrentUser();
-    const userMenu = document.getElementById('userMenu');
-    const loginLink = document.getElementById('loginLink');
-    const myPostingsLink = document.getElementById('myPostingsLink');
-    const createPostingBtn = document.getElementById('createPostingBtn');
-    const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
-    
-    if (currentUser && isAuthenticated()) {
-      userMenu.style.display = 'block';
-      loginLink.style.display = 'none';
-      myPostingsLink.style.display = 'block';
-      createPostingBtn.style.display = 'inline-flex';
-      createPostingLoginBtn.style.display = 'none';
+    function setupNavigation() {
+      const currentUser = getCurrentUser();
+      const userMenu = document.getElementById('userMenu');
+      const loginLink = document.getElementById('loginLink');
+      const myPostingsLink = document.getElementById('myPostingsLink');
+      const createPostingBtn = document.getElementById('createPostingBtn');
+      const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
       
-      document.getElementById('userMenuName').textContent = currentUser.username;
-      
-      document.getElementById('userMenuButton').addEventListener('click', (e) => {
-        e.stopPropagation();
-        document.getElementById('userMenuDropdown').classList.toggle('show');
-      });
-      
-      document.addEventListener('click', () => {
-        document.getElementById('userMenuDropdown').classList.remove('show');
-      });
-      
-      document.getElementById('logoutButton').addEventListener('click', () => {
-        if (confirm('Are you sure you want to logout?')) {
-          logout();
-        }
-      });
-    } else {
-      userMenu.style.display = 'none';
-      loginLink.style.display = 'block';
-      myPostingsLink.style.display = 'none';
-      createPostingBtn.style.display = 'none';
-      createPostingLoginBtn.style.display = 'inline-flex';
+      if (currentUser && isAuthenticated()) {
+        userMenu.style.display = 'block';
+        loginLink.style.display = 'none';
+        myPostingsLink.style.display = 'block';
+        createPostingBtn.style.display = 'inline-flex';
+        createPostingLoginBtn.style.display = 'none';
+        
+        document.getElementById('userMenuName').textContent = currentUser.username;
+        
+        document.getElementById('userMenuButton').addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.getElementById('userMenuDropdown').classList.toggle('show');
+        });
+        
+        document.addEventListener('click', () => {
+          document.getElementById('userMenuDropdown').classList.remove('show');
+        });
+        
+        document.getElementById('logoutButton').addEventListener('click', () => {
+          if (confirm('Are you sure you want to logout?')) {
+            logout();
+          }
+        });
+      } else {
+        userMenu.style.display = 'none';
+        loginLink.style.display = 'block';
+        myPostingsLink.style.display = 'none';
+        createPostingBtn.style.display = 'none';
+        createPostingLoginBtn.style.display = 'inline-flex';
+      }
     }
 
-    // Get posting ID from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const postingId = urlParams.get('id');
-
-    if (!postingId) {
-      showError('No posting ID provided');
-      return;
+    function showError(message) {
+      const loadingState = document.getElementById('loadingState');
+      const errorState = document.getElementById('errorState');
+      const postingContent = document.getElementById('postingContent');
+      loadingState.style.display = 'none';
+      errorState.style.display = 'block';
+      postingContent.style.display = 'none';
+      const errorTitle = errorState.querySelector('h2');
+      if (errorTitle) {
+        errorTitle.textContent = message;
+      }
+      lucide.createIcons();
     }
 
     // Load posting details
-    async function loadPosting() {
+    async function loadPosting(postingId) {
       const loadingState = document.getElementById('loadingState');
       const errorState = document.getElementById('errorState');
       const postingContent = document.getElementById('postingContent');
@@ -208,25 +217,62 @@
           throw new Error('Posting not found');
         }
 
-        // Convert posting to product format for consistent image URL handling
-        const product = postingToProduct(posting);
-
-        // Get base URL for images
-        const getBaseUrl = () => {
-          if (typeof window !== 'undefined' && window.API_URL) {
-            return window.API_URL.replace('/api', '');
+        // Handle multiple images (up to 3) or single image
+        const getImageUrl = (imgUrl) => {
+          if (typeof getPostingImageUrl !== 'undefined') {
+            return getPostingImageUrl(imgUrl);
           }
-          return 'https://autoilty-production.up.railway.app';
+          if (!imgUrl) {
+            return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+          }
+          const baseUrl = typeof getImageBaseUrl !== 'undefined' ? getImageBaseUrl() : 'https://autoilty-production.up.railway.app';
+          return `${baseUrl}${imgUrl.startsWith('/') ? imgUrl : `/uploads/${imgUrl}`}`;
         };
-        const baseUrl = getBaseUrl();
 
-        // Set image
-        const imageUrl = posting.image_url 
-          ? `${baseUrl}${posting.image_url.startsWith('/') ? posting.image_url : `/uploads/${posting.image_url}`}`
-          : 'https://via.placeholder.com/600';
+        // Get images array (if backend supports multiple images) or use single image_url
+        let images = [];
+        if (posting.images && Array.isArray(posting.images) && posting.images.length > 0) {
+          // Backend provides images array
+          images = posting.images.slice(0, 3); // Limit to 3 images
+        } else if (posting.image_url) {
+          // Single image from image_url field
+          images = [posting.image_url];
+        }
+
+        const postingImage = document.getElementById('postingImage');
+        const imageThumbnails = document.getElementById('imageThumbnails');
         
-        document.getElementById('postingImage').src = imageUrl;
-        document.getElementById('postingImage').alt = posting.title;
+        if (images.length > 0) {
+          // Set main image
+          const mainImageUrl = getImageUrl(images[0]);
+          postingImage.src = mainImageUrl;
+          postingImage.alt = posting.title || 'Posting image';
+          postingImage.onerror = function() {
+            this.onerror = null;
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+          };
+
+          // Show thumbnails if multiple images
+          if (images.length > 1) {
+            imageThumbnails.style.display = 'grid';
+            imageThumbnails.innerHTML = images.map((imgUrl, index) => {
+              const thumbUrl = getImageUrl(imgUrl);
+              return `
+                <div style="border: 2px solid ${index === 0 ? 'var(--color-primary)' : 'var(--color-border)'}; border-radius: var(--radius); overflow: hidden; cursor: pointer; aspect-ratio: 1;">
+                  <img src="${thumbUrl}" alt="Image ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;" 
+                    onclick="document.getElementById('postingImage').src='${thumbUrl}'; document.querySelectorAll('#imageThumbnails img').forEach((img, i) => { img.parentElement.style.borderColor = i === ${index} ? 'var(--color-primary)' : 'var(--color-border)'; });">
+                </div>
+              `;
+            }).join('');
+          } else {
+            imageThumbnails.style.display = 'none';
+          }
+        } else {
+          // No images - use placeholder
+          postingImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+          postingImage.alt = 'No image available';
+          imageThumbnails.style.display = 'none';
+        }
 
         // Set details
         document.getElementById('postingCategory').textContent = (posting.category || 'Other').toUpperCase();
@@ -264,20 +310,28 @@
       }
     }
 
-    function showError(message) {
-      const loadingState = document.getElementById('loadingState');
-      const errorState = document.getElementById('errorState');
-      loadingState.style.display = 'none';
-      errorState.style.display = 'block';
-      errorState.querySelector('h2').textContent = message;
-      lucide.createIcons();
+    // Initialize page
+    function initPage() {
+      setupNavigation();
+      
+      // Get posting ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const postingId = urlParams.get('id');
+
+      if (!postingId) {
+        showError('No posting ID provided');
+        return;
+      }
+
+      // Load posting details
+      loadPosting(postingId);
     }
 
     // Load posting on page ready
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadPosting);
+      document.addEventListener('DOMContentLoaded', initPage);
     } else {
-      loadPosting();
+      initPage();
     }
   </script>
 </body>
