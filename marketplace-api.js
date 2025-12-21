@@ -135,7 +135,18 @@ function postingToProduct(posting) {
     title: posting.title,
     price: parseFloat(posting.price),
     category: posting.category.toLowerCase(),
-    image: getPostingImageUrl(posting.image_url),
+    image: (() => {
+      if (!posting.image_url) {
+        return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+      }
+      const baseUrl = (typeof window !== 'undefined' && window.API_URL) 
+        ? window.API_URL.replace('/api', '')
+        : 'https://autoilty-production.up.railway.app';
+      const imagePath = posting.image_url.startsWith('/') 
+        ? posting.image_url 
+        : `/uploads/${posting.image_url}`;
+      return `${baseUrl}${imagePath}`;
+    })(),
     description: posting.description,
     location: posting.location,
     username: posting.username,
@@ -255,6 +266,34 @@ function renderPostingsAsProducts(postings, container) {
 }
 
 
+
+/**
+ * Get base URL for images (backend serves uploads at root level)
+ */
+function getImageBaseUrl() {
+  if (typeof window !== 'undefined' && window.API_URL) {
+    // Remove /api suffix to get base URL
+    return window.API_URL.replace('/api', '');
+  }
+  return 'https://autoilty-production.up.railway.app';
+}
+
+/**
+ * Construct full image URL from posting image_url field
+ */
+function getPostingImageUrl(imageUrl) {
+  if (!imageUrl) {
+    // Return a data URI SVG placeholder instead of external URL
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+  }
+  
+  const baseUrl = getImageBaseUrl();
+  // Ensure image_url starts with /uploads/ (backend returns it this way)
+  const imagePath = imageUrl.startsWith('/') 
+    ? imageUrl 
+    : `/uploads/${imageUrl}`;
+  return `${baseUrl}${imagePath}`;
+}
 
 // Export functions to global scope
 
