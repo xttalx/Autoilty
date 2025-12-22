@@ -238,8 +238,10 @@
         if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
           navLinks.classList.remove('active');
           const icon = navToggle.querySelector('i');
-          icon.setAttribute('data-lucide', 'menu');
-          lucide.createIcons();
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            lucide.createIcons();
+          }
         }
       });
       
@@ -248,8 +250,10 @@
         link.addEventListener('click', () => {
           navLinks.classList.remove('active');
           const icon = navToggle.querySelector('i');
-          icon.setAttribute('data-lucide', 'menu');
-          lucide.createIcons();
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            lucide.createIcons();
+          }
         });
       });
     }
@@ -482,14 +486,20 @@
       const postingIdInput = document.getElementById('contactPostingId');
       const toUserIdInput = document.getElementById('contactToUserId');
       
-      postingTitle.textContent = `About: ${data.postingTitle}`;
-      postingIdInput.value = data.postingId;
-      toUserIdInput.value = data.toUserId;
+      if (!modal || !postingTitle || !postingIdInput || !toUserIdInput) {
+        console.error('Contact modal elements not found');
+        return;
+      }
+      
+      postingTitle.textContent = `About: ${data.postingTitle || 'Posting'}`;
+      postingIdInput.value = data.postingId || '';
+      toUserIdInput.value = data.toUserId || '';
       
       // Pre-fill name and email if user is logged in
       const currentUser = getCurrentUser();
-      if (currentUser) {
-        document.getElementById('contactName').value = currentUser.username || '';
+      const contactName = document.getElementById('contactName');
+      if (currentUser && contactName) {
+        contactName.value = currentUser.username || '';
       }
       
       modal.style.display = 'block';
@@ -499,68 +509,112 @@
     
     function closeContactModal() {
       const modal = document.getElementById('contactSellerModal');
-      modal.style.display = 'none';
+      const form = document.getElementById('contactSellerForm');
+      const errorDiv = document.getElementById('contactFormError');
+      
+      if (modal) {
+        modal.style.display = 'none';
+      }
       document.body.style.overflow = '';
-      document.getElementById('contactSellerForm').reset();
-      document.getElementById('contactFormError').style.display = 'none';
+      if (form) form.reset();
+      if (errorDiv) errorDiv.style.display = 'none';
     }
     
     // Make openContactModal globally available
     window.openContactModal = openContactModal;
     
-    // Modal event listeners
-    document.getElementById('contactModalOverlay').addEventListener('click', closeContactModal);
-    document.getElementById('contactModalClose').addEventListener('click', closeContactModal);
-    document.getElementById('contactModalCancel').addEventListener('click', closeContactModal);
+    // Modal event listeners with null checks
+    const contactModalOverlay = document.getElementById('contactModalOverlay');
+    const contactModalClose = document.getElementById('contactModalClose');
+    const contactModalCancel = document.getElementById('contactModalCancel');
     
-    // Form submission
-    document.getElementById('contactSellerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const errorDiv = document.getElementById('contactFormError');
-      errorDiv.style.display = 'none';
-      
-      // Pre-fill name/email if user is logged in
-      const currentUser = getCurrentUser();
-      const nameInput = document.getElementById('contactName');
-      const emailInput = document.getElementById('contactEmail');
-      
-      if (currentUser && isAuthenticated()) {
-        if (!nameInput.value.trim()) {
-          nameInput.value = currentUser.username || '';
-        }
-        if (!emailInput.value.trim()) {
-          emailInput.value = currentUser.email || '';
-        }
-      }
-      
-      const formData = {
-        postingId: parseInt(document.getElementById('contactPostingId').value),
-        toUserId: parseInt(document.getElementById('contactToUserId').value),
-        name: nameInput.value.trim(),
-        email: emailInput.value.trim(),
-        phone: document.getElementById('contactPhone').value.trim() || null,
-        message: document.getElementById('contactMessage').value.trim()
-      };
-      
-      try {
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
+    if (contactModalOverlay) {
+      contactModalOverlay.addEventListener('click', closeContactModal);
+    }
+    if (contactModalClose) {
+      contactModalClose.addEventListener('click', closeContactModal);
+    }
+    if (contactModalCancel) {
+      contactModalCancel.addEventListener('click', closeContactModal);
+    }
+    
+    // Form submission with null checks
+    const contactSellerForm = document.getElementById('contactSellerForm');
+    if (contactSellerForm) {
+      contactSellerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        await sendMessage(formData);
+        const errorDiv = document.getElementById('contactFormError');
+        const postingIdInput = document.getElementById('contactPostingId');
+        const toUserIdInput = document.getElementById('contactToUserId');
+        const nameInput = document.getElementById('contactName');
+        const emailInput = document.getElementById('contactEmail');
+        const phoneInput = document.getElementById('contactPhone');
+        const messageInput = document.getElementById('contactMessage');
         
-        showNotification('Message sent successfully!');
-        closeContactModal();
-      } catch (error) {
-        errorDiv.textContent = error.message || 'Failed to send message. Please try again.';
-        errorDiv.style.display = 'block';
-      } finally {
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Send Message';
-      }
-    });
+        if (!errorDiv || !postingIdInput || !toUserIdInput || !nameInput || !emailInput || !messageInput) {
+          console.error('Contact form elements not found');
+          return;
+        }
+        
+        errorDiv.style.display = 'none';
+        
+        // Pre-fill name/email if user is logged in
+        const currentUser = getCurrentUser();
+        if (currentUser && isAuthenticated()) {
+          if (!nameInput.value.trim()) {
+            nameInput.value = currentUser.username || '';
+          }
+          if (!emailInput.value.trim()) {
+            emailInput.value = currentUser.email || '';
+          }
+        }
+        
+        const formData = {
+          postingId: parseInt(postingIdInput.value),
+          toUserId: parseInt(toUserIdInput.value),
+          name: nameInput.value.trim(),
+          email: emailInput.value.trim(),
+          phone: phoneInput ? phoneInput.value.trim() || null : null,
+          message: messageInput.value.trim()
+        };
+        
+        try {
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+          }
+          
+          // Check if sendMessage function exists (from messages-api.js)
+          if (typeof sendMessage === 'function') {
+            await sendMessage(formData);
+            
+            if (typeof showNotification === 'function') {
+              showNotification('Message sent successfully!');
+            } else {
+              alert('Message sent successfully!');
+            }
+            closeContactModal();
+          } else {
+            // Fallback: log to console if API not available
+            console.log('Message data:', formData);
+            alert('Message would be sent: ' + JSON.stringify(formData));
+            closeContactModal();
+          }
+        } catch (error) {
+          console.error('Error sending message:', error);
+          errorDiv.textContent = error.message || 'Failed to send message. Please try again.';
+          errorDiv.style.display = 'block';
+        } finally {
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Message';
+          }
+        }
+      });
+    }
 
     // Load on page ready
     if (document.readyState === 'loading') {

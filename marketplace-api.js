@@ -281,27 +281,45 @@ function renderPostingsAsProducts(postings, container) {
   container.querySelectorAll('.contact-seller-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
+      e.preventDefault();
+      
       const postingId = btn.dataset.postingId;
       const sellerUsername = btn.dataset.sellerUsername;
       
+      if (!postingId) {
+        console.error('Posting ID not found');
+        return;
+      }
+      
       // Get posting details from stored postings or card data
       const card = btn.closest('.product-card');
-      if (card && typeof window.openContactModal === 'function') {
-        const postingUserId = card.dataset.postingUserId;
-        const postingTitle = card.querySelector('.product-name')?.textContent || 'Posting';
-        
-        // Try to get full posting data from stored postings
-        let posting = null;
-        if (typeof window.currentPostings !== 'undefined' && Array.isArray(window.currentPostings)) {
-          posting = window.currentPostings.find(p => p.id == postingId);
-        }
-        
+      if (!card) {
+        console.error('Product card not found');
+        return;
+      }
+      
+      const postingUserId = card.dataset.postingUserId;
+      const postingTitleEl = card.querySelector('.product-name');
+      const postingTitle = postingTitleEl ? postingTitleEl.textContent : 'Posting';
+      
+      // Try to get full posting data from stored postings
+      let posting = null;
+      if (typeof window.currentPostings !== 'undefined' && Array.isArray(window.currentPostings)) {
+        posting = window.currentPostings.find(p => p.id == postingId);
+      }
+      
+      // Check if openContactModal function exists
+      if (typeof window.openContactModal === 'function') {
         window.openContactModal({
           postingId: postingId,
           postingTitle: posting ? posting.title : postingTitle,
           toUserId: posting ? posting.user_id : postingUserId,
           sellerUsername: posting ? posting.username : sellerUsername
         });
+      } else {
+        console.warn('openContactModal function not found. Make sure marketplace.html has loaded the modal script.');
+        // Fallback: navigate to detail page
+        window.location.href = `posting-detail.html?id=${postingId}`;
       }
     });
   });

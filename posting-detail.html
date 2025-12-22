@@ -504,9 +504,9 @@
         return;
       }
       
-      postingTitle.textContent = `About: ${data.postingTitle}`;
-      postingIdInput.value = data.postingId;
-      toUserIdInput.value = data.toUserId;
+      postingTitle.textContent = `About: ${data.postingTitle || 'Posting'}`;
+      postingIdInput.value = data.postingId || '';
+      toUserIdInput.value = data.toUserId || '';
       
       // Pre-fill name and email if user is logged in
       const currentUser = getCurrentUser();
