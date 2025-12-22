@@ -533,20 +533,22 @@
       if (errorDiv) errorDiv.style.display = 'none';
     }
     
-    // Contact Seller button handler
-    const contactSellerBtn = document.getElementById('contactSellerBtn');
-    if (contactSellerBtn) {
-      contactSellerBtn.addEventListener('click', () => {
-        if (window.currentPosting) {
-          openContactModal({
-            postingId: window.currentPosting.id,
-            postingTitle: window.currentPosting.title,
-            toUserId: window.currentPosting.userId,
-            sellerUsername: window.currentPosting.username
-          });
-        }
-      });
+    // Contact Seller button handler - safe version
+const contactSellerBtn = document.getElementById('contactSellerBtn');
+if (contactSellerBtn) {
+  contactSellerBtn.addEventListener('click', () => {
+    if (!window.currentPosting) {
+      alert('Posting details are still loading. Please wait a moment and try again.');
+      return;
     }
+    openContactModal({
+      postingId: window.currentPosting.id,
+      postingTitle: window.currentPosting.title || 'this posting',
+      toUserId: window.currentPosting.userId,
+      sellerUsername: window.currentPosting.username
+    });
+  });
+}
     
     // Modal event listeners
     const contactModalOverlay = document.getElementById('contactModalOverlay');
