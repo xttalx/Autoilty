@@ -135,18 +135,7 @@ function postingToProduct(posting) {
     title: posting.title,
     price: parseFloat(posting.price),
     category: posting.category.toLowerCase(),
-    image: (() => {
-      if (!posting.image_url) {
-        return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
-      }
-      const baseUrl = (typeof window !== 'undefined' && window.API_URL) 
-        ? window.API_URL.replace('/api', '')
-        : 'https://autoilty-production.up.railway.app';
-      const imagePath = posting.image_url.startsWith('/') 
-        ? posting.image_url 
-        : `/uploads/${posting.image_url}`;
-      return `${baseUrl}${imagePath}`;
-    })(),
+    image: posting.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==',
     description: posting.description,
     location: posting.location,
     username: posting.username,
@@ -341,6 +330,7 @@ function getImageBaseUrl() {
 
 /**
  * Construct full image URL from posting image_url field
+ * image_url is now a full Supabase Storage URL, so return as-is
  */
 function getPostingImageUrl(imageUrl) {
   if (!imageUrl) {
@@ -348,11 +338,16 @@ function getPostingImageUrl(imageUrl) {
     return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
   }
   
+  // If already a full URL (from Supabase Storage), return as-is
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  
+  // Legacy support: if it's a relative path, prepend base URL (for old postings)
   const baseUrl = getImageBaseUrl();
-  // Ensure image_url starts with /uploads/ (backend returns it this way)
   const imagePath = imageUrl.startsWith('/') 
     ? imageUrl 
-    : `/uploads/${imageUrl}`;
+    : `/${imageUrl}`;
   return `${baseUrl}${imagePath}`;
 }
 

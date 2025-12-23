@@ -16,9 +16,9 @@ const { Pool } = require('pg');
 const path = require('path');
 const cors = require('cors');
 const multer = require('multer');
-const fs = require('fs').promises;
 const axios = require('axios');
 const nodemailer = require('nodemailer');
+const { createClient } = require('@supabase/supabase-js');
 const app = express();
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isProduction = NODE_ENV === 'production';
@@ -32,7 +32,6 @@ if (isProduction && !JWT_SECRET) {
 }
 
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
-const UPLOAD_DIR = path.join(__dirname, 'uploads');
 
 // ───────────────────────────────
 // EMAIL CONFIGURATION
@@ -155,28 +154,10 @@ if (isProduction) {
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use('/uploads', express.static(UPLOAD_DIR));
+// Removed /uploads static serving - using Supabase Storage now
 
-// Ensure upload directory exists
-async function ensureUploadDir() {
-  try {
-    await fs.access(UPLOAD_DIR);
-  } catch {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  }
-}
-ensureUploadDir();
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOAD_DIR);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Configure multer for memory storage (to get buffer for Supabase upload)
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
@@ -250,6 +231,102 @@ pool.on('connect', () => {
 pool.on('error', (err) => {
   console.error('❌ PostgreSQL pool error:', err);
 });
+
+// ───────────────────────────────
+// SUPABASE STORAGE CONFIGURATION
+// ───────────────────────────────
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+const SUPABASE_STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'postings';
+
+let supabaseStorage = null;
+
+if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+  try {
+    supabaseStorage = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+    console.log('✅ Supabase Storage client initialized');
+  } catch (error) {
+    console.error('❌ Error initializing Supabase Storage:', error);
+  }
+} else {
+  console.warn('⚠️  Supabase Storage not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables.');
+}
+
+/**
+ * Upload file to Supabase Storage
+ * @param {Buffer} fileBuffer - File buffer from multer
+ * @param {string} fileName - File name
+ * @param {string} contentType - MIME type
+ * @returns {Promise<string|null>} Public URL of uploaded file
+ */
+async function uploadToSupabaseStorage(fileBuffer, fileName, contentType) {
+  if (!supabaseStorage) {
+    throw new Error('Supabase Storage not configured');
+  }
+
+  try {
+    // Upload file to Supabase Storage bucket
+    const { data, error } = await supabaseStorage.storage
+      .from(SUPABASE_STORAGE_BUCKET)
+      .upload(fileName, fileBuffer, {
+        contentType: contentType,
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Supabase Storage upload error:', error);
+      throw error;
+    }
+
+    // Get public URL
+    const { data: urlData } = supabaseStorage.storage
+      .from(SUPABASE_STORAGE_BUCKET)
+      .getPublicUrl(fileName);
+
+    if (!urlData?.publicUrl) {
+      throw new Error('Failed to get public URL');
+    }
+
+    console.log('✅ Image uploaded to Supabase Storage:', urlData.publicUrl);
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Error uploading to Supabase Storage:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete file from Supabase Storage
+ * @param {string} imageUrl - Full URL or path of the image
+ */
+async function deleteFromSupabaseStorage(imageUrl) {
+  if (!supabaseStorage || !imageUrl) {
+    return;
+  }
+
+  try {
+    // Extract file name from URL
+    const urlParts = imageUrl.split('/');
+    const fileName = urlParts[urlParts.length - 1].split('?')[0]; // Remove query params
+
+    const { error } = await supabaseStorage.storage
+      .from(SUPABASE_STORAGE_BUCKET)
+      .remove([fileName]);
+
+    if (error) {
+      console.warn('Could not delete image from Supabase Storage:', error);
+    } else {
+      console.log('✅ Image deleted from Supabase Storage:', fileName);
+    }
+  } catch (error) {
+    console.warn('Error deleting from Supabase Storage:', error);
+  }
+}
 
 // Initialize database tables (idempotent - safe to run multiple times)
 async function initializeDatabase() {
@@ -579,7 +656,7 @@ app.get('/api/postings', async (req, res) => {
       postings: postings.map(p => ({
         ...p,
         price: parseFloat(p.price) || 0,
-        image_url: p.image_url ? `/uploads/${path.basename(p.image_url)}` : null
+        image_url: p.image_url || null // Already full URL from Supabase Storage
       })),
       pagination: {
         page: parseInt(page),
@@ -612,7 +689,7 @@ app.get('/api/postings/:id', async (req, res) => {
     res.json({
       ...posting,
       price: parseFloat(posting.price),
-      image_url: posting.image_url ? `/uploads/${path.basename(posting.image_url)}` : null
+      image_url: posting.image_url || null // Already full URL from Supabase Storage
     });
   } catch (error) {
     console.error('Get posting error:', error);
@@ -632,7 +709,7 @@ app.get('/api/postings/user/my-postings', authenticateToken, async (req, res) =>
       postings: postings.map(p => ({
         ...p,
         price: parseFloat(p.price),
-        image_url: p.image_url ? `/uploads/${path.basename(p.image_url)}` : null
+        image_url: p.image_url || null // Already full URL from Supabase Storage
       }))
     });
   } catch (error) {
@@ -656,7 +733,18 @@ app.post('/api/postings', authenticateToken, upload.single('image'), async (req,
       return res.status(400).json({ error: 'Invalid category' });
     }
 
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+    // Upload image to Supabase Storage if provided
+    let imageUrl = null;
+    if (req.file) {
+      try {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const fileName = `posting-${uniqueSuffix}${path.extname(req.file.originalname)}`;
+        imageUrl = await uploadToSupabaseStorage(req.file.buffer, fileName, req.file.mimetype);
+      } catch (uploadError) {
+        console.error('Image upload error:', uploadError);
+        return res.status(500).json({ error: 'Failed to upload image. Please try again.' });
+      }
+    }
 
     // Create posting - PostgreSQL returns the id with RETURNING
     const result = await pool.query(
@@ -675,7 +763,7 @@ app.post('/api/postings', authenticateToken, upload.single('image'), async (req,
       posting: {
         ...posting,
         price: parseFloat(posting.price),
-        image_url: posting.image_url ? `/uploads/${path.basename(posting.image_url)}` : null
+        image_url: posting.image_url || null // Already full URL from Supabase
       }
     });
   } catch (error) {
@@ -731,20 +819,24 @@ app.put('/api/postings/:id', authenticateToken, upload.single('image'), async (r
       params.push(location || null);
     }
     if (req.file) {
-      // Delete old image if exists
+      // Delete old image from Supabase Storage if exists
       if (existing.image_url) {
-        try {
-          const oldImagePath = existing.image_url.startsWith('/uploads/') 
-            ? path.join(UPLOAD_DIR, path.basename(existing.image_url))
-            : existing.image_url;
-          await fs.unlink(oldImagePath);
-        } catch (err) {
-          console.warn('Could not delete old image:', err);
-        }
+        await deleteFromSupabaseStorage(existing.image_url);
       }
-      paramNum++;
-      updates.push(`image_url = $${paramNum}`);
-      params.push(`/uploads/${req.file.filename}`);
+      
+      // Upload new image to Supabase Storage
+      try {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const fileName = `posting-${uniqueSuffix}${path.extname(req.file.originalname)}`;
+        const imageUrl = await uploadToSupabaseStorage(req.file.buffer, fileName, req.file.mimetype);
+        
+        paramNum++;
+        updates.push(`image_url = $${paramNum}`);
+        params.push(imageUrl);
+      } catch (uploadError) {
+        console.error('Image upload error:', uploadError);
+        return res.status(500).json({ error: 'Failed to upload image. Please try again.' });
+      }
     }
 
     updates.push('updated_at = CURRENT_TIMESTAMP');
@@ -764,7 +856,7 @@ app.put('/api/postings/:id', authenticateToken, upload.single('image'), async (r
       posting: {
         ...posting,
         price: parseFloat(posting.price),
-        image_url: posting.image_url ? `/uploads/${path.basename(posting.image_url)}` : null
+        image_url: posting.image_url || null // Already full URL from Supabase
       }
     });
   } catch (error) {
@@ -787,16 +879,9 @@ app.delete('/api/postings/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to delete this posting' });
     }
 
-    // Delete image file if exists
+    // Delete image from Supabase Storage if exists
     if (posting.image_url) {
-      try {
-        const imagePath = posting.image_url.startsWith('/uploads/') 
-          ? path.join(UPLOAD_DIR, path.basename(posting.image_url))
-          : posting.image_url;
-        await fs.unlink(imagePath);
-      } catch (err) {
-        console.warn('Could not delete image file:', err);
-      }
+      await deleteFromSupabaseStorage(posting.image_url);
     }
 
     // Delete posting

@@ -343,20 +343,17 @@
             return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
           }
           
-          // If already a full URL, return as is
+          // If already a full URL (from Supabase Storage), return as is
           if (imgUrl.startsWith('http://') || imgUrl.startsWith('https://')) {
             return imgUrl;
           }
           
-          // Construct full URL
+          // Legacy support: if it's a relative path, prepend base URL (for old postings)
           const baseUrl = 'https://autoilty-production.up.railway.app';
-          // Ensure image_url starts with /uploads/ or add it
-          if (imgUrl.startsWith('/uploads/')) {
-            return `${baseUrl}${imgUrl}`;
-          } else if (imgUrl.startsWith('/')) {
+          if (imgUrl.startsWith('/')) {
             return `${baseUrl}${imgUrl}`;
           } else {
-            return `${baseUrl}/uploads/${imgUrl}`;
+            return `${baseUrl}/${imgUrl}`;
           }
         };
 
