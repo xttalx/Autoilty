@@ -16,6 +16,27 @@ function getApiBaseUrl() {
   return 'https://autoilty-production.up.railway.app/api';
 }
 
+// Get auth token from localStorage (supports both 'auth_token' and 'token' for compatibility)
+function getToken() {
+  // Try auth_token first (used by auth.js)
+  const authToken = localStorage.getItem('auth_token');
+  if (authToken) return authToken;
+  
+  // Fallback to token (for backward compatibility)
+  return localStorage.getItem('token');
+}
+
+// Check if user is authenticated
+function isAuthenticated() {
+  return !!getToken();
+}
+
+// Redirect to login if not authenticated
+function redirectToLogin(returnUrl = null) {
+  const currentUrl = returnUrl || window.location.pathname;
+  window.location.href = `login.html?return=${encodeURIComponent(currentUrl)}`;
+}
+
 /**
  * Send a message to a seller about a posting
  * @param {Object} messageData - { postingId, toUserId, name, email, phone, message }
@@ -24,7 +45,7 @@ function getApiBaseUrl() {
 async function sendMessage(messageData) {
   try {
     // Get token if user is logged in (optional for anonymous messages)
-    const token = localStorage.getItem('token');
+    const token = getToken();
     
     const headers = {
       'Content-Type': 'application/json'
@@ -59,8 +80,9 @@ async function sendMessage(messageData) {
  */
 async function getInboxMessages() {
   try {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
+      redirectToLogin();
       throw new Error('Authentication required');
     }
 
@@ -70,6 +92,12 @@ async function getInboxMessages() {
         'Authorization': `Bearer ${token}`
       }
     });
+
+    if (response.status === 401 || response.status === 403) {
+      // Token expired or invalid - redirect to login
+      redirectToLogin();
+      throw new Error('Session expired. Please login again.');
+    }
 
     if (!response.ok) {
       const error = await response.json();
@@ -90,8 +118,9 @@ async function getInboxMessages() {
  */
 async function getConversation(postingId) {
   try {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
+      redirectToLogin();
       throw new Error('Authentication required');
     }
 
@@ -101,6 +130,12 @@ async function getConversation(postingId) {
         'Authorization': `Bearer ${token}`
       }
     });
+
+    if (response.status === 401 || response.status === 403) {
+      // Token expired or invalid - redirect to login
+      redirectToLogin();
+      throw new Error('Session expired. Please login again.');
+    }
 
     if (!response.ok) {
       const error = await response.json();
@@ -120,25 +155,46 @@ async function getConversation(postingId) {
  */
 async function getUnreadCount() {
   try {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
-      return 0;
+      return 0; // Not logged in, no unread messages
     }
 
-    const response = await fetch(`${getApiBaseUrl()}/messages/inbox`, {
+    // Use dedicated unread-count endpoint if available, otherwise fallback to inbox
+    const response = await fetch(`${getApiBaseUrl()}/messages/unread-count`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
       }
     });
 
+    if (response.status === 401 || response.status === 403) {
+      // Token expired - return 0 (will be handled by other auth checks)
+      return 0;
+    }
+
     if (!response.ok) {
+      // If endpoint doesn't exist, fallback to counting from inbox
+      try {
+        const inboxResponse = await fetch(`${getApiBaseUrl()}/messages/inbox`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (inboxResponse.ok) {
+          const data = await inboxResponse.json();
+          return data.messages ? data.messages.filter(m => !m.read).length : 0;
+        }
+      } catch (e) {
+        // Ignore fallback errors
+      }
       return 0;
     }
 
     const data = await response.json();
-    const unreadCount = data.messages ? data.messages.filter(m => !m.read).length : 0;
-    return unreadCount;
+    return data.unreadCount || 0;
   } catch (error) {
     console.error('Error fetching unread count:', error);
     return 0;
@@ -146,12 +202,18 @@ async function getUnreadCount() {
 }
 
 /**
- * Update unread badge in navigation
+ * Update unread badge in navigation (only shows when logged in)
  */
 async function updateUnreadBadge() {
   try {
     const badge = document.getElementById('unreadBadge');
     if (!badge) return;
+
+    // Only show badge if user is authenticated
+    if (!isAuthenticated()) {
+      badge.style.display = 'none';
+      return;
+    }
 
     const count = await getUnreadCount();
     if (count > 0) {
@@ -162,6 +224,8 @@ async function updateUnreadBadge() {
     }
   } catch (error) {
     console.error('Error updating unread badge:', error);
+    const badge = document.getElementById('unreadBadge');
+    if (badge) badge.style.display = 'none';
   }
 }
 

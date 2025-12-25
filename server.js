@@ -1153,6 +1153,24 @@ app.put('/api/messages/:id/read', authenticateToken, async (req, res) => {
   }
 });
 
+// Get unread message count for logged-in user (protected)
+app.get('/api/messages/unread-count', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await dbGet(
+      `SELECT COUNT(*) as unread_count 
+       FROM messages 
+       WHERE to_user_id = $1 AND read = FALSE`,
+      [userId]
+    );
+    
+    res.json({ unreadCount: parseInt(result.unread_count || 0) });
+  } catch (error) {
+    console.error('Get unread count error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // ============================================
 // BUSINESS DIRECTORY ROUTES
 // ============================================

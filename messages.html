@@ -121,6 +121,21 @@
     // Initialize Lucide icons
     lucide.createIcons();
     
+    // Check authentication before loading messages
+    if (typeof requireAuth === 'function') {
+      if (!requireAuth('messages.html')) {
+        // Redirecting to login - requireAuth handles it
+        // Stop execution here
+        throw new Error('Authentication required');
+      }
+    } else if (typeof isAuthenticated === 'function') {
+      // Fallback if requireAuth is not available
+      if (!isAuthenticated()) {
+        window.location.href = 'login.html?return=messages.html';
+        throw new Error('Authentication required');
+      }
+    }
+    
     // Mobile hamburger menu toggle
     function setupMobileNav() {
       const navToggle = document.getElementById('navToggle');
@@ -423,12 +438,20 @@
       }
     });
 
-    // Load messages on page ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadMessages);
-    } else {
-      loadMessages();
+    // Update unread badge (only if authenticated)
+    if (typeof updateUnreadBadge === 'function' && typeof isAuthenticated === 'function' && isAuthenticated()) {
+      updateUnreadBadge();
     }
+    
+    // Load messages on page ready (only if authenticated)
+    if (currentUser && isAuthenticated()) {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadMessages);
+      } else {
+        loadMessages();
+      }
+    }
+    // If not authenticated, the redirect at line 247 will handle it
   </script>
 </body>
 </html>
