@@ -377,6 +377,19 @@ async function initializeDatabase() {
         FOREIGN KEY (posting_id) REFERENCES postings(id) ON DELETE CASCADE
       )
     `);
+    
+    // Fix existing table: Make from_user_id nullable if it's not already
+    try {
+      await pool.query(`
+        ALTER TABLE messages 
+        ALTER COLUMN from_user_id DROP NOT NULL
+      `);
+    } catch (alterError) {
+      // Column might already be nullable or table might not exist yet - ignore
+      if (!alterError.message.includes('does not exist') && !alterError.message.includes('already')) {
+        console.warn('Could not alter from_user_id column (may already be nullable):', alterError.message);
+      }
+    }
 
     // Create indexes for better query performance
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_postings_user_id ON postings(user_id)`);
@@ -927,6 +940,20 @@ app.post('/api/messages', async (req, res) => {
           FOREIGN KEY (posting_id) REFERENCES postings(id) ON DELETE CASCADE
         )
       `);
+      
+      // Fix existing table: Make from_user_id nullable if it's not already
+      try {
+        await pool.query(`
+          ALTER TABLE messages 
+          ALTER COLUMN from_user_id DROP NOT NULL
+        `);
+      } catch (alterError) {
+        // Column might already be nullable or error might be different - ignore
+        if (!alterError.message.includes('does not exist') && !alterError.message.includes('already')) {
+          console.warn('Could not alter from_user_id column (may already be nullable):', alterError.message);
+        }
+      }
+      
       // Create indexes if they don't exist
       await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_to_user_id ON messages(to_user_id)`);
       await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_posting_id ON messages(posting_id)`);
