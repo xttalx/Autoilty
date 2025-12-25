@@ -273,8 +273,13 @@ function renderPostingsAsProducts(postings, container) {
     card.style.cursor = 'pointer';
     card.addEventListener('click', (e) => {
 
-      // Don't navigate if clicking the Contact Seller button
-      if (e.target.closest('.contact-seller-btn')) {
+      // Don't navigate if clicking the Contact Seller button, form, or any interactive element
+      if (e.target.closest('.contact-seller-btn') || 
+          e.target.closest('.contact-form-container') || 
+          e.target.closest('.contact-form-inline') ||
+          e.target.closest('textarea') ||
+          e.target.closest('button[type="submit"]') ||
+          e.target.closest('button[type="button"].contact-form-cancel')) {
         return;
       }
 
@@ -311,35 +316,70 @@ function renderPostingsAsProducts(postings, container) {
         return;
       }
       
-      // Toggle form visibility
-      const isVisible = formContainer.style.display !== 'none';
+      // Hide button and show form
+      btn.style.display = 'none';
+      formContainer.style.display = 'block';
       
-      if (isVisible) {
-        // Hide form
-        formContainer.style.display = 'none';
-      } else {
-        // Show form and pre-fill if user is logged in
-        formContainer.style.display = 'block';
-        
-        // Pre-fill name and email if user is logged in
-        if (typeof getCurrentUser === 'function' && typeof isAuthenticated === 'function') {
-          const currentUser = getCurrentUser();
-          if (currentUser && isAuthenticated()) {
-            const nameInput = formContainer.querySelector(`#contactName_${postingId}`);
-            const emailInput = formContainer.querySelector(`#contactEmail_${postingId}`);
-            if (nameInput) nameInput.value = currentUser.username || '';
-            if (emailInput) emailInput.value = currentUser.email || '';
-          }
+      // Pre-fill name and email if user is logged in
+      if (typeof getCurrentUser === 'function' && typeof isAuthenticated === 'function') {
+        const currentUser = getCurrentUser();
+        if (currentUser && isAuthenticated()) {
+          const nameInput = formContainer.querySelector(`#contactName_${postingId}`);
+          const emailInput = formContainer.querySelector(`#contactEmail_${postingId}`);
+          if (nameInput) nameInput.value = currentUser.username || '';
+          if (emailInput) emailInput.value = currentUser.email || '';
         }
-        
-        // Scroll form into view
-        formContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
+      
+      // Focus on textarea
+      const textarea = formContainer.querySelector('textarea');
+      if (textarea) {
+        setTimeout(() => textarea.focus(), 100);
+      }
+      
+      // Scroll form into view
+      formContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       
       // Re-initialize icons
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
       }
+    });
+  });
+  
+  // Handle cancel button - show button again and hide form
+  container.querySelectorAll('.contact-form-cancel').forEach(cancelBtn => {
+    cancelBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      
+      const postingId = cancelBtn.dataset.postingId;
+      if (!postingId) return;
+      
+      const formContainer = container.querySelector(`.contact-form-container[data-posting-id="${postingId}"]`);
+      const contactBtn = container.querySelector(`.contact-seller-btn[data-posting-id="${postingId}"]`);
+      
+      if (formContainer) {
+        formContainer.style.display = 'none';
+        const form = formContainer.querySelector('form');
+        if (form) form.reset();
+        const errorDiv = formContainer.querySelector('.contact-form-error');
+        if (errorDiv) {
+          errorDiv.style.display = 'none';
+          errorDiv.textContent = '';
+        }
+      }
+      
+      if (contactBtn) {
+        contactBtn.style.display = 'block';
+      }
+    });
+  });
+  
+  // Prevent form container clicks from navigating
+  container.querySelectorAll('.contact-form-container').forEach(container => {
+    container.addEventListener('click', (e) => {
+      e.stopPropagation();
     });
   });
   
@@ -351,6 +391,7 @@ function renderPostingsAsProducts(postings, container) {
       
       const postingId = form.dataset.postingId;
       const formContainer = form.closest('.contact-form-container');
+      const contactBtn = container.querySelector(`.contact-seller-btn[data-posting-id="${postingId}"]`);
       const errorDiv = formContainer ? formContainer.querySelector('.contact-form-error') : null;
       
       if (errorDiv) {
@@ -407,6 +448,8 @@ function renderPostingsAsProducts(postings, container) {
           ? window.API_BASE_URL 
           : 'https://autoilty-production.up.railway.app/api';
         
+        const contactBtn = container.querySelector(`.contact-seller-btn[data-posting-id="${postingId}"]`);
+        
         const response = await fetch(`${apiBaseUrl}/messages`, {
           method: 'POST',
           headers: {
@@ -420,9 +463,14 @@ function renderPostingsAsProducts(postings, container) {
           throw new Error(errorData.error || 'Failed to send message');
         }
         
-        // Success - show message and hide form
+        // Success - hide form and show button again
         if (formContainer) {
           formContainer.style.display = 'none';
+        }
+        
+        // Show button again
+        if (contactBtn) {
+          contactBtn.style.display = 'block';
         }
         
         // Show success notification
@@ -453,7 +501,7 @@ function renderPostingsAsProducts(postings, container) {
     });
   });
   
-  // Handle cancel buttons
+  // Handle cancel buttons - show button again and hide form
   container.querySelectorAll('.contact-form-cancel').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -463,6 +511,8 @@ function renderPostingsAsProducts(postings, container) {
       if (!postingId) return;
       
       const formContainer = container.querySelector(`.contact-form-container[data-posting-id="${postingId}"]`);
+      const contactBtn = container.querySelector(`.contact-seller-btn[data-posting-id="${postingId}"]`);
+      
       if (formContainer) {
         formContainer.style.display = 'none';
         const form = formContainer.querySelector('.contact-form-inline');
@@ -472,6 +522,10 @@ function renderPostingsAsProducts(postings, container) {
           errorDiv.style.display = 'none';
           errorDiv.textContent = '';
         }
+      }
+      
+      if (contactBtn) {
+        contactBtn.style.display = 'block';
       }
     });
   });

@@ -542,50 +542,52 @@
       if (errorDiv) errorDiv.style.display = 'none';
     }
     
-    // Contact Seller button handler - toggle inline form
+    // Contact Seller button handler - hide button and show form
     const contactSellerBtn = document.getElementById('contactSellerBtn');
     const contactFormContainer = document.getElementById('contactFormContainer');
     
     if (contactSellerBtn && contactFormContainer) {
-      contactSellerBtn.addEventListener('click', () => {
+      contactSellerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        
         if (!window.currentPosting) {
           alert('Posting details are still loading. Please wait a moment and try again.');
           return;
         }
         
-        // Toggle form visibility
-        const isVisible = contactFormContainer.style.display !== 'none';
+        // Hide button and show form
+        contactSellerBtn.style.display = 'none';
+        contactFormContainer.style.display = 'block';
         
-        if (isVisible) {
-          contactFormContainer.style.display = 'none';
-        } else {
-          // Set hidden fields
-          const postingIdInput = document.getElementById('contactPostingId');
-          const toUserIdInput = document.getElementById('contactToUserId');
-          if (postingIdInput) postingIdInput.value = window.currentPosting.id;
-          if (toUserIdInput) toUserIdInput.value = window.currentPosting.userId;
-          
-          // Pre-fill name and email if user is logged in (hidden fields)
-          if (typeof getCurrentUser === 'function' && typeof isAuthenticated === 'function') {
-            const currentUser = getCurrentUser();
-            if (currentUser && isAuthenticated()) {
-              const nameInput = document.getElementById('contactName');
-              const emailInput = document.getElementById('contactEmail');
-              if (nameInput) nameInput.value = currentUser.username || '';
-              if (emailInput) emailInput.value = currentUser.email || '';
-            } else {
-              // For anonymous users, we still need name/email - but they're hidden
-              // The backend will require these, so we'll handle validation on submit
-            }
+        // Set hidden fields
+        const postingIdInput = document.getElementById('contactPostingId');
+        const toUserIdInput = document.getElementById('contactToUserId');
+        if (postingIdInput) postingIdInput.value = window.currentPosting.id;
+        if (toUserIdInput) toUserIdInput.value = window.currentPosting.userId;
+        
+        // Pre-fill name and email if user is logged in (hidden fields)
+        if (typeof getCurrentUser === 'function' && typeof isAuthenticated === 'function') {
+          const currentUser = getCurrentUser();
+          if (currentUser && isAuthenticated()) {
+            const nameInput = document.getElementById('contactName');
+            const emailInput = document.getElementById('contactEmail');
+            if (nameInput) nameInput.value = currentUser.username || '';
+            if (emailInput) emailInput.value = currentUser.email || '';
           }
-          
-          contactFormContainer.style.display = 'block';
-          contactFormContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          
-          // Re-initialize icons
-          if (typeof lucide !== 'undefined' && lucide.createIcons) {
-            lucide.createIcons();
-          }
+        }
+        
+        // Focus on textarea
+        const textarea = document.getElementById('contactMessage');
+        if (textarea) {
+          setTimeout(() => textarea.focus(), 100);
+        }
+        
+        contactFormContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        // Re-initialize icons
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
         }
       });
     }
@@ -683,9 +685,13 @@
             throw new Error(errorData.error || 'Failed to send message');
           }
           
-          // Success - hide form and show message
+          // Success - hide form and show button again
           if (contactFormContainer) {
             contactFormContainer.style.display = 'none';
+          }
+          
+          if (contactSellerBtn) {
+            contactSellerBtn.style.display = 'block';
           }
           
           alert('Message sent successfully!');
