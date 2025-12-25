@@ -17,7 +17,10 @@
     <div class="container">
       <div class="nav-inner">
         <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
-        <div class="nav-links">
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" style="display: none;">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="nav-links" id="navLinks">
           <a href="index.html" class="nav-link">Home</a>
           <a href="marketplace.html" class="nav-link">Marketplace</a>
           <a href="create-listing.html" class="nav-link">Create Listing</a>
@@ -62,6 +65,76 @@
     } else if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('autoilty_cart');
     }
+    
+    // Mobile hamburger menu toggle
+    function setupMobileNav() {
+      const navToggle = document.getElementById('navToggle');
+      const navLinks = document.getElementById('navLinks');
+      
+      if (!navToggle || !navLinks) return;
+      
+      // Show/hide toggle button based on screen size
+      function checkMobile() {
+        if (window.innerWidth <= 768) {
+          navToggle.style.display = 'block';
+        } else {
+          navToggle.style.display = 'none';
+          navLinks.classList.remove('active');
+        }
+      }
+      
+      // Initial check
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      
+      // Toggle menu on click
+      navToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navLinks.classList.toggle('active');
+        const icon = navToggle.querySelector('i');
+        if (icon) {
+          if (navLinks.classList.contains('active')) {
+            icon.setAttribute('data-lucide', 'x');
+          } else {
+            icon.setAttribute('data-lucide', 'menu');
+          }
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
+        }
+      });
+      
+      // Close menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
+          navLinks.classList.remove('active');
+          const icon = navToggle.querySelector('i');
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
+        }
+      });
+      
+      // Close menu when clicking a link
+      navLinks.querySelectorAll('a, button').forEach(item => {
+        item.addEventListener('click', () => {
+          navLinks.classList.remove('active');
+          const icon = navToggle.querySelector('i');
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
+        });
+      });
+    }
+    
+    // Initialize mobile nav
+    setupMobileNav();
   </script>
   <script src="script.js" defer></script>
 </body>

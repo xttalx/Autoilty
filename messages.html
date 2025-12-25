@@ -42,8 +42,8 @@
             </button>
             <div class="user-menu-dropdown" id="userMenuDropdown">
               <a href="my-postings.html" class="user-menu-item">
-                <i data-lucide="list" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-                My Postings
+                <i data-lucide="user" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Profile
               </a>
               <a href="messages.html" class="user-menu-item" id="inboxLink">
                 <i data-lucide="mail" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
@@ -123,39 +123,73 @@
     lucide.createIcons();
     
     // Mobile hamburger menu toggle
-    const navToggle = document.getElementById('navToggle');
-    const navLinks = document.getElementById('navLinks');
-    
-    if (navToggle && navLinks) {
-      navToggle.addEventListener('click', () => {
+    function setupMobileNav() {
+      const navToggle = document.getElementById('navToggle');
+      const navLinks = document.getElementById('navLinks');
+      
+      if (!navToggle || !navLinks) return;
+      
+      // Show/hide toggle button based on screen size
+      function checkMobile() {
+        if (window.innerWidth <= 768) {
+          navToggle.style.display = 'block';
+        } else {
+          navToggle.style.display = 'none';
+          navLinks.classList.remove('active');
+        }
+      }
+      
+      // Initial check
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      
+      // Toggle menu on click
+      navToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
         navLinks.classList.toggle('active');
         const icon = navToggle.querySelector('i');
-        if (navLinks.classList.contains('active')) {
-          icon.setAttribute('data-lucide', 'x');
-        } else {
-          icon.setAttribute('data-lucide', 'menu');
+        if (icon) {
+          if (navLinks.classList.contains('active')) {
+            icon.setAttribute('data-lucide', 'x');
+          } else {
+            icon.setAttribute('data-lucide', 'menu');
+          }
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
         }
-        lucide.createIcons();
       });
       
+      // Close menu when clicking outside
       document.addEventListener('click', (e) => {
         if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
           navLinks.classList.remove('active');
           const icon = navToggle.querySelector('i');
-          icon.setAttribute('data-lucide', 'menu');
-          lucide.createIcons();
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
         }
       });
       
-      navLinks.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
+      // Close menu when clicking a link
+      navLinks.querySelectorAll('a, button').forEach(item => {
+        item.addEventListener('click', () => {
           navLinks.classList.remove('active');
           const icon = navToggle.querySelector('i');
-          icon.setAttribute('data-lucide', 'menu');
-          lucide.createIcons();
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
         });
       });
     }
+    
+    setupMobileNav();
     
     // Setup user menu and navigation based on auth status
     const currentUser = getCurrentUser();
