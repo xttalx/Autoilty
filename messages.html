@@ -368,16 +368,43 @@
           }
         }
         
+        // Get posting owner ID from the conversation data
+        const postingOwnerId = data.posting?.user_id || postingId; // Use posting owner as fallback
+        
         // Render messages
-        chatMessages.innerHTML = data.messages.map(msg => {
+        chatMessages.innerHTML = data.messages.map((msg, index) => {
           const isFromMe = msg.isFromMe;
+          const messageId = `msg-${msg.id || index}`;
+          // Determine toUserId for reply: if message is from anonymous, reply to posting owner; otherwise reply to sender
+          const replyToUserId = msg.fromUserId || postingOwnerId;
+          
           return `
-            <div style="margin-bottom: var(--spacing-md); display: flex; ${isFromMe ? 'justify-content: flex-end' : 'justify-content: flex-start'}">
-              <div style="max-width: 70%; background: ${isFromMe ? 'var(--color-primary)' : '#f5f5f5'}; color: ${isFromMe ? 'white' : 'var(--color-text)'}; padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius);">
-                <p style="font-size: 0.75rem; margin-bottom: var(--spacing-xs); opacity: 0.8;">${msg.fromName}</p>
-                <p style="margin: 0;">${msg.message}</p>
-                <p style="font-size: 0.75rem; margin-top: var(--spacing-xs); opacity: 0.8;">${new Date(msg.createdAt).toLocaleString()}</p>
+            <div class="message-wrapper" data-message-id="${messageId}" style="margin-bottom: var(--spacing-md);">
+              <div style="display: flex; ${isFromMe ? 'justify-content: flex-end' : 'justify-content: flex-start'}">
+                <div style="max-width: 70%; background: ${isFromMe ? 'var(--color-primary)' : '#f5f5f5'}; color: ${isFromMe ? 'white' : 'var(--color-text)'}; padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius);">
+                  <p style="font-size: 0.75rem; margin-bottom: var(--spacing-xs); opacity: 0.8;">${msg.fromName}</p>
+                  <p style="margin: 0;">${msg.message}</p>
+                  <p style="font-size: 0.75rem; margin-top: var(--spacing-xs); opacity: 0.8;">${new Date(msg.createdAt).toLocaleString()}</p>
+                </div>
               </div>
+              ${!isFromMe ? `
+                <div style="margin-top: var(--spacing-xs); text-align: left;">
+                  <button class="reply-btn" data-message-id="${messageId}" data-posting-id="${postingId}" data-from-user-id="${msg.fromUserId || ''}" data-from-name="${msg.fromName || ''}" data-from-email="${msg.fromEmail || ''}" style="background: none; border: none; color: var(--color-text-light); font-size: 0.875rem; cursor: pointer; padding: var(--spacing-xs); display: inline-flex; align-items: center; gap: var(--spacing-xs); transition: var(--transition);">
+                    <i data-lucide="corner-down-left" style="width: 1rem; height: 1rem;"></i>
+                    Reply
+                  </button>
+                </div>
+                <div class="inline-reply-form" id="replyForm_${messageId}" data-posting-id="${postingId}" style="display: none; margin-top: var(--spacing-sm); padding: var(--spacing-sm); background: #f9f9f9; border-radius: var(--radius); border: 1px solid var(--color-border);">
+                  <textarea class="inline-reply-textarea" id="replyText_${messageId}" placeholder="Type your reply..." rows="3" style="width: 100%; padding: var(--spacing-xs); border: 1px solid var(--color-border); border-radius: var(--radius); font-family: inherit; font-size: 0.875rem; resize: vertical; margin-bottom: var(--spacing-xs);"></textarea>
+                  <div style="display: flex; gap: var(--spacing-xs); justify-content: flex-end;">
+                    <button class="btn btn-secondary reply-cancel-btn" data-message-id="${messageId}" style="padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.875rem;">Cancel</button>
+                    <button class="btn btn-primary reply-send-btn" data-message-id="${messageId}" data-posting-id="${postingId}" data-to-user-id="${replyToUserId}" data-to-name="${msg.fromName || ''}" data-to-email="${msg.fromEmail || ''}" style="padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.875rem;">
+                      <i data-lucide="send" class="btn-icon" style="width: 0.875rem; height: 0.875rem;"></i>
+                      Send
+                    </button>
+                  </div>
+                </div>
+              ` : ''}
             </div>
           `;
         }).join('');
@@ -385,6 +412,9 @@
         // Scroll to bottom
         chatMessages.scrollTop = chatMessages.scrollHeight;
         lucide.createIcons();
+        
+        // Attach reply button handlers
+        attachReplyHandlers(postingId, currentUser);
       } catch (error) {
         chatMessages.innerHTML = `
           <div style="text-align: center; padding: var(--spacing-lg);">

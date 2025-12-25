@@ -87,6 +87,7 @@
   </main>
 
   <script src="auth.js"></script>
+  <script src="messages-api.js"></script>
   <script>
     // Initialize Lucide icons
     lucide.createIcons();
@@ -137,6 +138,27 @@
         localStorage.setItem('auth_user', JSON.stringify(data.user));
 
         showMessage('Login successful! Redirecting...', 'success');
+        
+        // Check for unread messages and show notification
+        try {
+          if (typeof getUnreadCount === 'function') {
+            const unreadCount = await getUnreadCount();
+            if (unreadCount > 0) {
+              // Show notification after a short delay
+              setTimeout(() => {
+                if (typeof showNotification === 'function') {
+                  showNotification(`You have ${unreadCount} new message${unreadCount > 1 ? 's' : ''} in your inbox`);
+                } else {
+                  // Fallback to alert if showNotification is not available
+                  alert(`You have ${unreadCount} new message${unreadCount > 1 ? 's' : ''} in your inbox`);
+                }
+              }, 500);
+            }
+          }
+        } catch (error) {
+          // Ignore errors - just don't show notification
+          console.error('Error checking unread messages:', error);
+        }
         
         // Redirect to home page or return URL
         setTimeout(() => {

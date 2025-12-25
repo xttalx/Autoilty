@@ -1282,6 +1282,57 @@ p {
   }
 }
 
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Inline Reply Form Styles */
+.inline-reply-form {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reply-btn:hover {
+  color: var(--color-primary);
+}
+
+.reply-btn i {
+  transition: var(--transition);
+}
+
+.reply-btn:hover i {
+  transform: translateX(-2px);
+}
+
+.inline-reply-textarea {
+  font-family: var(--font-family);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.inline-reply-textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  border-color: var(--color-primary);
+}
+
 /* ============================================
    UTILITIES
    ============================================ */
