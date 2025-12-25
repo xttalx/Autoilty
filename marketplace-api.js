@@ -219,10 +219,42 @@ function renderPostingsAsProducts(postings, container) {
 
           <p style="font-size: 0.875rem; color: var(--color-text-light); margin-bottom: var(--spacing-sm);">by ${product.username}</p>
 
-          <button class="btn btn-primary btn-full contact-seller-btn" data-posting-id="${product.id}" data-seller-username="${product.username}" style="margin-top: var(--spacing-sm); padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.875rem;">
+          <button class="btn btn-primary btn-full contact-seller-btn" data-posting-id="${product.id}" data-posting-user-id="${posting.user_id}" data-seller-username="${product.username}" style="margin-top: var(--spacing-sm); padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.875rem;">
             <i data-lucide="message-circle" class="btn-icon"></i>
             Contact Seller
           </button>
+          
+          <!-- Inline message form (hidden by default) -->
+          <div class="contact-form-container" data-posting-id="${product.id}" style="display: none; margin-top: var(--spacing-sm); padding: var(--spacing-sm); background: #f9f9f9; border-radius: var(--radius); border: 1px solid var(--color-border);">
+            <form class="contact-form-inline" data-posting-id="${product.id}">
+              <input type="hidden" name="postingId" value="${product.id}">
+              <input type="hidden" name="toUserId" value="${posting.user_id}">
+              
+              <div class="form-group" style="margin-bottom: var(--spacing-xs);">
+                <input type="text" name="fromName" class="form-input" placeholder="Your name" style="font-size: 0.875rem; padding: var(--spacing-xs);" id="contactName_${product.id}">
+              </div>
+              
+              <div class="form-group" style="margin-bottom: var(--spacing-xs);">
+                <input type="email" name="fromEmail" class="form-input" placeholder="Your email" style="font-size: 0.875rem; padding: var(--spacing-xs);" id="contactEmail_${product.id}">
+              </div>
+              
+              <div class="form-group" style="margin-bottom: var(--spacing-xs);">
+                <textarea name="message" class="form-input" rows="3" placeholder="Type your message..." required style="font-size: 0.875rem; padding: var(--spacing-xs); resize: vertical;" id="contactMessage_${product.id}"></textarea>
+              </div>
+              
+              <div class="contact-form-error" data-posting-id="${product.id}" style="color: var(--color-error); font-size: 0.75rem; margin-bottom: var(--spacing-xs); display: none;"></div>
+              
+              <div style="display: flex; gap: var(--spacing-xs);">
+                <button type="submit" class="btn btn-primary" style="flex: 1; padding: var(--spacing-xs); font-size: 0.875rem;">
+                  <i data-lucide="send" class="btn-icon" style="width: 0.875rem; height: 0.875rem;"></i>
+                  Send
+                </button>
+                <button type="button" class="btn btn-secondary contact-form-cancel" data-posting-id="${product.id}" style="padding: var(--spacing-xs); font-size: 0.875rem;">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
 
         </div>
 
@@ -266,49 +298,186 @@ function renderPostingsAsProducts(postings, container) {
 
   });
 
-  // Add Contact Seller button handlers
+  // Add Contact Seller button handlers - show/hide inline form
   container.querySelectorAll('.contact-seller-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
       
       const postingId = btn.dataset.postingId;
-      const sellerUsername = btn.dataset.sellerUsername;
-      
       if (!postingId) {
         console.error('Posting ID not found');
         return;
       }
       
-      // Get posting details from stored postings or card data
-      const card = btn.closest('.product-card');
-      if (!card) {
-        console.error('Product card not found');
+      // Find the inline form container for this posting
+      const formContainer = container.querySelector(`.contact-form-container[data-posting-id="${postingId}"]`);
+      if (!formContainer) {
+        console.error('Contact form container not found');
         return;
       }
       
-      const postingUserId = card.dataset.postingUserId;
-      const postingTitleEl = card.querySelector('.product-name');
-      const postingTitle = postingTitleEl ? postingTitleEl.textContent : 'Posting';
+      // Toggle form visibility
+      const isVisible = formContainer.style.display !== 'none';
       
-      // Try to get full posting data from stored postings
-      let posting = null;
-      if (typeof window.currentPostings !== 'undefined' && Array.isArray(window.currentPostings)) {
-        posting = window.currentPostings.find(p => p.id == postingId);
+      if (isVisible) {
+        // Hide form
+        formContainer.style.display = 'none';
+      } else {
+        // Show form and pre-fill if user is logged in
+        formContainer.style.display = 'block';
+        
+        // Pre-fill name and email if user is logged in
+        if (typeof getCurrentUser === 'function' && typeof isAuthenticated === 'function') {
+          const currentUser = getCurrentUser();
+          if (currentUser && isAuthenticated()) {
+            const nameInput = formContainer.querySelector(`#contactName_${postingId}`);
+            const emailInput = formContainer.querySelector(`#contactEmail_${postingId}`);
+            if (nameInput) nameInput.value = currentUser.username || '';
+            if (emailInput) emailInput.value = currentUser.email || '';
+          }
+        }
+        
+        // Scroll form into view
+        formContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
       
-      // Check if openContactModal function exists
-      if (typeof window.openContactModal === 'function') {
-        window.openContactModal({
-          postingId: postingId,
-          postingTitle: posting ? posting.title : postingTitle,
-          toUserId: posting ? posting.user_id : postingUserId,
-          sellerUsername: posting ? posting.username : sellerUsername
+      // Re-initialize icons
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    });
+  });
+  
+  // Handle form submissions
+  container.querySelectorAll('.contact-form-inline').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const postingId = form.dataset.postingId;
+      const formContainer = form.closest('.contact-form-container');
+      const errorDiv = formContainer ? formContainer.querySelector('.contact-form-error') : null;
+      
+      if (errorDiv) {
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
+      }
+      
+      const formData = {
+        postingId: parseInt(form.querySelector('input[name="postingId"]')?.value),
+        toUserId: parseInt(form.querySelector('input[name="toUserId"]')?.value),
+        name: form.querySelector('input[name="fromName"]')?.value.trim() || '',
+        email: form.querySelector('input[name="fromEmail"]')?.value.trim() || '',
+        message: form.querySelector('textarea[name="message"]')?.value.trim() || ''
+      };
+      
+      // Pre-fill from logged-in user if available
+      if (typeof getCurrentUser === 'function' && typeof isAuthenticated === 'function') {
+        const currentUser = getCurrentUser();
+        if (currentUser && isAuthenticated()) {
+          if (!formData.name) formData.name = currentUser.username || '';
+          if (!formData.email) formData.email = currentUser.email || '';
+        }
+      }
+      
+      // Validation
+      if (!formData.message) {
+        if (errorDiv) {
+          errorDiv.textContent = 'Message is required';
+          errorDiv.style.display = 'block';
+        }
+        return;
+      }
+      
+      if (!formData.name || !formData.email) {
+        if (errorDiv) {
+          errorDiv.textContent = 'Name and email are required';
+          errorDiv.style.display = 'block';
+        }
+        return;
+      }
+      
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-lucide="loader" class="btn-icon spin"></i> Sending...';
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+      }
+      
+      try {
+        // Get API base URL
+        const apiBaseUrl = typeof window !== 'undefined' && window.API_BASE_URL 
+          ? window.API_BASE_URL 
+          : 'https://autoilty-production.up.railway.app/api';
+        
+        const response = await fetch(`${apiBaseUrl}/messages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
         });
-      } else {
-        console.warn('openContactModal function not found. Make sure marketplace.html has loaded the modal script.');
-        // Fallback: navigate to detail page
-        window.location.href = `posting-detail.html?id=${postingId}`;
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to send message');
+        }
+        
+        // Success - show message and hide form
+        if (formContainer) {
+          formContainer.style.display = 'none';
+        }
+        
+        // Show success notification
+        if (typeof showNotification === 'function') {
+          showNotification('Message sent successfully!');
+        } else {
+          alert('Message sent successfully!');
+        }
+        
+        // Reset form
+        form.reset();
+        
+      } catch (error) {
+        console.error('Error sending message:', error);
+        if (errorDiv) {
+          errorDiv.textContent = error.message || 'Failed to send message. Please try again.';
+          errorDiv.style.display = 'block';
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i data-lucide="send" class="btn-icon"></i> Send';
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
+        }
+      }
+    });
+  });
+  
+  // Handle cancel buttons
+  container.querySelectorAll('.contact-form-cancel').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const postingId = btn.dataset.postingId;
+      if (!postingId) return;
+      
+      const formContainer = container.querySelector(`.contact-form-container[data-posting-id="${postingId}"]`);
+      if (formContainer) {
+        formContainer.style.display = 'none';
+        const form = formContainer.querySelector('.contact-form-inline');
+        if (form) form.reset();
+        const errorDiv = formContainer.querySelector('.contact-form-error');
+        if (errorDiv) {
+          errorDiv.style.display = 'none';
+          errorDiv.textContent = '';
+        }
       }
     });
   });
