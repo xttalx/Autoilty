@@ -16,6 +16,8 @@
   <script src="public/config.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script src="messages-api.js"></script>
 </head>
 <body>
   <!-- Navigation -->
@@ -34,6 +36,28 @@
             <i data-lucide="shopping-cart"></i>
             <span class="cart-badge" id="cartBadge">0</span>
           </button>
+          <div class="user-menu" id="userMenu" style="display: none;">
+            <button class="user-menu-button" id="userMenuButton">
+              <span id="userMenuName">User</span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="user-menu-dropdown" id="userMenuDropdown">
+              <a href="my-postings.html" class="user-menu-item">
+                <i data-lucide="user" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Profile
+              </a>
+              <a href="messages.html" class="user-menu-item" id="inboxLink">
+                <i data-lucide="mail" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Inbox
+                <span class="unread-badge" id="unreadBadge" style="display: none; margin-left: auto; background: var(--color-primary); color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.75rem; font-weight: 600; min-width: 18px; text-align: center;">0</span>
+              </a>
+              <button class="user-menu-item danger" id="logoutButton" style="width: 100%; text-align: left; border: none; cursor: pointer;">
+                <i data-lucide="log-out" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+          <a href="login.html" class="nav-link" id="loginLink">Login</a>
         </div>
       </div>
     </div>
@@ -530,6 +554,65 @@
     
     // Initialize mobile nav
     setupMobileNav();
+    
+    // Setup navigation and user menu
+    function setupNavigation() {
+      const currentUser = getCurrentUser();
+      const userMenu = document.getElementById('userMenu');
+      const loginLink = document.getElementById('loginLink');
+      
+      if (currentUser && isAuthenticated()) {
+        // User is logged in - show user menu
+        if (userMenu) {
+          userMenu.style.display = 'block';
+          userMenu.style.visibility = 'visible';
+        }
+        if (loginLink) loginLink.style.display = 'none';
+        
+        const userMenuName = document.getElementById('userMenuName');
+        if (userMenuName) userMenuName.textContent = currentUser.username;
+        
+        // Update unread badge
+        if (typeof updateUnreadBadge === 'function') {
+          updateUnreadBadge();
+        }
+        
+        // User menu toggle
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userMenuDropdown = document.getElementById('userMenuDropdown');
+        if (userMenuButton && userMenuDropdown) {
+          userMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenuDropdown.classList.toggle('show');
+          });
+          
+          document.addEventListener('click', (e) => {
+            if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
+              userMenuDropdown.classList.remove('show');
+            }
+          });
+        }
+        
+        // Logout
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+          logoutButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+              logout();
+            }
+          });
+        }
+      } else {
+        // User is not logged in - show login link
+        if (userMenu) userMenu.style.display = 'none';
+        if (loginLink) loginLink.style.display = 'block';
+      }
+    }
+    
+    // Initialize navigation
+    if (typeof getCurrentUser !== 'undefined' && typeof isAuthenticated !== 'undefined') {
+      setupNavigation();
+    }
   </script>
 </body>
 </html>

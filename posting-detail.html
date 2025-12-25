@@ -125,14 +125,8 @@
               <form class="contact-form-inline" id="contactFormInline">
                 <input type="hidden" name="postingId" id="contactPostingId">
                 <input type="hidden" name="toUserId" id="contactToUserId">
-                
-                <div class="form-group" style="margin-bottom: var(--spacing-sm);">
-                  <input type="text" name="fromName" class="form-input" placeholder="Your name" id="contactName">
-                </div>
-                
-                <div class="form-group" style="margin-bottom: var(--spacing-sm);">
-                  <input type="email" name="fromEmail" class="form-input" placeholder="Your email" id="contactEmail">
-                </div>
+                <input type="hidden" name="fromName" id="contactName" value="">
+                <input type="hidden" name="fromEmail" id="contactEmail" value="">
                 
                 <div class="form-group" style="margin-bottom: var(--spacing-sm);">
                   <textarea name="message" class="form-input" rows="4" placeholder="Type your message..." required id="contactMessage" style="resize: vertical;"></textarea>
@@ -571,7 +565,7 @@
           if (postingIdInput) postingIdInput.value = window.currentPosting.id;
           if (toUserIdInput) toUserIdInput.value = window.currentPosting.userId;
           
-          // Pre-fill name and email if user is logged in
+          // Pre-fill name and email if user is logged in (hidden fields)
           if (typeof getCurrentUser === 'function' && typeof isAuthenticated === 'function') {
             const currentUser = getCurrentUser();
             if (currentUser && isAuthenticated()) {
@@ -579,6 +573,9 @@
               const emailInput = document.getElementById('contactEmail');
               if (nameInput) nameInput.value = currentUser.username || '';
               if (emailInput) emailInput.value = currentUser.email || '';
+            } else {
+              // For anonymous users, we still need name/email - but they're hidden
+              // The backend will require these, so we'll handle validation on submit
             }
           }
           
@@ -636,6 +633,15 @@
           message: messageInput.value.trim()
         };
         
+        // Pre-fill from logged-in user if available and fields are empty
+        if (typeof getCurrentUser === 'function' && typeof isAuthenticated === 'function') {
+          const currentUser = getCurrentUser();
+          if (currentUser && isAuthenticated()) {
+            if (!formData.name) formData.name = currentUser.username || '';
+            if (!formData.email) formData.email = currentUser.email || '';
+          }
+        }
+        
         // Validation
         if (!formData.message) {
           errorDiv.textContent = 'Message is required';
@@ -644,7 +650,7 @@
         }
         
         if (!formData.name || !formData.email) {
-          errorDiv.textContent = 'Name and email are required';
+          errorDiv.textContent = 'Please log in or provide your name and email';
           errorDiv.style.display = 'block';
           return;
         }

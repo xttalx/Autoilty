@@ -26,7 +26,6 @@
           <a href="index.html" class="nav-link">Home</a>
           <a href="marketplace.html" class="nav-link">Marketplace</a>
           <a href="my-postings.html" class="nav-link" id="myPostingsLink" style="display: none;">My Postings</a>
-          <a href="messages.html" class="nav-link active" id="messagesLink" style="display: none;">Messages</a>
           <a href="my-postings.html" class="btn btn-secondary" id="createPostingBtn" style="display: none;">
             <i data-lucide="plus" class="btn-icon"></i>
             Create Posting
@@ -196,7 +195,6 @@
     const userMenu = document.getElementById('userMenu');
     const loginLink = document.getElementById('loginLink');
     const myPostingsLink = document.getElementById('myPostingsLink');
-    const messagesLink = document.getElementById('messagesLink');
     const createPostingBtn = document.getElementById('createPostingBtn');
     const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
     
@@ -204,7 +202,6 @@
       userMenu.style.display = 'block';
       loginLink.style.display = 'none';
       myPostingsLink.style.display = 'block';
-      messagesLink.style.display = 'block';
       createPostingBtn.style.display = 'inline-flex';
       createPostingLoginBtn.style.display = 'none';
       
@@ -228,7 +225,6 @@
       userMenu.style.display = 'none';
       loginLink.style.display = 'block';
       myPostingsLink.style.display = 'none';
-      messagesLink.style.display = 'none';
       createPostingBtn.style.display = 'none';
       createPostingLoginBtn.style.display = 'inline-flex';
       

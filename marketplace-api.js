@@ -229,14 +229,8 @@ function renderPostingsAsProducts(postings, container) {
             <form class="contact-form-inline" data-posting-id="${product.id}">
               <input type="hidden" name="postingId" value="${product.id}">
               <input type="hidden" name="toUserId" value="${posting.user_id}">
-              
-              <div class="form-group" style="margin-bottom: var(--spacing-xs);">
-                <input type="text" name="fromName" class="form-input" placeholder="Your name" style="font-size: 0.875rem; padding: var(--spacing-xs);" id="contactName_${product.id}">
-              </div>
-              
-              <div class="form-group" style="margin-bottom: var(--spacing-xs);">
-                <input type="email" name="fromEmail" class="form-input" placeholder="Your email" style="font-size: 0.875rem; padding: var(--spacing-xs);" id="contactEmail_${product.id}">
-              </div>
+              <input type="hidden" name="fromName" id="contactName_${product.id}" value="">
+              <input type="hidden" name="fromEmail" id="contactEmail_${product.id}" value="">
               
               <div class="form-group" style="margin-bottom: var(--spacing-xs);">
                 <textarea name="message" class="form-input" rows="3" placeholder="Type your message..." required style="font-size: 0.875rem; padding: var(--spacing-xs); resize: vertical;" id="contactMessage_${product.id}"></textarea>

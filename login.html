@@ -138,9 +138,9 @@
 
         showMessage('Login successful! Redirecting...', 'success');
         
-        // Redirect to marketplace or return URL
+        // Redirect to home page or return URL
         setTimeout(() => {
-          const returnUrl = new URLSearchParams(window.location.search).get('return') || 'marketplace.html';
+          const returnUrl = new URLSearchParams(window.location.search).get('return') || 'index.html';
           window.location.href = returnUrl;
         }, 1000);
 
@@ -168,7 +168,7 @@
 
     // Check if already logged in
     if (isAuthenticated()) {
-      window.location.href = 'marketplace.html';
+      window.location.href = 'index.html';
     }
     
     // Mobile hamburger menu toggle
