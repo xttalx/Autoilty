@@ -230,7 +230,7 @@ p {
 
 @media (max-width: 768px) {
   .nav-toggle {
-    display: block;
+    display: block !important;
   }
   
   .nav-links {
@@ -246,14 +246,16 @@ p {
     gap: 0;
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease;
-    z-index: 99;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    z-index: 999;
     display: none;
+    opacity: 0;
   }
   
   .nav-links.active {
     display: flex;
     max-height: 600px;
+    opacity: 1;
     box-shadow: var(--shadow-md);
   }
   

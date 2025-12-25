@@ -176,20 +176,105 @@
     // Initialize Lucide icons
     lucide.createIcons();
     
-    // Mobile hamburger menu toggle
-    const navToggle = document.getElementById('navToggle');
-    const navLinks = document.getElementById('navLinks');
+    // Setup navigation and user menu
+    function setupNavigation() {
+      const currentUser = getCurrentUser();
+      const userMenu = document.getElementById('userMenu');
+      const loginLink = document.getElementById('loginLink');
+      const myPostingsLink = document.getElementById('myPostingsLink');
+      const createPostingBtn = document.getElementById('createPostingBtn');
+      const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
+      
+      if (currentUser && isAuthenticated()) {
+        // User is logged in - show user menu and create posting button
+        if (userMenu) {
+          userMenu.style.display = 'block';
+          userMenu.style.visibility = 'visible';
+        }
+        if (loginLink) loginLink.style.display = 'none';
+        if (myPostingsLink) myPostingsLink.style.display = 'block';
+        if (createPostingBtn) createPostingBtn.style.display = 'inline-flex';
+        if (createPostingLoginBtn) createPostingLoginBtn.style.display = 'none';
+        
+        const userMenuName = document.getElementById('userMenuName');
+        if (userMenuName) userMenuName.textContent = currentUser.username;
+        
+        // Update unread badge
+        if (typeof updateUnreadBadge === 'function') {
+          updateUnreadBadge();
+        }
+        
+        // User menu toggle
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userMenuDropdown = document.getElementById('userMenuDropdown');
+        if (userMenuButton && userMenuDropdown) {
+          userMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenuDropdown.classList.toggle('show');
+          });
+          
+          document.addEventListener('click', (e) => {
+            if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
+              userMenuDropdown.classList.remove('show');
+            }
+          });
+        }
+        
+        // Logout
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+          logoutButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+              logout();
+            }
+          });
+        }
+      } else {
+        // User is not logged in - show login link and create posting button that redirects to login
+        if (userMenu) userMenu.style.display = 'none';
+        if (loginLink) loginLink.style.display = 'block';
+        if (myPostingsLink) myPostingsLink.style.display = 'none';
+        if (createPostingBtn) createPostingBtn.style.display = 'none';
+        if (createPostingLoginBtn) createPostingLoginBtn.style.display = 'inline-flex';
+      }
+    }
     
-    if (navToggle && navLinks) {
-      navToggle.addEventListener('click', () => {
+    // Mobile hamburger menu toggle (single implementation, no duplicates)
+    function setupMobileNav() {
+      const navToggle = document.getElementById('navToggle');
+      const navLinks = document.getElementById('navLinks');
+      
+      if (!navToggle || !navLinks) return;
+      
+      // Show/hide toggle button based on screen size
+      function checkMobile() {
+        if (window.innerWidth <= 768) {
+          navToggle.style.display = 'block';
+        } else {
+          navToggle.style.display = 'none';
+          navLinks.classList.remove('active');
+        }
+      }
+      
+      // Initial check
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      
+      // Toggle menu on click
+      navToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
         navLinks.classList.toggle('active');
         const icon = navToggle.querySelector('i');
-        if (navLinks.classList.contains('active')) {
-          icon.setAttribute('data-lucide', 'x');
-        } else {
-          icon.setAttribute('data-lucide', 'menu');
+        if (icon) {
+          if (navLinks.classList.contains('active')) {
+            icon.setAttribute('data-lucide', 'x');
+          } else {
+            icon.setAttribute('data-lucide', 'menu');
+          }
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
         }
-        lucide.createIcons();
       });
       
       // Close menu when clicking outside
@@ -199,78 +284,34 @@
           const icon = navToggle.querySelector('i');
           if (icon) {
             icon.setAttribute('data-lucide', 'menu');
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
           }
         }
       });
       
       // Close menu when clicking a link
-      navLinks.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
+      navLinks.querySelectorAll('a, button').forEach(item => {
+        item.addEventListener('click', () => {
           navLinks.classList.remove('active');
           const icon = navToggle.querySelector('i');
           if (icon) {
             icon.setAttribute('data-lucide', 'menu');
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
           }
         });
       });
     }
     
-    // Setup user menu and navigation based on auth status
-    const currentUser = getCurrentUser();
-    const userMenu = document.getElementById('userMenu');
-    const loginLink = document.getElementById('loginLink');
-    const myPostingsLink = document.getElementById('myPostingsLink');
-    const createPostingBtn = document.getElementById('createPostingBtn');
-    const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
-    
-    if (currentUser && isAuthenticated()) {
-      // User is logged in - show user menu and create posting button
-      userMenu.style.display = 'block';
-      loginLink.style.display = 'none';
-      myPostingsLink.style.display = 'block';
-      createPostingBtn.style.display = 'inline-flex';
-      createPostingLoginBtn.style.display = 'none';
-      
-      document.getElementById('userMenuName').textContent = currentUser.username;
-      
-      // User menu toggle
-      document.getElementById('userMenuButton').addEventListener('click', (e) => {
-        e.stopPropagation();
-        document.getElementById('userMenuDropdown').classList.toggle('show');
-      });
-      
-      document.addEventListener('click', () => {
-        document.getElementById('userMenuDropdown').classList.remove('show');
-      });
-      
-      // Logout
-      document.getElementById('logoutButton').addEventListener('click', () => {
-        if (confirm('Are you sure you want to logout?')) {
-          logout();
-        }
-      });
-
-      // Create posting CTA button - redirects to my-postings
-      document.getElementById('createPostingCtaBtn').addEventListener('click', () => {
-        window.location.href = 'my-postings.html';
-      });
-    } else {
-      // User is not logged in - show login link and create posting button that redirects to login
-      userMenu.style.display = 'none';
-      loginLink.style.display = 'block';
-      myPostingsLink.style.display = 'none';
-      createPostingBtn.style.display = 'none';
-      createPostingLoginBtn.style.display = 'inline-flex';
-
-      // Create posting CTA button - redirects to login
-      document.getElementById('createPostingCtaBtn').addEventListener('click', () => {
-        window.location.href = 'login.html?return=my-postings.html';
-      });
-    }
+    // Initialize navigation
+    setupNavigation();
+    setupMobileNav();
 
     // Create posting button in nav - redirects based on auth status
+    const createPostingBtn = document.getElementById('createPostingBtn');
     if (createPostingBtn) {
       createPostingBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -438,69 +479,6 @@
       }
     }
     
-    // Mobile hamburger menu toggle
-    const navToggle = document.getElementById('navToggle');
-    const navLinks = document.getElementById('navLinks');
-    
-    if (navToggle && navLinks) {
-      // Show toggle button on mobile
-      function checkMobile() {
-        if (window.innerWidth <= 768) {
-          navToggle.style.display = 'block';
-        } else {
-          navToggle.style.display = 'none';
-          navLinks.classList.remove('active');
-        }
-      }
-      
-      checkMobile();
-      window.addEventListener('resize', checkMobile);
-      
-      navToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        navLinks.classList.toggle('active');
-        const icon = navToggle.querySelector('i');
-        if (icon) {
-          if (navLinks.classList.contains('active')) {
-            icon.setAttribute('data-lucide', 'x');
-          } else {
-            icon.setAttribute('data-lucide', 'menu');
-          }
-          if (typeof lucide !== 'undefined' && lucide.createIcons) {
-            lucide.createIcons();
-          }
-        }
-      });
-      
-      // Close menu when clicking outside
-      document.addEventListener('click', (e) => {
-        if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
-          navLinks.classList.remove('active');
-          const icon = navToggle.querySelector('i');
-          if (icon) {
-            icon.setAttribute('data-lucide', 'menu');
-            if (typeof lucide !== 'undefined' && lucide.createIcons) {
-              lucide.createIcons();
-            }
-          }
-        }
-      });
-      
-      // Close menu when clicking a link
-      navLinks.querySelectorAll('a, button').forEach(item => {
-        item.addEventListener('click', () => {
-          navLinks.classList.remove('active');
-          const icon = navToggle.querySelector('i');
-          if (icon) {
-            icon.setAttribute('data-lucide', 'menu');
-            if (typeof lucide !== 'undefined' && lucide.createIcons) {
-              lucide.createIcons();
-            }
-          }
-        });
-      });
-    }
-
     // Contact Seller now uses inline forms in product cards (handled by marketplace-api.js)
 
     // Load on page ready
