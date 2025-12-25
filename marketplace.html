@@ -47,6 +47,11 @@
                 <i data-lucide="list" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
                 My Postings
               </a>
+              <a href="messages.html" class="user-menu-item" id="inboxLink">
+                <i data-lucide="mail" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Inbox
+                <span class="unread-badge" id="unreadBadge" style="display: none; margin-left: auto; background: var(--color-primary); color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.75rem; font-weight: 600; min-width: 18px; text-align: center;">0</span>
+              </a>
               <button class="user-menu-item danger" id="logoutButton" style="width: 100%; text-align: left; border: none; cursor: pointer;">
                 <i data-lucide="log-out" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
                 Logout
@@ -167,7 +172,6 @@
   <script src="auth.js"></script>
   <script src="marketplace-api.js"></script>
   <script src="messages-api.js"></script>
-  <script src="script.js" defer></script>
   <script>
     // Initialize Lucide icons
     lucide.createIcons();
@@ -434,6 +438,69 @@
       }
     }
     
+    // Mobile hamburger menu toggle
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    
+    if (navToggle && navLinks) {
+      // Show toggle button on mobile
+      function checkMobile() {
+        if (window.innerWidth <= 768) {
+          navToggle.style.display = 'block';
+        } else {
+          navToggle.style.display = 'none';
+          navLinks.classList.remove('active');
+        }
+      }
+      
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      
+      navToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navLinks.classList.toggle('active');
+        const icon = navToggle.querySelector('i');
+        if (icon) {
+          if (navLinks.classList.contains('active')) {
+            icon.setAttribute('data-lucide', 'x');
+          } else {
+            icon.setAttribute('data-lucide', 'menu');
+          }
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
+        }
+      });
+      
+      // Close menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
+          navLinks.classList.remove('active');
+          const icon = navToggle.querySelector('i');
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
+        }
+      });
+      
+      // Close menu when clicking a link
+      navLinks.querySelectorAll('a, button').forEach(item => {
+        item.addEventListener('click', () => {
+          navLinks.classList.remove('active');
+          const icon = navToggle.querySelector('i');
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
+        });
+      });
+    }
+
     // Contact Seller now uses inline forms in product cards (handled by marketplace-api.js)
 
     // Load on page ready

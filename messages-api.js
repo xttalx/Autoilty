@@ -114,10 +114,63 @@ async function getConversation(postingId) {
   }
 }
 
+/**
+ * Get unread message count for the logged-in user
+ * @returns {Promise<number>} Number of unread messages
+ */
+async function getUnreadCount() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return 0;
+    }
+
+    const response = await fetch(`${getApiBaseUrl()}/messages/inbox`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      return 0;
+    }
+
+    const data = await response.json();
+    const unreadCount = data.messages ? data.messages.filter(m => !m.read).length : 0;
+    return unreadCount;
+  } catch (error) {
+    console.error('Error fetching unread count:', error);
+    return 0;
+  }
+}
+
+/**
+ * Update unread badge in navigation
+ */
+async function updateUnreadBadge() {
+  try {
+    const badge = document.getElementById('unreadBadge');
+    if (!badge) return;
+
+    const count = await getUnreadCount();
+    if (count > 0) {
+      badge.textContent = count > 99 ? '99+' : count.toString();
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch (error) {
+    console.error('Error updating unread badge:', error);
+  }
+}
+
 // Export functions to global scope
 if (typeof window !== 'undefined') {
   window.sendMessage = sendMessage;
   window.getInboxMessages = getInboxMessages;
   window.getConversation = getConversation;
+  window.getUnreadCount = getUnreadCount;
+  window.updateUnreadBadge = updateUnreadBadge;
 }
 

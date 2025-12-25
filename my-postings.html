@@ -32,6 +32,11 @@
                 <i data-lucide="list" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
                 My Postings
               </a>
+              <a href="messages.html" class="user-menu-item" id="inboxLink">
+                <i data-lucide="mail" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Inbox
+                <span class="unread-badge" id="unreadBadge" style="display: none; margin-left: auto; background: var(--color-primary); color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.75rem; font-weight: 600; min-width: 18px; text-align: center;">0</span>
+              </a>
               <button class="user-menu-item danger" id="logoutButton" style="width: 100%; text-align: left; border: none; cursor: pointer;">
                 <i data-lucide="log-out" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
                 Logout
@@ -185,6 +190,7 @@
   </div>
 
   <script src="auth.js"></script>
+  <script src="messages-api.js"></script>
   <script>
     // Initialize Lucide icons
     lucide.createIcons();
@@ -198,6 +204,11 @@
     const currentUser = getCurrentUser();
     if (currentUser) {
       document.getElementById('userMenuName').textContent = currentUser.username;
+      
+      // Update unread badge
+      if (typeof updateUnreadBadge === 'function') {
+        updateUnreadBadge();
+      }
     }
 
     // User menu toggle

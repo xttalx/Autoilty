@@ -248,10 +248,12 @@ p {
     overflow: hidden;
     transition: max-height 0.3s ease;
     z-index: 99;
+    display: none;
   }
   
   .nav-links.active {
-    max-height: 500px;
+    display: flex;
+    max-height: 600px;
     box-shadow: var(--shadow-md);
   }
   
