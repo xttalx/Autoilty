@@ -350,6 +350,9 @@
         const data = await getConversation(postingId);
         chatTitle.textContent = `Conversation: ${data.posting.title}`;
         
+        // Store conversation data globally for reply handlers
+        window.currentConversationData = data;
+        
         document.getElementById('chatPostingId').value = postingId;
         // Find the other user (not current user) - handle anonymous messages
         const otherUser = data.messages.find(m => m.fromUserId !== currentUser.id && m.fromUserId !== null) || 
@@ -368,15 +371,16 @@
           }
         }
         
-        // Get posting owner ID from the conversation data
-        const postingOwnerId = data.posting?.user_id || postingId; // Use posting owner as fallback
+        // Store posting data for reply handlers
+        const postingData = data.posting;
         
         // Render messages
         chatMessages.innerHTML = data.messages.map((msg, index) => {
           const isFromMe = msg.isFromMe;
           const messageId = `msg-${msg.id || index}`;
-          // Determine toUserId for reply: if message is from anonymous, reply to posting owner; otherwise reply to sender
-          const replyToUserId = msg.fromUserId || postingOwnerId;
+          // For replies: send to the original sender's userId
+          // If message is from anonymous user (no fromUserId), we'll handle it in the reply handler
+          const replyToUserId = msg.fromUserId || '';
           
           return `
             <div class="message-wrapper" data-message-id="${messageId}" style="margin-bottom: var(--spacing-md);">
@@ -428,7 +432,131 @@
       const modal = document.getElementById('chatModal');
       modal.style.display = 'none';
       document.body.style.overflow = '';
-      document.getElementById('chatReplyForm').reset();
+      const form = document.getElementById('chatReplyForm');
+      if (form) form.reset();
+      
+      // Hide all inline reply forms
+      document.querySelectorAll('.inline-reply-form').forEach(form => {
+        form.style.display = 'none';
+      });
+    }
+    
+    // Attach reply handlers for inline reply buttons
+    function attachReplyHandlers(postingId, currentUser) {
+      const chatMessages = document.getElementById('chatMessages');
+      if (!chatMessages) return;
+      
+      // Reply button click - show inline form
+      chatMessages.querySelectorAll('.reply-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const messageId = btn.dataset.messageId;
+          const replyForm = document.getElementById(`replyForm_${messageId}`);
+          const textarea = document.getElementById(`replyText_${messageId}`);
+          
+          // Hide all other reply forms
+          document.querySelectorAll('.inline-reply-form').forEach(form => {
+            if (form.id !== `replyForm_${messageId}`) {
+              form.style.display = 'none';
+            }
+          });
+          
+          // Toggle current form
+          if (replyForm) {
+            const isVisible = replyForm.style.display !== 'none';
+            replyForm.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible && textarea) {
+              setTimeout(() => textarea.focus(), 100);
+            }
+          }
+          
+          lucide.createIcons();
+        });
+      });
+      
+      // Cancel button click - hide form
+      chatMessages.querySelectorAll('.reply-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const messageId = btn.dataset.messageId;
+          const replyForm = document.getElementById(`replyForm_${messageId}`);
+          const textarea = document.getElementById(`replyText_${messageId}`);
+          
+          if (replyForm) replyForm.style.display = 'none';
+          if (textarea) textarea.value = '';
+        });
+      });
+      
+      // Send button click - send reply
+      chatMessages.querySelectorAll('.reply-send-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          
+          const messageId = btn.dataset.messageId;
+          const postingId = parseInt(btn.dataset.postingId);
+          const toUserIdStr = btn.dataset.toUserId;
+          const toUserId = toUserIdStr ? parseInt(toUserIdStr) : null;
+          const textarea = document.getElementById(`replyText_${messageId}`);
+          const replyForm = document.getElementById(`replyForm_${messageId}`);
+          
+          if (!textarea || !textarea.value.trim()) {
+            alert('Please enter a message');
+            return;
+          }
+          
+          // For anonymous messages (no toUserId), try to find from conversation data
+          let actualToUserId = toUserId;
+          if (!actualToUserId) {
+            // Try to find the message's fromUserId from conversation data
+            const convData = window.currentConversationData;
+            if (convData && convData.messages) {
+              const msgId = messageId.replace('msg-', '');
+              const originalMessage = convData.messages.find(m => (m.id || '').toString() === msgId);
+              if (originalMessage && originalMessage.fromUserId) {
+                actualToUserId = originalMessage.fromUserId;
+              }
+            }
+            
+            if (!actualToUserId) {
+              alert('Cannot reply to this message. The sender did not provide contact information.');
+              return;
+            }
+          }
+          
+          // Disable button
+          btn.disabled = true;
+          const originalHTML = btn.innerHTML;
+          btn.innerHTML = '<i data-lucide="loader" class="btn-icon spin"></i> Sending...';
+          lucide.createIcons();
+          
+          try {
+            const messageData = {
+              postingId: postingId,
+              toUserId: actualToUserId,
+              name: currentUser.username || '',
+              email: currentUser.email || '',
+              phone: null,
+              message: textarea.value.trim()
+            };
+            
+            await sendMessage(messageData);
+            
+            // Hide reply form and clear textarea
+            if (replyForm) replyForm.style.display = 'none';
+            if (textarea) textarea.value = '';
+            
+            // Reload conversation
+            await openChat(postingId);
+          } catch (error) {
+            console.error('Error sending reply:', error);
+            alert('Failed to send reply: ' + error.message);
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+            lucide.createIcons();
+          }
+        });
+      });
     }
     
     // Make openChat globally available
