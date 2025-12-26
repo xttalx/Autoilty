@@ -1296,6 +1296,7 @@ p {
 /* Inline Reply Form Styles */
 .inline-reply-form {
   animation: fadeIn 0.2s ease;
+  margin-top: var(--spacing-sm);
 }
 
 @keyframes fadeIn {
@@ -1309,8 +1310,28 @@ p {
   }
 }
 
+.reply-btn {
+  background: none !important;
+  border: none !important;
+  color: var(--color-text-light) !important;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: var(--transition);
+  border-radius: var(--radius);
+  font-family: var(--font-family);
+}
+
 .reply-btn:hover {
-  color: var(--color-primary);
+  color: var(--color-primary) !important;
+  background: rgba(var(--color-primary-rgb, 59, 130, 246), 0.1) !important;
+}
+
+.reply-btn:active {
+  transform: scale(0.98);
 }
 
 .reply-btn i {
@@ -1321,10 +1342,64 @@ p {
   transform: translateX(-2px);
 }
 
+.reply-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.inline-reply-form {
+  background: #f9f9f9;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
 .inline-reply-textarea {
   font-family: var(--font-family);
   font-size: 0.875rem;
   line-height: 1.5;
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  resize: vertical;
+  min-height: 60px;
+  transition: var(--transition);
+}
+
+.inline-reply-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 59, 130, 246), 0.1);
+}
+
+.inline-reply-textarea:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Mobile responsive for reply form */
+@media (max-width: 768px) {
+  .inline-reply-form {
+    padding: var(--spacing-sm);
+  }
+  
+  .inline-reply-textarea {
+    font-size: 1rem; /* Prevent zoom on iOS */
+  }
+  
+  .reply-btn {
+    font-size: 0.875rem;
+    padding: var(--spacing-xs);
+  }
+  
+  .reply-send-btn,
+  .reply-cancel-btn {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .inline-reply-textarea:focus {

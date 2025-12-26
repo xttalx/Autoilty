@@ -352,27 +352,26 @@
         
         // Store conversation data globally for reply handlers
         window.currentConversationData = data;
+        window.currentPostingData = data.posting;
         
         document.getElementById('chatPostingId').value = postingId;
         // Find the other user (not current user) - handle anonymous messages
+        // For the bottom reply form, we need to determine who to reply to
         const otherUser = data.messages.find(m => m.fromUserId !== currentUser.id && m.fromUserId !== null) || 
                          data.messages.find(m => !m.isFromMe) || 
                          data.messages[0];
         // For replies, we need to send to the original sender
-        // If message is from anonymous user, we'll use their email/name
+        // If message is from anonymous user, we can't reply (they have no userId)
         if (otherUser) {
-          if (otherUser.fromUserId === currentUser.id) {
-            document.getElementById('chatToUserId').value = otherUser.toUserId;
-          } else if (otherUser.fromUserId) {
+          if (otherUser.fromUserId && otherUser.fromUserId !== currentUser.id) {
             document.getElementById('chatToUserId').value = otherUser.fromUserId;
+          } else if (otherUser.toUserId && otherUser.toUserId !== currentUser.id) {
+            document.getElementById('chatToUserId').value = otherUser.toUserId;
           } else {
-            // Anonymous message - we'll need to reply using email
-            document.getElementById('chatToUserId').value = posting.user_id; // Reply to posting owner
+            // Fallback: use posting owner (shouldn't happen in normal flow)
+            document.getElementById('chatToUserId').value = data.posting.user_id || '';
           }
         }
-        
-        // Store posting data for reply handlers
-        const postingData = data.posting;
         
         // Render messages
         chatMessages.innerHTML = data.messages.map((msg, index) => {
@@ -393,18 +392,18 @@
               </div>
               ${!isFromMe ? `
                 <div style="margin-top: var(--spacing-xs); text-align: left;">
-                  <button class="reply-btn" data-message-id="${messageId}" data-posting-id="${postingId}" data-from-user-id="${msg.fromUserId || ''}" data-from-name="${msg.fromName || ''}" data-from-email="${msg.fromEmail || ''}" style="background: none; border: none; color: var(--color-text-light); font-size: 0.875rem; cursor: pointer; padding: var(--spacing-xs); display: inline-flex; align-items: center; gap: var(--spacing-xs); transition: var(--transition);">
+                  <button class="reply-btn" data-message-id="${messageId}" data-posting-id="${postingId}" data-from-user-id="${msg.fromUserId || ''}" data-from-name="${msg.fromName || ''}" data-from-email="${msg.fromEmail || ''}" style="background: none; border: none; color: var(--color-text-light); font-size: 0.875rem; cursor: pointer; padding: var(--spacing-xs) var(--spacing-sm); display: inline-flex; align-items: center; gap: var(--spacing-xs); transition: var(--transition); border-radius: var(--radius);" title="Reply to this message">
                     <i data-lucide="corner-down-left" style="width: 1rem; height: 1rem;"></i>
-                    Reply
+                    <span>Reply</span>
                   </button>
                 </div>
-                <div class="inline-reply-form" id="replyForm_${messageId}" data-posting-id="${postingId}" style="display: none; margin-top: var(--spacing-sm); padding: var(--spacing-sm); background: #f9f9f9; border-radius: var(--radius); border: 1px solid var(--color-border);">
-                  <textarea class="inline-reply-textarea" id="replyText_${messageId}" placeholder="Type your reply..." rows="3" style="width: 100%; padding: var(--spacing-xs); border: 1px solid var(--color-border); border-radius: var(--radius); font-family: inherit; font-size: 0.875rem; resize: vertical; margin-bottom: var(--spacing-xs);"></textarea>
-                  <div style="display: flex; gap: var(--spacing-xs); justify-content: flex-end;">
-                    <button class="btn btn-secondary reply-cancel-btn" data-message-id="${messageId}" style="padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.875rem;">Cancel</button>
-                    <button class="btn btn-primary reply-send-btn" data-message-id="${messageId}" data-posting-id="${postingId}" data-to-user-id="${replyToUserId}" data-to-name="${msg.fromName || ''}" data-to-email="${msg.fromEmail || ''}" style="padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.875rem;">
+                <div class="inline-reply-form" id="replyForm_${messageId}" data-posting-id="${postingId}" data-from-user-id="${msg.fromUserId || ''}" style="display: none; margin-top: var(--spacing-sm); padding: var(--spacing-md); background: #f9f9f9; border-radius: var(--radius); border: 1px solid var(--color-border);">
+                  <textarea class="inline-reply-textarea" id="replyText_${messageId}" placeholder="Type your reply..." rows="3" style="width: 100%; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: var(--radius); font-family: inherit; font-size: 0.875rem; resize: vertical; margin-bottom: var(--spacing-sm); min-height: 60px;" required></textarea>
+                  <div style="display: flex; gap: var(--spacing-sm); justify-content: flex-end; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-secondary reply-cancel-btn" data-message-id="${messageId}" style="padding: var(--spacing-xs) var(--spacing-md); font-size: 0.875rem; min-width: 70px;">Cancel</button>
+                    <button type="button" class="btn btn-primary reply-send-btn" data-message-id="${messageId}" data-posting-id="${postingId}" data-to-user-id="${msg.fromUserId || ''}" data-to-name="${msg.fromName || ''}" data-to-email="${msg.fromEmail || ''}" style="padding: var(--spacing-xs) var(--spacing-md); font-size: 0.875rem; min-width: 80px; display: inline-flex; align-items: center; gap: var(--spacing-xs);">
                       <i data-lucide="send" class="btn-icon" style="width: 0.875rem; height: 0.875rem;"></i>
-                      Send
+                      <span>Send</span>
                     </button>
                   </div>
                 </div>
@@ -496,39 +495,99 @@
           const messageId = btn.dataset.messageId;
           const postingId = parseInt(btn.dataset.postingId);
           const toUserIdStr = btn.dataset.toUserId;
-          const toUserId = toUserIdStr ? parseInt(toUserIdStr) : null;
           const textarea = document.getElementById(`replyText_${messageId}`);
           const replyForm = document.getElementById(`replyForm_${messageId}`);
           
-          if (!textarea || !textarea.value.trim()) {
-            alert('Please enter a message');
+          // Null checks
+          if (!textarea) {
+            console.error('Textarea not found for message:', messageId);
             return;
           }
           
-          // For anonymous messages (no toUserId), try to find from conversation data
-          let actualToUserId = toUserId;
+          if (!textarea.value.trim()) {
+            alert('Please enter a message');
+            textarea.focus();
+            return;
+          }
+          
+          // Determine toUserId for reply
+          let actualToUserId = null;
+          
+          // First, try to get from button data attribute
+          if (toUserIdStr && toUserIdStr.trim() !== '') {
+            actualToUserId = parseInt(toUserIdStr);
+          }
+          
+          // If still no userId, try to find from conversation data
           if (!actualToUserId) {
-            // Try to find the message's fromUserId from conversation data
             const convData = window.currentConversationData;
             if (convData && convData.messages) {
               const msgId = messageId.replace('msg-', '');
-              const originalMessage = convData.messages.find(m => (m.id || '').toString() === msgId);
+              const originalMessage = convData.messages.find(m => {
+                const mId = (m.id || '').toString();
+                return mId === msgId || mId === messageId;
+              });
+              
               if (originalMessage && originalMessage.fromUserId) {
                 actualToUserId = originalMessage.fromUserId;
               }
             }
-            
-            if (!actualToUserId) {
-              alert('Cannot reply to this message. The sender did not provide contact information.');
-              return;
+          }
+          
+          // If still no userId, try to get from posting owner (for anonymous messages)
+          if (!actualToUserId) {
+            const postingData = window.currentPostingData;
+            if (postingData && postingData.user_id) {
+              // For anonymous messages, we reply to the posting owner
+              // But wait - if we're the posting owner, we can't reply to anonymous users
+              // Actually, we should check: if the message is from an anonymous user (no fromUserId),
+              // we can't reply because they have no account. Let's show an error.
+              const convData = window.currentConversationData;
+              if (convData && convData.messages) {
+                const msgId = messageId.replace('msg-', '');
+                const originalMessage = convData.messages.find(m => {
+                  const mId = (m.id || '').toString();
+                  return mId === msgId || mId === messageId;
+                });
+                
+                if (originalMessage && !originalMessage.fromUserId) {
+                  // This is an anonymous message - we can't reply to anonymous users
+                  alert('Cannot reply to anonymous messages. The sender did not provide contact information.');
+                  return;
+                }
+              }
+              
+              // Fallback: use posting owner (shouldn't normally happen)
+              actualToUserId = postingData.user_id;
             }
           }
           
-          // Disable button
+          // Final check
+          if (!actualToUserId) {
+            alert('Cannot determine recipient. Please try again.');
+            console.error('Could not determine toUserId for reply', {
+              messageId,
+              postingId,
+              toUserIdStr,
+              conversationData: window.currentConversationData
+            });
+            return;
+          }
+          
+          // Prevent sending to yourself
+          if (actualToUserId === currentUser.id) {
+            alert('Cannot send message to yourself.');
+            return;
+          }
+          
+          // Disable button and show loading state
           btn.disabled = true;
           const originalHTML = btn.innerHTML;
           btn.innerHTML = '<i data-lucide="loader" class="btn-icon spin"></i> Sending...';
           lucide.createIcons();
+          
+          // Disable textarea
+          if (textarea) textarea.disabled = true;
           
           try {
             const messageData = {
@@ -544,15 +603,24 @@
             
             // Hide reply form and clear textarea
             if (replyForm) replyForm.style.display = 'none';
-            if (textarea) textarea.value = '';
+            if (textarea) {
+              textarea.value = '';
+              textarea.disabled = false;
+            }
             
-            // Reload conversation
+            // Reload conversation to show new message
             await openChat(postingId);
+            
+            // Update unread badge if function exists
+            if (typeof updateUnreadBadge === 'function') {
+              updateUnreadBadge();
+            }
           } catch (error) {
             console.error('Error sending reply:', error);
-            alert('Failed to send reply: ' + error.message);
+            alert('Failed to send reply: ' + (error.message || 'Please try again.'));
             btn.disabled = false;
             btn.innerHTML = originalHTML;
+            if (textarea) textarea.disabled = false;
             lucide.createIcons();
           }
         });
