@@ -436,16 +436,17 @@
                 </div>
               </div>
               ${!isFromMe ? `
-                <div style="margin-top: var(--spacing-xs); text-align: right;">
+                <div style="margin-top: var(--spacing-xs); text-align: right; padding-right: var(--spacing-xs);">
                   <button class="reply-btn" 
                           data-message-id="${messageId}" 
                           data-posting-id="${postingId}" 
                           data-from-user-id="${msg.fromUserId || ''}" 
                           data-from-name="${msg.fromName || ''}" 
                           data-from-email="${msg.fromEmail || ''}"
-                          data-message-text="${(msg.message || '').replace(/"/g, '&quot;')}"
+                          data-message-text="${(msg.message || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}"
                           data-message-date="${new Date(msg.createdAt).toLocaleString()}"
-                          title="Reply to this message">
+                          title="Reply to this message"
+                          type="button">
                     <i data-lucide="corner-down-left"></i>
                     <span>Reply</span>
                   </button>
@@ -620,15 +621,32 @@
     // Attach reply handlers for reply buttons
     function attachReplyHandlers(postingId, currentUser) {
       const chatMessages = document.getElementById('chatMessages');
-      if (!chatMessages) return;
+      if (!chatMessages) {
+        console.warn('chatMessages element not found');
+        return;
+      }
+      
+      // Find all reply buttons
+      const replyButtons = chatMessages.querySelectorAll('.reply-btn');
+      console.log(`Found ${replyButtons.length} reply buttons to attach handlers`);
       
       // Reply button click - open right-side modal
-      chatMessages.querySelectorAll('.reply-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+      replyButtons.forEach((btn, index) => {
+        // Remove any existing listeners by cloning the button
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        // Add click handler to new button
+        newBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          openReplyModal(btn);
+          e.preventDefault();
+          console.log('Reply button clicked', newBtn.dataset);
+          openReplyModal(newBtn);
         });
       });
+      
+      // Re-initialize Lucide icons after DOM manipulation
+      lucide.createIcons();
     }
     
     // Make openChat globally available
