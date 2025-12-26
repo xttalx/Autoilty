@@ -436,7 +436,7 @@
                 </div>
               </div>
               ${!isFromMe ? `
-                <div style="margin-top: var(--spacing-xs); text-align: right; padding-right: var(--spacing-xs);">
+                <div style="margin-top: 8px; text-align: right; padding-right: 4px; display: block; visibility: visible; opacity: 1;">
                   <button class="reply-btn" 
                           data-message-id="${messageId}" 
                           data-posting-id="${postingId}" 
@@ -446,8 +446,9 @@
                           data-message-text="${(msg.message || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}"
                           data-message-date="${new Date(msg.createdAt).toLocaleString()}"
                           title="Reply to this message"
-                          type="button">
-                    <i data-lucide="corner-down-left"></i>
+                          type="button"
+                          style="display: inline-flex !important; visibility: visible !important; opacity: 1 !important;">
+                    <i data-lucide="corner-down-left" style="width: 16px; height: 16px;"></i>
                     <span>Reply</span>
                   </button>
                 </div>
@@ -458,10 +459,18 @@
         
         // Scroll to bottom
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Initialize Lucide icons
         lucide.createIcons();
         
-        // Attach reply button handlers
-        attachReplyHandlers(postingId, currentUser);
+        // Debug: Count reply buttons after rendering
+        const replyBtnCount = chatMessages.querySelectorAll('.reply-btn').length;
+        console.log(`Rendered ${replyBtnCount} reply buttons in DOM`);
+        
+        // Attach reply button handlers after a short delay to ensure DOM is ready
+        setTimeout(() => {
+          attachReplyHandlers(postingId, currentUser);
+        }, 100);
       } catch (error) {
         chatMessages.innerHTML = `
           <div style="text-align: center; padding: var(--spacing-lg);">
