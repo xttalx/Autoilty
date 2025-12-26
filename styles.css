@@ -1293,23 +1293,7 @@ p {
   }
 }
 
-/* Inline Reply Form Styles */
-.inline-reply-form {
-  animation: fadeIn 0.2s ease;
-  margin-top: var(--spacing-sm);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* Reply Button Styles */
 .reply-btn {
   background: none !important;
   border: none !important;
@@ -1336,6 +1320,8 @@ p {
 
 .reply-btn i {
   transition: var(--transition);
+  width: 1rem;
+  height: 1rem;
 }
 
 .reply-btn:hover i {
@@ -1347,58 +1333,141 @@ p {
   cursor: not-allowed;
 }
 
-.inline-reply-form {
-  background: #f9f9f9;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+/* Right-Side Reply Modal Styles */
+.reply-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  animation: fadeIn 0.2s ease;
+}
+
+.reply-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 450px;
+  max-width: 90vw;
+  height: 100vh;
+  background: white;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  animation: slideInRight 0.3s ease;
+  overflow-y: auto;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.reply-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: var(--spacing-md);
-  margin-top: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.inline-reply-textarea {
-  font-family: var(--font-family);
-  font-size: 0.875rem;
-  line-height: 1.5;
-  width: 100%;
-  padding: var(--spacing-sm);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  resize: vertical;
-  min-height: 60px;
+.reply-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.reply-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-light);
   transition: var(--transition);
+  border-radius: var(--radius);
+  width: 32px;
+  height: 32px;
 }
 
-.inline-reply-textarea:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 59, 130, 246), 0.1);
-}
-
-.inline-reply-textarea:disabled {
+.reply-modal-close:hover {
   background: #f5f5f5;
-  cursor: not-allowed;
-  opacity: 0.7;
+  color: var(--color-text);
 }
 
-/* Mobile responsive for reply form */
+.reply-modal-close i {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.reply-modal-body {
+  flex: 1;
+  padding: var(--spacing-md);
+  overflow-y: auto;
+}
+
+.reply-original-message {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-sm);
+  background: #f9f9f9;
+  border-radius: var(--radius);
+  border-left: 3px solid var(--color-primary);
+}
+
+.reply-modal-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.reply-modal-actions .btn {
+  min-width: 100px;
+}
+
+/* Mobile Responsive */
 @media (max-width: 768px) {
-  .inline-reply-form {
-    padding: var(--spacing-sm);
+  .reply-modal {
+    width: 100vw;
+    max-width: 100vw;
   }
   
-  .inline-reply-textarea {
-    font-size: 1rem; /* Prevent zoom on iOS */
+  .reply-modal-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .reply-modal-body {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .reply-modal-actions {
+    flex-direction: column;
+  }
+  
+  .reply-modal-actions .btn {
+    width: 100%;
+    min-width: 0;
   }
   
   .reply-btn {
     font-size: 0.875rem;
     padding: var(--spacing-xs);
-  }
-  
-  .reply-send-btn,
-  .reply-cancel-btn {
-    flex: 1;
-    min-width: 0;
   }
 }
 

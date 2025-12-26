@@ -115,6 +115,51 @@
     </div>
   </div>
 
+  <!-- Reply Modal (Right Side) -->
+  <div class="reply-modal-overlay" id="replyModalOverlay" style="display: none;"></div>
+  <div class="reply-modal" id="replyModal" style="display: none;">
+    <div class="reply-modal-header">
+      <h3>Reply to Message</h3>
+      <button class="reply-modal-close" id="replyModalClose" aria-label="Close reply modal">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="reply-modal-body">
+      <!-- Original Message Preview -->
+      <div class="reply-original-message" id="replyOriginalMessage">
+        <!-- Will be populated with original message -->
+      </div>
+      
+      <!-- Reply Form -->
+      <form id="replyModalForm">
+        <input type="hidden" id="replyModalPostingId" name="postingId">
+        <input type="hidden" id="replyModalToUserId" name="toUserId">
+        <input type="hidden" id="replyModalMessageId" name="messageId">
+        
+        <div class="form-group">
+          <label for="replyModalTextarea" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500; color: var(--color-text);">Your Reply</label>
+          <textarea 
+            id="replyModalTextarea" 
+            name="message" 
+            class="form-input" 
+            rows="6" 
+            placeholder="Type your reply..." 
+            required
+            style="width: 100%; min-height: 120px; resize: vertical;"
+          ></textarea>
+        </div>
+        
+        <div class="reply-modal-actions">
+          <button type="button" class="btn btn-secondary" id="replyModalCancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="replyModalSend">
+            <i data-lucide="send" class="btn-icon"></i>
+            Send Reply
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="auth.js"></script>
   <script src="messages-api.js"></script>
   <script>
@@ -391,21 +436,19 @@
                 </div>
               </div>
               ${!isFromMe ? `
-                <div style="margin-top: var(--spacing-xs); text-align: left;">
-                  <button class="reply-btn" data-message-id="${messageId}" data-posting-id="${postingId}" data-from-user-id="${msg.fromUserId || ''}" data-from-name="${msg.fromName || ''}" data-from-email="${msg.fromEmail || ''}" style="background: none; border: none; color: var(--color-text-light); font-size: 0.875rem; cursor: pointer; padding: var(--spacing-xs) var(--spacing-sm); display: inline-flex; align-items: center; gap: var(--spacing-xs); transition: var(--transition); border-radius: var(--radius);" title="Reply to this message">
-                    <i data-lucide="corner-down-left" style="width: 1rem; height: 1rem;"></i>
+                <div style="margin-top: var(--spacing-xs); text-align: right;">
+                  <button class="reply-btn" 
+                          data-message-id="${messageId}" 
+                          data-posting-id="${postingId}" 
+                          data-from-user-id="${msg.fromUserId || ''}" 
+                          data-from-name="${msg.fromName || ''}" 
+                          data-from-email="${msg.fromEmail || ''}"
+                          data-message-text="${(msg.message || '').replace(/"/g, '&quot;')}"
+                          data-message-date="${new Date(msg.createdAt).toLocaleString()}"
+                          title="Reply to this message">
+                    <i data-lucide="corner-down-left"></i>
                     <span>Reply</span>
                   </button>
-                </div>
-                <div class="inline-reply-form" id="replyForm_${messageId}" data-posting-id="${postingId}" data-from-user-id="${msg.fromUserId || ''}" style="display: none; margin-top: var(--spacing-sm); padding: var(--spacing-md); background: #f9f9f9; border-radius: var(--radius); border: 1px solid var(--color-border);">
-                  <textarea class="inline-reply-textarea" id="replyText_${messageId}" placeholder="Type your reply..." rows="3" style="width: 100%; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: var(--radius); font-family: inherit; font-size: 0.875rem; resize: vertical; margin-bottom: var(--spacing-sm); min-height: 60px;" required></textarea>
-                  <div style="display: flex; gap: var(--spacing-sm); justify-content: flex-end; flex-wrap: wrap;">
-                    <button type="button" class="btn btn-secondary reply-cancel-btn" data-message-id="${messageId}" style="padding: var(--spacing-xs) var(--spacing-md); font-size: 0.875rem; min-width: 70px;">Cancel</button>
-                    <button type="button" class="btn btn-primary reply-send-btn" data-message-id="${messageId}" data-posting-id="${postingId}" data-to-user-id="${msg.fromUserId || ''}" data-to-name="${msg.fromName || ''}" data-to-email="${msg.fromEmail || ''}" style="padding: var(--spacing-xs) var(--spacing-md); font-size: 0.875rem; min-width: 80px; display: inline-flex; align-items: center; gap: var(--spacing-xs);">
-                      <i data-lucide="send" class="btn-icon" style="width: 0.875rem; height: 0.875rem;"></i>
-                      <span>Send</span>
-                    </button>
-                  </div>
                 </div>
               ` : ''}
             </div>
@@ -429,200 +472,132 @@
     
     function closeChatModal() {
       const modal = document.getElementById('chatModal');
-      modal.style.display = 'none';
-      document.body.style.overflow = '';
+      if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
       const form = document.getElementById('chatReplyForm');
       if (form) form.reset();
-      
-      // Hide all inline reply forms
-      document.querySelectorAll('.inline-reply-form').forEach(form => {
-        form.style.display = 'none';
-      });
     }
     
-    // Attach reply handlers for inline reply buttons
+    // Open reply modal (right side)
+    function openReplyModal(button) {
+      const overlay = document.getElementById('replyModalOverlay');
+      const modal = document.getElementById('replyModal');
+      const originalMessageDiv = document.getElementById('replyOriginalMessage');
+      const textarea = document.getElementById('replyModalTextarea');
+      const postingIdInput = document.getElementById('replyModalPostingId');
+      const toUserIdInput = document.getElementById('replyModalToUserId');
+      const messageIdInput = document.getElementById('replyModalMessageId');
+      
+      if (!overlay || !modal || !textarea) {
+        console.error('Reply modal elements not found');
+        return;
+      }
+      
+      // Get data from button
+      const postingId = parseInt(button.dataset.postingId);
+      const fromUserId = button.dataset.fromUserId || '';
+      const fromName = button.dataset.fromName || 'Unknown';
+      const fromEmail = button.dataset.fromEmail || '';
+      const messageText = button.dataset.messageText || '';
+      const messageDate = button.dataset.messageDate || '';
+      const messageId = button.dataset.messageId || '';
+      
+      // Determine toUserId for reply
+      let actualToUserId = null;
+      
+      // First, try to get from button data attribute
+      if (fromUserId && fromUserId.trim() !== '') {
+        actualToUserId = parseInt(fromUserId);
+      }
+      
+      // If still no userId, try to find from conversation data
+      if (!actualToUserId) {
+        const convData = window.currentConversationData;
+        if (convData && convData.messages) {
+          const msgId = messageId.replace('msg-', '');
+          const originalMessage = convData.messages.find(m => {
+            const mId = (m.id || '').toString();
+            return mId === msgId || mId === messageId;
+          });
+          
+          if (originalMessage && originalMessage.fromUserId) {
+            actualToUserId = originalMessage.fromUserId;
+          }
+        }
+      }
+      
+      // Check if we can reply (need valid userId)
+      if (!actualToUserId) {
+        alert('Cannot reply to this message. The sender did not provide contact information.');
+        return;
+      }
+      
+      // Prevent sending to yourself
+      if (actualToUserId === currentUser.id) {
+        alert('Cannot send message to yourself.');
+        return;
+      }
+      
+      // Populate form
+      if (postingIdInput) postingIdInput.value = postingId;
+      if (toUserIdInput) toUserIdInput.value = actualToUserId;
+      if (messageIdInput) messageIdInput.value = messageId;
+      if (textarea) textarea.value = '';
+      
+      // Populate original message preview
+      if (originalMessageDiv) {
+        originalMessageDiv.innerHTML = `
+          <div style="background: #f5f5f5; padding: var(--spacing-sm); border-radius: var(--radius); border-left: 3px solid var(--color-primary);">
+            <p style="font-size: 0.75rem; color: var(--color-text-light); margin-bottom: var(--spacing-xs);">
+              <strong>From:</strong> ${fromName} ${fromEmail ? `(${fromEmail})` : ''}
+            </p>
+            <p style="margin: var(--spacing-xs) 0; color: var(--color-text);">${messageText}</p>
+            <p style="font-size: 0.75rem; color: var(--color-text-light); margin-top: var(--spacing-xs);">
+              ${messageDate}
+            </p>
+          </div>
+        `;
+      }
+      
+      // Show modal
+      overlay.style.display = 'block';
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      
+      // Focus textarea after animation
+      setTimeout(() => {
+        if (textarea) textarea.focus();
+      }, 300);
+      
+      lucide.createIcons();
+    }
+    
+    // Close reply modal
+    function closeReplyModal() {
+      const overlay = document.getElementById('replyModalOverlay');
+      const modal = document.getElementById('replyModal');
+      const form = document.getElementById('replyModalForm');
+      const textarea = document.getElementById('replyModalTextarea');
+      
+      if (overlay) overlay.style.display = 'none';
+      if (modal) modal.style.display = 'none';
+      if (form) form.reset();
+      if (textarea) textarea.value = '';
+      document.body.style.overflow = '';
+    }
+    
+    // Attach reply handlers for reply buttons
     function attachReplyHandlers(postingId, currentUser) {
       const chatMessages = document.getElementById('chatMessages');
       if (!chatMessages) return;
       
-      // Reply button click - show inline form
+      // Reply button click - open right-side modal
       chatMessages.querySelectorAll('.reply-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const messageId = btn.dataset.messageId;
-          const replyForm = document.getElementById(`replyForm_${messageId}`);
-          const textarea = document.getElementById(`replyText_${messageId}`);
-          
-          // Hide all other reply forms
-          document.querySelectorAll('.inline-reply-form').forEach(form => {
-            if (form.id !== `replyForm_${messageId}`) {
-              form.style.display = 'none';
-            }
-          });
-          
-          // Toggle current form
-          if (replyForm) {
-            const isVisible = replyForm.style.display !== 'none';
-            replyForm.style.display = isVisible ? 'none' : 'block';
-            if (!isVisible && textarea) {
-              setTimeout(() => textarea.focus(), 100);
-            }
-          }
-          
-          lucide.createIcons();
-        });
-      });
-      
-      // Cancel button click - hide form
-      chatMessages.querySelectorAll('.reply-cancel-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const messageId = btn.dataset.messageId;
-          const replyForm = document.getElementById(`replyForm_${messageId}`);
-          const textarea = document.getElementById(`replyText_${messageId}`);
-          
-          if (replyForm) replyForm.style.display = 'none';
-          if (textarea) textarea.value = '';
-        });
-      });
-      
-      // Send button click - send reply
-      chatMessages.querySelectorAll('.reply-send-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          
-          const messageId = btn.dataset.messageId;
-          const postingId = parseInt(btn.dataset.postingId);
-          const toUserIdStr = btn.dataset.toUserId;
-          const textarea = document.getElementById(`replyText_${messageId}`);
-          const replyForm = document.getElementById(`replyForm_${messageId}`);
-          
-          // Null checks
-          if (!textarea) {
-            console.error('Textarea not found for message:', messageId);
-            return;
-          }
-          
-          if (!textarea.value.trim()) {
-            alert('Please enter a message');
-            textarea.focus();
-            return;
-          }
-          
-          // Determine toUserId for reply
-          let actualToUserId = null;
-          
-          // First, try to get from button data attribute
-          if (toUserIdStr && toUserIdStr.trim() !== '') {
-            actualToUserId = parseInt(toUserIdStr);
-          }
-          
-          // If still no userId, try to find from conversation data
-          if (!actualToUserId) {
-            const convData = window.currentConversationData;
-            if (convData && convData.messages) {
-              const msgId = messageId.replace('msg-', '');
-              const originalMessage = convData.messages.find(m => {
-                const mId = (m.id || '').toString();
-                return mId === msgId || mId === messageId;
-              });
-              
-              if (originalMessage && originalMessage.fromUserId) {
-                actualToUserId = originalMessage.fromUserId;
-              }
-            }
-          }
-          
-          // If still no userId, try to get from posting owner (for anonymous messages)
-          if (!actualToUserId) {
-            const postingData = window.currentPostingData;
-            if (postingData && postingData.user_id) {
-              // For anonymous messages, we reply to the posting owner
-              // But wait - if we're the posting owner, we can't reply to anonymous users
-              // Actually, we should check: if the message is from an anonymous user (no fromUserId),
-              // we can't reply because they have no account. Let's show an error.
-              const convData = window.currentConversationData;
-              if (convData && convData.messages) {
-                const msgId = messageId.replace('msg-', '');
-                const originalMessage = convData.messages.find(m => {
-                  const mId = (m.id || '').toString();
-                  return mId === msgId || mId === messageId;
-                });
-                
-                if (originalMessage && !originalMessage.fromUserId) {
-                  // This is an anonymous message - we can't reply to anonymous users
-                  alert('Cannot reply to anonymous messages. The sender did not provide contact information.');
-                  return;
-                }
-              }
-              
-              // Fallback: use posting owner (shouldn't normally happen)
-              actualToUserId = postingData.user_id;
-            }
-          }
-          
-          // Final check
-          if (!actualToUserId) {
-            alert('Cannot determine recipient. Please try again.');
-            console.error('Could not determine toUserId for reply', {
-              messageId,
-              postingId,
-              toUserIdStr,
-              conversationData: window.currentConversationData
-            });
-            return;
-          }
-          
-          // Prevent sending to yourself
-          if (actualToUserId === currentUser.id) {
-            alert('Cannot send message to yourself.');
-            return;
-          }
-          
-          // Disable button and show loading state
-          btn.disabled = true;
-          const originalHTML = btn.innerHTML;
-          btn.innerHTML = '<i data-lucide="loader" class="btn-icon spin"></i> Sending...';
-          lucide.createIcons();
-          
-          // Disable textarea
-          if (textarea) textarea.disabled = true;
-          
-          try {
-            const messageData = {
-              postingId: postingId,
-              toUserId: actualToUserId,
-              name: currentUser.username || '',
-              email: currentUser.email || '',
-              phone: null,
-              message: textarea.value.trim()
-            };
-            
-            await sendMessage(messageData);
-            
-            // Hide reply form and clear textarea
-            if (replyForm) replyForm.style.display = 'none';
-            if (textarea) {
-              textarea.value = '';
-              textarea.disabled = false;
-            }
-            
-            // Reload conversation to show new message
-            await openChat(postingId);
-            
-            // Update unread badge if function exists
-            if (typeof updateUnreadBadge === 'function') {
-              updateUnreadBadge();
-            }
-          } catch (error) {
-            console.error('Error sending reply:', error);
-            alert('Failed to send reply: ' + (error.message || 'Please try again.'));
-            btn.disabled = false;
-            btn.innerHTML = originalHTML;
-            if (textarea) textarea.disabled = false;
-            lucide.createIcons();
-          }
+          openReplyModal(btn);
         });
       });
     }
@@ -630,39 +605,131 @@
     // Make openChat globally available
     window.openChat = openChat;
     
-    // Modal event listeners
-    document.getElementById('chatModalOverlay').addEventListener('click', closeChatModal);
-    document.getElementById('chatModalClose').addEventListener('click', closeChatModal);
+    // Chat modal event listeners
+    const chatModalOverlay = document.getElementById('chatModalOverlay');
+    const chatModalClose = document.getElementById('chatModalClose');
+    if (chatModalOverlay) chatModalOverlay.addEventListener('click', closeChatModal);
+    if (chatModalClose) chatModalClose.addEventListener('click', closeChatModal);
     
-    // Reply form submission
-    document.getElementById('chatReplyForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const formData = {
-        postingId: parseInt(document.getElementById('chatPostingId').value),
-        toUserId: parseInt(document.getElementById('chatToUserId').value),
-        name: currentUser.username,
-        email: currentUser.email || '',
-        phone: null,
-        message: document.getElementById('chatReplyMessage').value.trim()
-      };
-      
-      try {
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
+    // Reply modal event listeners
+    const replyModalOverlay = document.getElementById('replyModalOverlay');
+    const replyModalClose = document.getElementById('replyModalClose');
+    const replyModalCancel = document.getElementById('replyModalCancel');
+    const replyModalForm = document.getElementById('replyModalForm');
+    
+    if (replyModalOverlay) {
+      replyModalOverlay.addEventListener('click', closeReplyModal);
+    }
+    
+    if (replyModalClose) {
+      replyModalClose.addEventListener('click', closeReplyModal);
+    }
+    
+    if (replyModalCancel) {
+      replyModalCancel.addEventListener('click', closeReplyModal);
+    }
+    
+    // Reply modal form submission
+    if (replyModalForm) {
+      replyModalForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        await sendMessage(formData);
+        const postingIdInput = document.getElementById('replyModalPostingId');
+        const toUserIdInput = document.getElementById('replyModalToUserId');
+        const textarea = document.getElementById('replyModalTextarea');
+        const sendBtn = document.getElementById('replyModalSend');
         
-        // Reload conversation
-        await openChat(formData.postingId);
-        document.getElementById('chatReplyMessage').value = '';
-      } catch (error) {
-        alert('Failed to send reply: ' + error.message);
-      } finally {
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        submitBtn.disabled = false;
-      }
-    });
+        if (!postingIdInput || !toUserIdInput || !textarea || !sendBtn) {
+          console.error('Reply modal form elements not found');
+          return;
+        }
+        
+        const postingId = parseInt(postingIdInput.value);
+        const toUserId = parseInt(toUserIdInput.value);
+        const message = textarea.value.trim();
+        
+        if (!message) {
+          alert('Please enter a message');
+          textarea.focus();
+          return;
+        }
+        
+        // Disable form
+        sendBtn.disabled = true;
+        textarea.disabled = true;
+        const originalHTML = sendBtn.innerHTML;
+        sendBtn.innerHTML = '<i data-lucide="loader" class="btn-icon spin"></i> Sending...';
+        lucide.createIcons();
+        
+        try {
+          const messageData = {
+            postingId: postingId,
+            toUserId: toUserId,
+            name: currentUser.username || '',
+            email: currentUser.email || '',
+            phone: null,
+            message: message
+          };
+          
+          await sendMessage(messageData);
+          
+          // Show success message
+          alert('Reply sent!');
+          
+          // Close modal
+          closeReplyModal();
+          
+          // Reload conversation to show new message
+          await openChat(postingId);
+          
+          // Update unread badge if function exists
+          if (typeof updateUnreadBadge === 'function') {
+            updateUnreadBadge();
+          }
+        } catch (error) {
+          console.error('Error sending reply:', error);
+          alert('Failed to send reply: ' + (error.message || 'Please try again.'));
+          sendBtn.disabled = false;
+          textarea.disabled = false;
+          sendBtn.innerHTML = originalHTML;
+          lucide.createIcons();
+        }
+      });
+    }
+    
+    // Chat reply form submission (bottom form in chat modal)
+    const chatReplyForm = document.getElementById('chatReplyForm');
+    if (chatReplyForm) {
+      chatReplyForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = {
+          postingId: parseInt(document.getElementById('chatPostingId').value),
+          toUserId: parseInt(document.getElementById('chatToUserId').value),
+          name: currentUser.username,
+          email: currentUser.email || '',
+          phone: null,
+          message: document.getElementById('chatReplyMessage').value.trim()
+        };
+        
+        try {
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          if (submitBtn) submitBtn.disabled = true;
+          
+          await sendMessage(formData);
+          
+          // Reload conversation
+          await openChat(formData.postingId);
+          const chatReplyMessage = document.getElementById('chatReplyMessage');
+          if (chatReplyMessage) chatReplyMessage.value = '';
+        } catch (error) {
+          alert('Failed to send reply: ' + error.message);
+        } finally {
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
+    }
 
     // Update unread badge (only if authenticated)
     if (typeof updateUnreadBadge === 'function' && typeof isAuthenticated === 'function' && isAuthenticated()) {
