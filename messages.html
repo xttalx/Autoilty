@@ -116,8 +116,8 @@
   </div>
 
   <!-- Reply Modal (Right Side) -->
-  <div class="reply-modal-overlay" id="replyModalOverlay" style="display: none;"></div>
-  <div class="reply-modal" id="replyModal" style="display: none;">
+  <div class="reply-modal-overlay" id="replyModalOverlay"></div>
+  <div class="reply-modal" id="replyModal">
     <div class="reply-modal-header">
       <h3>Reply to Message</h3>
       <button class="reply-modal-close" id="replyModalClose" aria-label="Close reply modal">
@@ -495,6 +495,10 @@
         return;
       }
       
+      // Ensure modal is visible (in case it was hidden)
+      if (overlay) overlay.style.display = 'block';
+      if (modal) modal.style.display = 'flex';
+      
       // Get data from button
       const postingId = parseInt(button.dataset.postingId);
       const fromUserId = button.dataset.fromUserId || '';
@@ -561,15 +565,24 @@
         `;
       }
       
-      // Show modal
-      overlay.style.display = 'block';
-      modal.style.display = 'block';
+      // Show modal with animation
+      if (overlay) {
+        overlay.classList.add('open');
+      }
+      if (modal) {
+        // Force reflow to ensure animation
+        modal.offsetHeight;
+        modal.classList.add('open');
+      }
       document.body.style.overflow = 'hidden';
       
       // Focus textarea after animation
       setTimeout(() => {
-        if (textarea) textarea.focus();
-      }, 300);
+        if (textarea) {
+          textarea.focus();
+          textarea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 350);
       
       lucide.createIcons();
     }
@@ -581,12 +594,28 @@
       const form = document.getElementById('replyModalForm');
       const textarea = document.getElementById('replyModalTextarea');
       
-      if (overlay) overlay.style.display = 'none';
-      if (modal) modal.style.display = 'none';
-      if (form) form.reset();
-      if (textarea) textarea.value = '';
+      // Remove open class for animation
+      if (overlay) overlay.classList.remove('open');
+      if (modal) modal.classList.remove('open');
+      
+      // Reset form after animation completes
+      setTimeout(() => {
+        if (form) form.reset();
+        if (textarea) textarea.value = '';
+      }, 300);
+      
       document.body.style.overflow = '';
     }
+    
+    // Keyboard support - ESC key to close modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        const modal = document.getElementById('replyModal');
+        if (modal && modal.classList.contains('open')) {
+          closeReplyModal();
+        }
+      }
+    });
     
     // Attach reply handlers for reply buttons
     function attachReplyHandlers(postingId, currentUser) {
