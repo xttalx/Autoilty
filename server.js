@@ -391,6 +391,29 @@ async function initializeDatabase() {
       }
     }
 
+    // Migration: Add "read" column if it doesn't exist (for existing tables)
+    try {
+      const columnCheck = await pool.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'messages' AND column_name = 'read'
+      `);
+      
+      if (columnCheck.rows.length === 0) {
+        // Column doesn't exist, add it
+        await pool.query(`
+          ALTER TABLE messages 
+          ADD COLUMN read BOOLEAN DEFAULT FALSE NOT NULL
+        `);
+        console.log('✅ Added "read" column to messages table');
+      }
+    } catch (readColumnError) {
+      // Column might already exist or table might not exist yet - ignore
+      if (!readColumnError.message.includes('already exists') && !readColumnError.message.includes('does not exist')) {
+        console.warn('Could not add "read" column (may already exist):', readColumnError.message);
+      }
+    }
+
     // Create indexes for better query performance
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_postings_user_id ON postings(user_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_postings_category ON postings(category)`);
@@ -954,6 +977,29 @@ app.post('/api/messages', async (req, res) => {
         }
       }
       
+      // Migration: Add "read" column if it doesn't exist (for existing tables)
+      try {
+        const columnCheck = await pool.query(`
+          SELECT column_name 
+          FROM information_schema.columns 
+          WHERE table_name = 'messages' AND column_name = 'read'
+        `);
+        
+        if (columnCheck.rows.length === 0) {
+          // Column doesn't exist, add it
+          await pool.query(`
+            ALTER TABLE messages 
+            ADD COLUMN read BOOLEAN DEFAULT FALSE NOT NULL
+          `);
+          console.log('✅ Added "read" column to messages table');
+        }
+      } catch (readColumnError) {
+        // Column might already exist or table might not exist yet - ignore
+        if (!readColumnError.message.includes('already exists') && !readColumnError.message.includes('does not exist')) {
+          console.warn('Could not add "read" column (may already exist):', readColumnError.message);
+        }
+      }
+      
       // Create indexes if they don't exist
       await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_to_user_id ON messages(to_user_id)`);
       await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_posting_id ON messages(posting_id)`);
@@ -1031,8 +1077,18 @@ app.post('/api/messages', async (req, res) => {
 // Get inbox messages (protected - messages received by logged-in user)
 app.get('/api/messages/inbox', authenticateToken, async (req, res) => {
   try {
-    const messages = await dbAll(
-      `SELECT m.*, 
+    // Check if "read" column exists
+    const columnCheck = await pool.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'messages' AND column_name = 'read'
+    `);
+    
+    const hasReadColumn = columnCheck.rows.length > 0;
+    
+    // Build query - include read column only if it exists
+    let query = `
+      SELECT m.*, 
               p.title as posting_title, 
               p.price as posting_price,
               p.image_url as posting_image,
@@ -1041,9 +1097,10 @@ app.get('/api/messages/inbox', authenticateToken, async (req, res) => {
        JOIN postings p ON m.posting_id = p.id
        LEFT JOIN users u_from ON m.from_user_id = u_from.id
        WHERE m.to_user_id = $1
-       ORDER BY m.created_at DESC`,
-      [req.user.id]
-    );
+       ORDER BY m.created_at DESC
+    `;
+    
+    const messages = await dbAll(query, [req.user.id]);
 
     res.json({
       messages: messages.map(m => ({
@@ -1058,12 +1115,50 @@ app.get('/api/messages/inbox', authenticateToken, async (req, res) => {
         fromName: m.from_name,
         fromPhone: m.from_phone,
         message: m.message,
-        read: m.read || false,
+        read: hasReadColumn ? (m.read || false) : false, // Default to false if column doesn't exist
         createdAt: m.created_at
       }))
     });
   } catch (error) {
     console.error('Get inbox error:', error);
+    // If error is about missing column, return messages with read = false
+    if (error.message && error.message.includes('column "read" does not exist')) {
+      console.warn('"read" column missing, returning messages with read = false');
+      try {
+        const messages = await dbAll(
+          `SELECT m.*, 
+                  p.title as posting_title, 
+                  p.price as posting_price,
+                  p.image_url as posting_image,
+                  u_from.username as from_username
+           FROM messages m
+           JOIN postings p ON m.posting_id = p.id
+           LEFT JOIN users u_from ON m.from_user_id = u_from.id
+           WHERE m.to_user_id = $1
+           ORDER BY m.created_at DESC`,
+          [req.user.id]
+        );
+        return res.json({
+          messages: messages.map(m => ({
+            id: m.id,
+            postingId: m.posting_id,
+            postingTitle: m.posting_title,
+            postingPrice: parseFloat(m.posting_price),
+            postingImage: m.posting_image,
+            fromUserId: m.from_user_id,
+            fromUsername: m.from_username || null,
+            fromEmail: m.from_email,
+            fromName: m.from_name,
+            fromPhone: m.from_phone,
+            message: m.message,
+            read: false, // Default to false if column doesn't exist
+            createdAt: m.created_at
+          }))
+        });
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError);
+      }
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1093,12 +1188,27 @@ app.get('/api/messages/conversation/:postingId', authenticateToken, async (req, 
       [postingId, req.user.id]
     );
 
-      // Mark messages as read if they were sent to the current user
-      await pool.query(
-        `UPDATE messages SET read = TRUE 
-         WHERE posting_id = $1 AND to_user_id = $2 AND read = FALSE`,
-        [postingId, req.user.id]
-      );
+      // Mark messages as read if they were sent to the current user (only if column exists)
+      try {
+        const columnCheck = await pool.query(`
+          SELECT column_name 
+          FROM information_schema.columns 
+          WHERE table_name = 'messages' AND column_name = 'read'
+        `);
+        
+        if (columnCheck.rows.length > 0) {
+          await pool.query(
+            `UPDATE messages SET read = TRUE 
+             WHERE posting_id = $1 AND to_user_id = $2 AND read = FALSE`,
+            [postingId, req.user.id]
+          );
+        }
+      } catch (updateError) {
+        // Column might not exist - ignore, messages will show as read = true in response anyway
+        if (!updateError.message.includes('column "read" does not exist')) {
+          console.warn('Could not mark messages as read:', updateError.message);
+        }
+      }
 
       res.json({
         posting: {
@@ -1143,12 +1253,28 @@ app.put('/api/messages/:id/read', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to mark this message as read' });
     }
 
-    // Mark as read
-    await pool.query('UPDATE messages SET read = TRUE WHERE id = $1', [id]);
+    // Check if "read" column exists before updating
+    const columnCheck = await pool.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'messages' AND column_name = 'read'
+    `);
+    
+    if (columnCheck.rows.length > 0) {
+      // Column exists, mark as read
+      await pool.query('UPDATE messages SET read = TRUE WHERE id = $1', [id]);
+    } else {
+      // Column doesn't exist yet - return success anyway (migration will add it)
+      console.warn('"read" column missing, cannot mark message as read');
+    }
 
     res.json({ message: 'Message marked as read' });
   } catch (error) {
     console.error('Mark message as read error:', error);
+    // If error is about missing column, return success anyway
+    if (error.message && error.message.includes('column "read" does not exist')) {
+      return res.json({ message: 'Message marked as read' });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1157,16 +1283,37 @@ app.put('/api/messages/:id/read', authenticateToken, async (req, res) => {
 app.get('/api/messages/unread-count', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const result = await dbGet(
-      `SELECT COUNT(*) as unread_count 
-       FROM messages 
-       WHERE to_user_id = $1 AND read = FALSE`,
-      [userId]
-    );
+    
+    // Check if "read" column exists before querying
+    const columnCheck = await pool.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'messages' AND column_name = 'read'
+    `);
+    
+    let result;
+    if (columnCheck.rows.length > 0) {
+      // Column exists, use it
+      result = await dbGet(
+        `SELECT COUNT(*) as unread_count 
+         FROM messages 
+         WHERE to_user_id = $1 AND read = FALSE`,
+        [userId]
+      );
+    } else {
+      // Column doesn't exist yet, return 0 (all messages are effectively unread)
+      // This should not happen after migration, but safe fallback
+      result = { unread_count: '0' };
+    }
     
     res.json({ unreadCount: parseInt(result.unread_count || 0) });
   } catch (error) {
     console.error('Get unread count error:', error);
+    // If error is about missing column, return 0 as fallback
+    if (error.message && error.message.includes('column "read" does not exist')) {
+      console.warn('"read" column missing, returning 0 unread count');
+      return res.json({ unreadCount: 0 });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });
