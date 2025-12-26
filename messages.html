@@ -420,8 +420,14 @@
         
         // Render messages
         chatMessages.innerHTML = data.messages.map((msg, index) => {
-          const isFromMe = msg.isFromMe;
+          // Determine if message is from current user
+          const isFromMe = msg.isFromMe !== undefined ? msg.isFromMe : (msg.fromUserId === currentUser.id);
           const messageId = `msg-${msg.id || index}`;
+          
+          // Debug logging for first few messages
+          if (index < 3) {
+            console.log(`Message ${index}: isFromMe=${isFromMe}, fromUserId=${msg.fromUserId}, currentUser.id=${currentUser.id}, will show reply=${!isFromMe}`);
+          }
           // For replies: send to the original sender's userId
           // If message is from anonymous user (no fromUserId), we'll handle it in the reply handler
           const replyToUserId = msg.fromUserId || '';
@@ -639,11 +645,27 @@
       const replyButtons = chatMessages.querySelectorAll('.reply-btn');
       console.log(`Found ${replyButtons.length} reply buttons to attach handlers`);
       
+      // Debug: Check if buttons are visible
+      replyButtons.forEach((btn, index) => {
+        const computedStyle = window.getComputedStyle(btn);
+        console.log(`Button ${index}: display=${computedStyle.display}, visibility=${computedStyle.visibility}, opacity=${computedStyle.opacity}, width=${computedStyle.width}, height=${computedStyle.height}`);
+        
+        // Force button to be visible
+        btn.style.setProperty('display', 'inline-flex', 'important');
+        btn.style.setProperty('visibility', 'visible', 'important');
+        btn.style.setProperty('opacity', '1', 'important');
+      });
+      
       // Reply button click - open right-side modal
       replyButtons.forEach((btn, index) => {
         // Remove any existing listeners by cloning the button
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
+        
+        // Ensure button is visible
+        newBtn.style.setProperty('display', 'inline-flex', 'important');
+        newBtn.style.setProperty('visibility', 'visible', 'important');
+        newBtn.style.setProperty('opacity', '1', 'important');
         
         // Add click handler to new button
         newBtn.addEventListener('click', (e) => {
@@ -655,7 +677,9 @@
       });
       
       // Re-initialize Lucide icons after DOM manipulation
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
     
     // Make openChat globally available
