@@ -972,15 +972,15 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
     }
 
     // Verify posting exists if postingId is provided
+    // Note: postingId is optional context for conversations
+    // We don't require toUserId to match posting owner because:
+    // - Initial messages: toUserId matches posting owner (correct)
+    // - Replies: toUserId is the person you're replying to (may differ from posting owner)
     let postingIdValue = null;
     if (postingId) {
-      const posting = await dbGet('SELECT id, user_id FROM postings WHERE id = $1', [postingId]);
+      const posting = await dbGet('SELECT id FROM postings WHERE id = $1', [postingId]);
       if (!posting) {
         return res.status(404).json({ error: 'Posting not found' });
-      }
-      // If postingId is provided, ensure toUserId matches posting owner
-      if (posting.user_id !== parseInt(toUserId)) {
-        return res.status(400).json({ error: 'Recipient user ID does not match posting owner' });
       }
       postingIdValue = postingId;
     }
