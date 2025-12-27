@@ -303,59 +303,123 @@
         emptyState.style.display = 'none';
         messagesList.style.display = 'none';
 
+        // Fetch inbox messages
         const data = await getInboxMessages();
-        const messages = data.messages || [];
+        
+        // Debug: Log raw data
+        console.log('📬 Inbox data received:', data);
+        
+        // Backend returns { conversations: [...] } not { messages: [...] }
+        const conversations = data.conversations || data.messages || [];
+        
+        console.log('📋 Conversations count:', conversations.length);
+        console.log('📋 First conversation:', conversations[0]);
 
-        if (messages.length === 0) {
+        if (conversations.length === 0) {
+          console.log('📭 No conversations found');
           loadingState.style.display = 'none';
           emptyState.style.display = 'block';
+          messagesList.style.display = 'none';
           lucide.createIcons();
           return;
         }
 
-        // Group messages by posting
-        const messagesByPosting = {};
-        messages.forEach(msg => {
-          if (!messagesByPosting[msg.postingId]) {
-            messagesByPosting[msg.postingId] = {
-              postingId: msg.postingId,
-              postingTitle: msg.postingTitle,
-              postingPrice: msg.postingPrice,
-              postingImage: msg.postingImage,
-              messages: []
+        // Group conversations by postingId (or use conversation key if no postingId)
+        const conversationsByKey = {};
+        conversations.forEach(conv => {
+          // Create a unique key: postingId + fromUserId (or just fromUserId if no posting)
+          const key = conv.postingId 
+            ? `posting-${conv.postingId}-user-${conv.fromUserId}`
+            : `user-${conv.fromUserId}`;
+          
+          if (!conversationsByKey[key]) {
+            conversationsByKey[key] = {
+              key: key,
+              postingId: conv.postingId || null,
+              postingTitle: conv.postingTitle || 'Direct Message',
+              postingImage: conv.postingImage || null,
+              fromUserId: conv.fromUserId,
+              fromUsername: conv.fromUsername || 'User',
+              conversations: []
             };
           }
-          messagesByPosting[msg.postingId].messages.push(msg);
+          conversationsByKey[key].conversations.push(conv);
         });
 
-        // Render messages
-        messagesList.innerHTML = Object.values(messagesByPosting).map(group => {
-          const latestMessage = group.messages[0];
-          const messageCount = group.messages.length;
-          const imageUrl = group.postingImage 
-            ? (typeof getPostingImageUrl !== 'undefined' 
-              ? getPostingImageUrl(group.postingImage)
-              : `https://autoilty-production.up.railway.app${group.postingImage}`)
-            : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+        console.log('📦 Grouped conversations:', Object.keys(conversationsByKey).length, 'groups');
+
+        // Render conversation cards
+        messagesList.innerHTML = Object.values(conversationsByKey).map(group => {
+          // Get latest conversation (most recent message)
+          const latestConv = group.conversations.sort((a, b) => 
+            new Date(b.lastMessageDate || b.createdAt || 0) - new Date(a.lastMessageDate || a.createdAt || 0)
+          )[0];
+          
+          const unreadCount = latestConv.unreadCount || 0;
+          const lastMessage = latestConv.lastMessage || latestConv.message || 'No message';
+          const lastMessageDate = latestConv.lastMessageDate || latestConv.createdAt || new Date();
+          
+          // Build image URL with fallback
+          let imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+          
+          if (group.postingImage) {
+            // Check if it's already a full URL
+            if (group.postingImage.startsWith('http://') || group.postingImage.startsWith('https://')) {
+              imageUrl = group.postingImage;
+            } else if (typeof getPostingImageUrl !== 'undefined') {
+              imageUrl = getPostingImageUrl(group.postingImage);
+            } else {
+              // Assume it's a Supabase URL or construct full URL
+              imageUrl = group.postingImage.startsWith('/') 
+                ? `https://autoilty-production.up.railway.app${group.postingImage}`
+                : group.postingImage;
+            }
+          }
+          
+          // Format date
+          const dateStr = new Date(lastMessageDate).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: new Date(lastMessageDate).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+          });
+          
+          // Truncate message preview
+          const messagePreview = lastMessage.length > 100 
+            ? lastMessage.substring(0, 100) + '...' 
+            : lastMessage;
+          
+          // Determine click handler - use fromUserId for conversation (backend uses userId now)
+          const clickHandler = `openChatWithUser(${group.fromUserId})`;
           
           return `
-            <div class="message-card" style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--spacing-md); margin-bottom: var(--spacing-md); cursor: pointer; transition: var(--transition);" 
-                 onclick="openChat(${group.postingId})">
+            <div class="message-card" 
+                 style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--spacing-md); margin-bottom: var(--spacing-md); cursor: pointer; transition: var(--transition); background: white;"
+                 onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
+                 onmouseout="this.style.boxShadow='none'"
+                 onclick="${clickHandler}">
               <div style="display: flex; gap: var(--spacing-md);">
-                <img src="${imageUrl}" alt="${group.postingTitle}" style="width: 100px; height: 100px; object-fit: cover; border-radius: var(--radius);">
-                <div style="flex: 1;">
-                  <h3 style="margin-bottom: var(--spacing-xs);">${group.postingTitle}</h3>
+                <img src="${imageUrl}" 
+                     alt="${group.postingTitle}" 
+                     style="width: 100px; height: 100px; object-fit: cover; border-radius: var(--radius); flex-shrink: 0;"
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-xs);">
+                    <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--color-text);">
+                      ${escapeHtml(group.postingTitle)}
+                    </h3>
+                    ${unreadCount > 0 ? `<span style="background: var(--color-primary); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; min-width: 20px; text-align: center; flex-shrink: 0;">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+                  </div>
                   <p style="color: var(--color-text-light); font-size: 0.875rem; margin-bottom: var(--spacing-xs);">
-                    From: ${latestMessage.fromName} (${latestMessage.fromEmail})
+                    From: <strong>${escapeHtml(group.fromUsername)}</strong>
                   </p>
-                  <p style="color: var(--color-text); margin-bottom: var(--spacing-xs);">
-                    ${latestMessage.message.substring(0, 100)}${latestMessage.message.length > 100 ? '...' : ''}
+                  <p style="color: var(--color-text); margin-bottom: var(--spacing-xs); font-size: 0.9375rem; line-height: 1.5;">
+                    ${escapeHtml(messagePreview)}
                   </p>
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-sm);">
                     <span style="color: var(--color-text-light); font-size: 0.875rem;">
-                      ${new Date(latestMessage.createdAt).toLocaleDateString()}
+                      ${dateStr}
                     </span>
-                    ${messageCount > 1 ? `<span style="background: var(--color-primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">${messageCount}</span>` : ''}
+                    ${group.conversations.length > 1 ? `<span style="color: var(--color-text-light); font-size: 0.875rem;">${group.conversations.length} messages</span>` : ''}
                   </div>
                 </div>
               </div>
@@ -366,23 +430,47 @@
         loadingState.style.display = 'none';
         messagesList.style.display = 'block';
         lucide.createIcons();
+        
+        console.log('✅ Messages rendered successfully');
       } catch (error) {
-        console.error('Error loading messages:', error);
+        console.error('❌ Error loading messages:', error);
         loadingState.style.display = 'none';
+        emptyState.style.display = 'none';
         messagesList.innerHTML = `
           <div style="text-align: center; padding: var(--spacing-xl);">
             <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-error); display: block;"></i>
-            <h3>Error loading messages</h3>
-            <p style="color: var(--color-text-light);">${error.message || 'Please try again later.'}</p>
+            <h3 style="margin-bottom: var(--spacing-sm);">Error loading messages</h3>
+            <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">${escapeHtml(error.message || 'Please try again later.')}</p>
+            <button class="btn btn-primary" onclick="loadMessages()">Try Again</button>
           </div>
         `;
         messagesList.style.display = 'block';
         lucide.createIcons();
       }
     }
+    
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
 
-    // Open chat modal
-    async function openChat(postingId) {
+    // Open chat modal with postingId (legacy) or userId
+    async function openChat(postingIdOrUserId) {
+      // If it's a number, assume it's postingId for backward compatibility
+      // Otherwise, use openChatWithUser
+      if (typeof postingIdOrUserId === 'number' && postingIdOrUserId > 0) {
+        // Try as postingId first, fallback to userId
+        await openChatWithPosting(postingIdOrUserId);
+      } else {
+        await openChatWithUser(postingIdOrUserId);
+      }
+    }
+    
+    // Open chat modal with postingId
+    async function openChatWithPosting(postingId) {
       const modal = document.getElementById('chatModal');
       const chatMessages = document.getElementById('chatMessages');
       const chatTitle = document.getElementById('chatModalTitle');
