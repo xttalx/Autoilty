@@ -273,28 +273,42 @@ function renderPostingsAsProducts(postings, container) {
 
   // Add Contact Seller button handlers - open modal
   container.querySelectorAll('.contact-seller-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    // Remove existing listeners by cloning
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    
+    // Add click handler to new button
+    newBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
       
-      const postingId = btn.dataset.postingId;
-      const toUserId = btn.dataset.postingUserId;
-      const sellerName = btn.dataset.sellerUsername;
+      const postingId = newBtn.dataset.postingId;
+      const toUserId = newBtn.dataset.postingUserId;
+      const sellerName = newBtn.dataset.sellerUsername || newBtn.getAttribute('data-seller-username');
+      
+      console.log('Contact Seller button clicked:', { postingId, toUserId, sellerName });
       
       if (!postingId || !toUserId) {
-        console.error('Contact Seller: postingId and toUserId are required');
+        console.error('Contact Seller: postingId and toUserId are required', { postingId, toUserId });
         return;
       }
       
       // Open modal using global function
-      if (typeof openContactSellerModal === 'function') {
+      if (typeof window.openContactSellerModal === 'function') {
+        window.openContactSellerModal({
+          postingId: postingId ? parseInt(postingId) : null,
+          toUserId: parseInt(toUserId),
+          sellerName: sellerName || 'Seller'
+        });
+      } else if (typeof openContactSellerModal === 'function') {
         openContactSellerModal({
-          postingId: parseInt(postingId),
+          postingId: postingId ? parseInt(postingId) : null,
           toUserId: parseInt(toUserId),
           sellerName: sellerName || 'Seller'
         });
       } else {
-        console.error('openContactSellerModal function not found');
+        console.error('openContactSellerModal function not found. Available functions:', Object.keys(window).filter(k => k.includes('Contact')));
+        alert('Contact Seller feature is not available. Please refresh the page.');
       }
     });
   });

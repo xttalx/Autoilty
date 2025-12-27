@@ -511,9 +511,22 @@
       }
     }
     
-    // Initialize Contact Seller modal
-    if (typeof initContactSellerModal === 'function') {
-      initContactSellerModal();
+    // Initialize Contact Seller modal (after DOM is ready)
+    function initializeContactModal() {
+      if (typeof window.initContactSellerModal === 'function') {
+        window.initContactSellerModal();
+      } else if (typeof initContactSellerModal === 'function') {
+        initContactSellerModal();
+      } else {
+        console.warn('initContactSellerModal function not found');
+      }
+    }
+    
+    // Initialize modal when page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeContactModal);
+    } else {
+      initializeContactModal();
     }
 
     // Load on page ready

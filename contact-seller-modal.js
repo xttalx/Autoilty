@@ -273,5 +273,10 @@ if (typeof window !== 'undefined') {
   window.openContactSellerModal = openContactSellerModal;
   window.closeContactSellerModal = closeContactSellerModal;
   window.initContactSellerModal = initContactSellerModal;
+  
+  // Also export to module scope for direct access
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { openContactSellerModal, closeContactSellerModal, initContactSellerModal };
+  }
 }
 
