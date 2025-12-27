@@ -985,12 +985,66 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
       postingIdValue = postingId;
     }
 
+    // Get sender user info for from_name and from_email (if columns exist)
+    const sender = await dbGet('SELECT username, email FROM users WHERE id = $1', [fromUserId]);
+    const fromName = sender ? sender.username : null;
+    const fromEmail = sender ? sender.email : null;
+
+    // Check if from_name, from_email, from_phone columns exist in the table
+    // This allows the code to work with both old and new schema
+    const columnCheck = await pool.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'messages' 
+      AND column_name IN ('from_name', 'from_email', 'from_phone')
+    `);
+    
+    const hasFromName = columnCheck.rows.some(row => row.column_name === 'from_name');
+    const hasFromEmail = columnCheck.rows.some(row => row.column_name === 'from_email');
+    const hasFromPhone = columnCheck.rows.some(row => row.column_name === 'from_phone');
+
+    // Build dynamic INSERT query based on which columns exist
+    let insertQuery;
+    let insertParams;
+    
+    if (hasFromName || hasFromEmail || hasFromPhone) {
+      // Old schema with from_name, from_email, from_phone
+      const columns = ['from_user_id', 'to_user_id', 'posting_id', 'message'];
+      const values = [fromUserId, toUserId, postingIdValue, message.trim()];
+      const placeholders = [];
+      
+      if (hasFromName) {
+        columns.push('from_name');
+        values.push(fromName);
+      }
+      if (hasFromEmail) {
+        columns.push('from_email');
+        values.push(fromEmail);
+      }
+      if (hasFromPhone) {
+        columns.push('from_phone');
+        values.push(null); // from_phone is optional
+      }
+      
+      placeholders.push(...values.map((_, i) => `$${i + 1}`));
+      
+      insertQuery = `
+        INSERT INTO messages (${columns.join(', ')})
+        VALUES (${placeholders.join(', ')})
+        RETURNING id
+      `;
+      insertParams = values;
+    } else {
+      // New schema without from_name, from_email, from_phone
+      insertQuery = `
+        INSERT INTO messages (from_user_id, to_user_id, posting_id, message)
+        VALUES ($1, $2, $3, $4) RETURNING id
+      `;
+      insertParams = [fromUserId, toUserId, postingIdValue, message.trim()];
+    }
+
     // Create message in database
-    const result = await pool.query(
-      `INSERT INTO messages (from_user_id, to_user_id, posting_id, message)
-       VALUES ($1, $2, $3, $4) RETURNING id`,
-      [fromUserId, toUserId, postingIdValue, message.trim()]
-    );
+    const result = await pool.query(insertQuery, insertParams);
 
     const messageId = result.rows[0].id;
 
@@ -1004,10 +1058,29 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
     console.error('Create message error:', error);
     console.error('Error details:', {
       message: error.message,
+      code: error.code,
+      constraint: error.constraint,
       stack: error.stack,
       body: req.body
     });
-    res.status(500).json({ 
+    
+    // Handle specific database constraint errors
+    if (error.code === '23502') { // NOT NULL violation
+      return res.status(400).json({ 
+        error: 'Database constraint error: Missing required field',
+        details: error.message 
+      });
+    }
+    
+    if (error.code === '23503') { // Foreign key violation
+      return res.status(400).json({ 
+        error: 'Invalid reference: User or posting not found',
+        details: error.message 
+      });
+    }
+    
+    // Generic error response
+    res.status(500).json({
       error: 'Internal server error',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
