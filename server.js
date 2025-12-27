@@ -359,35 +359,45 @@ async function initializeDatabase() {
       )
     `);
 
-    // Messages table (supports anonymous messages - from_user_id can be null)
+    // Messages table (requires authentication - no anonymous messages)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS messages (
         id SERIAL PRIMARY KEY,
-        from_user_id INTEGER,
+        posting_id INTEGER,
+        from_user_id INTEGER NOT NULL,
         to_user_id INTEGER NOT NULL,
-        posting_id INTEGER NOT NULL,
-        from_name TEXT NOT NULL,
-        from_email TEXT NOT NULL,
-        from_phone TEXT,
         message TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
         read BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (posting_id) REFERENCES postings(id) ON DELETE CASCADE
+        FOREIGN KEY (posting_id) REFERENCES postings(id) ON DELETE SET NULL
       )
     `);
     
-    // Fix existing table: Make from_user_id nullable if it's not already
+    // Ensure from_user_id is NOT NULL (migration for existing tables)
     try {
       await pool.query(`
-        ALTER TABLE messages 
-        ALTER COLUMN from_user_id DROP NOT NULL
+        DO $$
+        BEGIN
+          IF EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'messages' 
+            AND column_name = 'from_user_id' 
+            AND is_nullable = 'YES'
+          ) THEN
+            -- First, delete any messages with null from_user_id (orphaned anonymous messages)
+            DELETE FROM messages WHERE from_user_id IS NULL;
+            -- Then make column NOT NULL
+            ALTER TABLE messages ALTER COLUMN from_user_id SET NOT NULL;
+            RAISE NOTICE 'Column from_user_id set to NOT NULL';
+          END IF;
+        END $$;
       `);
     } catch (alterError) {
-      // Column might already be nullable or table might not exist yet - ignore
+      // Column might already be NOT NULL or table might not exist yet - ignore
       if (!alterError.message.includes('does not exist') && !alterError.message.includes('already')) {
-        console.warn('Could not alter from_user_id column (may already be nullable):', alterError.message);
+        console.warn('Could not alter from_user_id column:', alterError.message);
       }
     }
 
@@ -417,6 +427,7 @@ async function initializeDatabase() {
     // Create indexes for better query performance
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_postings_user_id ON postings(user_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_postings_category ON postings(category)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_from_user_id ON messages(from_user_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_to_user_id ON messages(to_user_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_posting_id ON messages(posting_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at DESC)`);
@@ -934,14 +945,24 @@ app.delete('/api/postings/:id', authenticateToken, async (req, res) => {
 // MESSAGES ROUTES
 // ============================================
 
-// Create message (public - allows anonymous messages)
-app.post('/api/messages', async (req, res) => {
+// Create message (protected - requires authentication)
+app.post('/api/messages', authenticateToken, async (req, res) => {
   try {
-    const { postingId, toUserId, name, email, phone, message } = req.body;
+    const { postingId, toUserId, message } = req.body;
+    const fromUserId = req.user.id;
 
     // Validation
-    if (!postingId || !toUserId || !name || !email || !message) {
-      return res.status(400).json({ error: 'Posting ID, recipient user ID, name, email, and message are required' });
+    if (!toUserId || !message) {
+      return res.status(400).json({ error: 'Recipient user ID and message are required' });
+    }
+
+    if (message.trim().length === 0) {
+      return res.status(400).json({ error: 'Message cannot be empty' });
+    }
+
+    // Prevent sending message to yourself
+    if (fromUserId === parseInt(toUserId)) {
+      return res.status(400).json({ error: 'Cannot send message to yourself' });
     }
 
     // Ensure messages table exists (safety check)
@@ -1074,33 +1095,63 @@ app.post('/api/messages', async (req, res) => {
   }
 });
 
-// Get inbox messages (protected - messages received by logged-in user)
+// Get inbox messages (protected - messages received by logged-in user, grouped by sender/conversation)
 app.get('/api/messages/inbox', authenticateToken, async (req, res) => {
   try {
-    // Check if "read" column exists
-    const columnCheck = await pool.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'messages' AND column_name = 'read'
-    `);
+    const userId = req.user.id;
     
-    const hasReadColumn = columnCheck.rows.length > 0;
-    
-    // Build query - include read column only if it exists
-    let query = `
-      SELECT m.*, 
-              p.title as posting_title, 
-              p.price as posting_price,
-              p.image_url as posting_image,
-              u_from.username as from_username
-       FROM messages m
-       JOIN postings p ON m.posting_id = p.id
-       LEFT JOIN users u_from ON m.from_user_id = u_from.id
-       WHERE m.to_user_id = $1
-       ORDER BY m.created_at DESC
-    `;
-    
-    const messages = await dbAll(query, [req.user.id]);
+    // Get all messages where user is recipient, grouped by sender
+    // Return the latest message from each sender for the conversation list
+    const conversations = await dbAll(`
+      SELECT DISTINCT ON (from_user_id)
+        m.id,
+        m.from_user_id,
+        m.to_user_id,
+        m.posting_id,
+        m.message,
+        m.created_at,
+        m.read,
+        u.username as from_username,
+        p.title as posting_title,
+        p.image_url as posting_image
+      FROM messages m
+      JOIN users u ON m.from_user_id = u.id
+      LEFT JOIN postings p ON m.posting_id = p.id
+      WHERE m.to_user_id = $1
+      ORDER BY m.from_user_id, m.created_at DESC
+    `, [userId]);
+
+    // Get unread count per conversation
+    const unreadCounts = await dbAll(`
+      SELECT 
+        from_user_id,
+        COUNT(*) as unread_count
+      FROM messages
+      WHERE to_user_id = $1 AND read = FALSE
+      GROUP BY from_user_id
+    `, [userId]);
+
+    const unreadMap = {};
+    unreadCounts.forEach(item => {
+      unreadMap[item.from_user_id] = parseInt(item.unread_count);
+    });
+
+    // Format conversations with unread counts
+    const formattedConversations = conversations.map(conv => ({
+      id: conv.id,
+      fromUserId: conv.from_user_id,
+      fromUsername: conv.from_username,
+      postingId: conv.posting_id,
+      postingTitle: conv.posting_title,
+      postingImage: conv.posting_image,
+      lastMessage: conv.message,
+      lastMessageDate: conv.created_at,
+      unreadCount: unreadMap[conv.from_user_id] || 0
+    }));
+
+    res.json({
+      conversations: formattedConversations
+    });
 
     res.json({
       messages: messages.map(m => ({
@@ -1163,75 +1214,68 @@ app.get('/api/messages/inbox', authenticateToken, async (req, res) => {
   }
 });
 
-// Get conversation for a specific posting (protected)
-app.get('/api/messages/conversation/:postingId', authenticateToken, async (req, res) => {
+// Get conversation with a specific user (protected)
+app.get('/api/messages/conversation/:userId', authenticateToken, async (req, res) => {
   try {
-    const { postingId } = req.params;
+    const { userId } = req.params;
+    const currentUserId = req.user.id;
+    const otherUserId = parseInt(userId);
 
-    // Verify user owns the posting or is part of the conversation
-    const posting = await dbGet('SELECT * FROM postings WHERE id = $1', [postingId]);
-    if (!posting) {
-      return res.status(404).json({ error: 'Posting not found' });
+    // Verify other user exists
+    const otherUser = await dbGet('SELECT id, username FROM users WHERE id = $1', [otherUserId]);
+    if (!otherUser) {
+      return res.status(404).json({ error: 'User not found' });
     }
 
-    // Get all messages for this posting where user is either sender or receiver
+    // Get all messages between current user and other user
     const messages = await dbAll(
       `SELECT m.*, 
               u_from.username as from_username,
-              u_to.username as to_username
+              u_to.username as to_username,
+              p.title as posting_title,
+              p.image_url as posting_image
        FROM messages m
-       LEFT JOIN users u_from ON m.from_user_id = u_from.id
+       JOIN users u_from ON m.from_user_id = u_from.id
        JOIN users u_to ON m.to_user_id = u_to.id
-       WHERE m.posting_id = $1 
-         AND (m.from_user_id = $2 OR m.to_user_id = $2)
+       LEFT JOIN postings p ON m.posting_id = p.id
+       WHERE (m.from_user_id = $1 AND m.to_user_id = $2)
+          OR (m.from_user_id = $2 AND m.to_user_id = $1)
        ORDER BY m.created_at ASC`,
-      [postingId, req.user.id]
+      [currentUserId, otherUserId]
     );
 
-      // Mark messages as read if they were sent to the current user (only if column exists)
-      try {
-        const columnCheck = await pool.query(`
-          SELECT column_name 
-          FROM information_schema.columns 
-          WHERE table_name = 'messages' AND column_name = 'read'
-        `);
-        
-        if (columnCheck.rows.length > 0) {
-          await pool.query(
-            `UPDATE messages SET read = TRUE 
-             WHERE posting_id = $1 AND to_user_id = $2 AND read = FALSE`,
-            [postingId, req.user.id]
-          );
-        }
-      } catch (updateError) {
-        // Column might not exist - ignore, messages will show as read = true in response anyway
-        if (!updateError.message.includes('column "read" does not exist')) {
-          console.warn('Could not mark messages as read:', updateError.message);
-        }
-      }
+    // Mark messages as read if they were sent to the current user
+    try {
+      await pool.query(
+        `UPDATE messages SET read = TRUE 
+         WHERE ((from_user_id = $1 AND to_user_id = $2) OR (from_user_id = $2 AND to_user_id = $1))
+           AND to_user_id = $2 AND read = FALSE`,
+        [currentUserId, otherUserId]
+      );
+    } catch (updateError) {
+      console.warn('Could not mark messages as read:', updateError.message);
+    }
 
-      res.json({
-        posting: {
-          id: posting.id,
-          title: posting.title,
-          price: parseFloat(posting.price),
-          imageUrl: posting.image_url
-        },
-        messages: messages.map(m => ({
-          id: m.id,
-          fromUserId: m.from_user_id,
-          fromUsername: m.from_username || null,
-          fromName: m.from_name,
-          fromEmail: m.from_email,
-          fromPhone: m.from_phone,
-          toUserId: m.to_user_id,
-          toUsername: m.to_username,
-          message: m.message,
-          createdAt: m.created_at,
-          isFromMe: m.from_user_id === req.user.id,
-          read: true // Mark as read when viewing conversation
-        }))
-      });
+    res.json({
+      user: {
+        id: otherUser.id,
+        username: otherUser.username
+      },
+      messages: messages.map(m => ({
+        id: m.id,
+        postingId: m.posting_id,
+        postingTitle: m.posting_title,
+        postingImage: m.posting_image,
+        fromUserId: m.from_user_id,
+        fromUsername: m.from_username,
+        toUserId: m.to_user_id,
+        toUsername: m.to_username,
+        message: m.message,
+        createdAt: m.created_at,
+        isFromMe: m.from_user_id === currentUserId,
+        read: m.read || false
+      }))
+    });
   } catch (error) {
     console.error('Get conversation error:', error);
     res.status(500).json({ error: 'Internal server error' });
