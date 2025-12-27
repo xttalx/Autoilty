@@ -496,6 +496,153 @@
       div.textContent = text;
       return div.innerHTML;
     }
+    
+    // Toggle reply box visibility
+    function toggleReplyBox(cardId, toUserId, postingId) {
+      const replyBox = document.getElementById(`${cardId}-reply-box`);
+      const textarea = document.getElementById(`${cardId}-reply-text`);
+      
+      if (!replyBox) return;
+      
+      // Close all other reply boxes first
+      document.querySelectorAll('[id$="-reply-box"]').forEach(box => {
+        if (box.id !== `${cardId}-reply-box`) {
+          box.style.display = 'none';
+        }
+      });
+      
+      // Toggle current reply box
+      if (replyBox.style.display === 'none') {
+        replyBox.style.display = 'block';
+        // Focus textarea after a short delay to ensure it's visible
+        setTimeout(() => {
+          if (textarea) {
+            textarea.focus();
+            // Scroll reply box into view
+            replyBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }, 100);
+      } else {
+        replyBox.style.display = 'none';
+      }
+    }
+    
+    // Close reply box
+    function closeReplyBox(cardId) {
+      const replyBox = document.getElementById(`${cardId}-reply-box`);
+      const textarea = document.getElementById(`${cardId}-reply-text`);
+      
+      if (replyBox) {
+        replyBox.style.display = 'none';
+      }
+      if (textarea) {
+        textarea.value = '';
+      }
+    }
+    
+    // Send reply from inbox
+    async function sendInboxReply(event, toUserId, postingId, cardId) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      const textarea = document.getElementById(`${cardId}-reply-text`);
+      const sendBtn = document.getElementById(`${cardId}-send-btn`);
+      
+      if (!textarea || !sendBtn) {
+        console.error('Reply form elements not found');
+        return;
+      }
+      
+      const message = textarea.value.trim();
+      if (!message) {
+        alert('Please enter a message');
+        textarea.focus();
+        return;
+      }
+      
+      // Disable form while sending
+      sendBtn.disabled = true;
+      textarea.disabled = true;
+      const originalHTML = sendBtn.innerHTML;
+      sendBtn.innerHTML = '<i data-lucide="loader" class="btn-icon spin" style="width: 14px; height: 14px;"></i> Sending...';
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+      
+      try {
+        // Use sendMessage from messages-api.js
+        const messageData = {
+          postingId: postingId || null,
+          toUserId: toUserId,
+          message: message
+        };
+        
+        if (typeof window.sendMessage === 'function') {
+          await window.sendMessage(messageData);
+        } else if (typeof sendMessage === 'function') {
+          await sendMessage(messageData);
+        } else {
+          // Fallback: use fetch directly
+          const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+          if (!token) {
+            throw new Error('Please log in to send messages');
+          }
+          
+          const apiBaseUrl = typeof getApiBaseUrl === 'function' 
+            ? getApiBaseUrl() 
+            : (window.API_BASE_URL || 'https://autoilty-production.up.railway.app/api');
+          
+          const response = await fetch(`${apiBaseUrl}/messages`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(messageData)
+          });
+          
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to send message');
+          }
+        }
+        
+        // Success - close reply box and reload messages
+        closeReplyBox(cardId);
+        
+        // Show success notification
+        if (typeof showNotification === 'function') {
+          showNotification('Reply sent!');
+        } else {
+          alert('Reply sent!');
+        }
+        
+        // Reload messages to show the new reply
+        await loadMessages();
+        
+        // Update unread badge if function exists
+        if (typeof updateUnreadBadge === 'function') {
+          updateUnreadBadge();
+        }
+        
+      } catch (error) {
+        console.error('Error sending reply:', error);
+        alert('Failed to send reply: ' + (error.message || 'Please try again'));
+        
+        // Re-enable form
+        sendBtn.disabled = false;
+        textarea.disabled = false;
+        sendBtn.innerHTML = originalHTML;
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+      }
+    }
+    
+    // Make functions globally available
+    window.toggleReplyBox = toggleReplyBox;
+    window.closeReplyBox = closeReplyBox;
+    window.sendInboxReply = sendInboxReply;
 
     // Open chat modal with postingId (legacy) or userId
     async function openChat(postingIdOrUserId) {
