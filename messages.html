@@ -574,6 +574,87 @@
       }
     }
     
+    // Open chat modal with userId (new API)
+    async function openChatWithUser(userId) {
+      const modal = document.getElementById('chatModal');
+      const chatMessages = document.getElementById('chatMessages');
+      const chatTitle = document.getElementById('chatModalTitle');
+      
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      chatMessages.innerHTML = '<div style="text-align: center; padding: var(--spacing-lg);">Loading conversation...</div>';
+      
+      try {
+        // Use getConversation with userId (new API endpoint)
+        const data = await getConversation(userId);
+        
+        // data structure: { otherUser: { id, username }, messages: [...] }
+        chatTitle.textContent = `Conversation with ${data.otherUser?.username || 'User'}`;
+        
+        // Store conversation data globally for reply handlers
+        window.currentConversationData = data;
+        window.currentOtherUserId = data.otherUser?.id || userId;
+        
+        // Set reply target
+        const toUserIdInput = document.getElementById('chatToUserId');
+        const postingIdInput = document.getElementById('chatPostingId');
+        if (toUserIdInput) toUserIdInput.value = data.otherUser?.id || userId;
+        if (postingIdInput) postingIdInput.value = ''; // No posting for direct messages
+        
+        // Render messages
+        chatMessages.innerHTML = data.messages.map((msg, index) => {
+          const isFromMe = msg.isFromMe !== undefined ? msg.isFromMe : (msg.fromUserId === currentUser.id);
+          const messageId = `msg-${msg.id || index}`;
+          
+          return `
+            <div class="message-wrapper" data-message-id="${messageId}" style="margin-bottom: var(--spacing-md);">
+              <div style="display: flex; ${isFromMe ? 'justify-content: flex-end' : 'justify-content: flex-start'}">
+                <div style="max-width: 70%; background: ${isFromMe ? 'var(--color-primary)' : '#f5f5f5'}; color: ${isFromMe ? 'white' : 'var(--color-text)'}; padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius);">
+                  <p style="font-size: 0.75rem; margin-bottom: var(--spacing-xs); opacity: 0.8;">${escapeHtml(msg.fromUsername || 'User')}</p>
+                  <p style="margin: 0;">${escapeHtml(msg.message || '')}</p>
+                  <p style="font-size: 0.75rem; margin-top: var(--spacing-xs); opacity: 0.8;">${new Date(msg.createdAt || msg.created_at).toLocaleString()}</p>
+                </div>
+              </div>
+              ${!isFromMe ? `
+                <div style="margin-top: 8px; text-align: right; padding-right: 4px;">
+                  <button class="reply-btn" 
+                          data-message-id="${messageId}" 
+                          data-to-user-id="${data.otherUser?.id || userId}"
+                          data-from-user-id="${msg.fromUserId || ''}" 
+                          data-from-username="${escapeHtml(msg.fromUsername || '')}"
+                          data-message-text="${escapeHtml((msg.message || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;'))}"
+                          type="button">
+                    <i data-lucide="corner-down-left" style="width: 16px; height: 16px;"></i>
+                    <span>Reply</span>
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+        
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Attach reply handlers
+        attachReplyHandlers();
+        
+      } catch (error) {
+        console.error('Error loading conversation:', error);
+        chatMessages.innerHTML = `
+          <div style="text-align: center; padding: var(--spacing-xl);">
+            <i data-lucide="alert-circle" style="width: 3rem; height: 3rem; margin: 0 auto var(--spacing-md); color: var(--color-error); display: block;"></i>
+            <h3>Error loading conversation</h3>
+            <p style="color: var(--color-text-light);">${escapeHtml(error.message || 'Please try again later.')}</p>
+          </div>
+        `;
+        lucide.createIcons();
+      }
+    }
+    
     function closeChatModal() {
       const modal = document.getElementById('chatModal');
       if (modal) {
