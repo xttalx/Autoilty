@@ -1293,35 +1293,130 @@ p {
   }
 }
 
-/* Reply Button Styles */
+/* ============================================
+   MESSAGING - CONTACT SELLER MODAL
+   ============================================ */
+.contact-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.contact-modal-overlay.open {
+  display: flex;
+  opacity: 1;
+}
+
+.contact-modal {
+  background: white;
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+
+.contact-modal-overlay.open .contact-modal {
+  transform: scale(1);
+}
+
+.contact-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.contact-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.contact-modal-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+  transition: var(--transition);
+  border-radius: var(--radius);
+  width: 36px;
+  height: 36px;
+}
+
+.contact-modal-close:hover {
+  background: #f5f5f5;
+}
+
+.contact-modal-close i {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.contact-modal-body {
+  padding: var(--spacing-md);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.contact-modal-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.contact-modal-actions .btn {
+  min-width: 100px;
+}
+
+/* Reply Button - Uses consistent button styles */
 .reply-btn {
-  background: #ffffff !important;
-  border: 1px solid #e5e5e5 !important;
-  color: #000000 !important;
-  font-size: 0.875rem !important;
-  cursor: pointer !important;
-  padding: 6px 12px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  transition: all 0.2s ease !important;
-  border-radius: 8px !important;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-  font-weight: 500 !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: relative !important;
-  z-index: 1 !important;
-  min-width: auto !important;
-  min-height: auto !important;
-  line-height: 1.5 !important;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  transition: var(--transition);
+  border-radius: var(--radius);
+  font-weight: 500;
+  min-height: 36px;
 }
 
 .reply-btn:hover {
-  color: var(--color-primary) !important;
-  background: rgba(var(--color-primary-rgb, 59, 130, 246), 0.1) !important;
-  border-color: var(--color-primary) !important;
+  background: var(--color-primary);
+  color: var(--color-bg);
+  border-color: var(--color-primary);
 }
 
 .reply-btn:active {
@@ -1472,7 +1567,30 @@ p {
   min-width: 100px;
 }
 
-/* Mobile Responsive */
+/* Contact Modal Mobile Responsive */
+@media (max-width: 768px) {
+  .contact-modal {
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .contact-modal-header,
+  .contact-modal-body {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .contact-modal-actions {
+    flex-direction: column;
+  }
+  
+  .contact-modal-actions .btn {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* Reply Modal Mobile Responsive */
 @media (max-width: 768px) {
   .reply-modal {
     width: 100vw;
@@ -1538,6 +1656,20 @@ p {
   to {
     opacity: 1;
   }
+}
+
+/* Spinner animation for loading states */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
 }
 
 /* ============================================

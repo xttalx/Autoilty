@@ -115,36 +115,10 @@
               </div>
             </div>
 
-            <button class="btn btn-primary btn-full" id="contactSellerBtn" style="padding: var(--spacing-md); font-size: 1.125rem; margin-bottom: var(--spacing-md);">
+            <button class="btn btn-primary btn-full" id="contactSellerBtn">
               <i data-lucide="message-circle" class="btn-icon"></i>
               Contact Seller
             </button>
-            
-            <!-- Inline message form (hidden by default) -->
-            <div class="contact-form-container" id="contactFormContainer" style="display: none; margin-top: var(--spacing-md); padding: var(--spacing-md); background: #f9f9f9; border-radius: var(--radius); border: 1px solid var(--color-border);">
-              <form class="contact-form-inline" id="contactFormInline">
-                <input type="hidden" name="postingId" id="contactPostingId">
-                <input type="hidden" name="toUserId" id="contactToUserId">
-                <input type="hidden" name="fromName" id="contactName" value="">
-                <input type="hidden" name="fromEmail" id="contactEmail" value="">
-                
-                <div class="form-group" style="margin-bottom: var(--spacing-sm);">
-                  <textarea name="message" class="form-input" rows="4" placeholder="Type your message..." required id="contactMessage" style="resize: vertical;"></textarea>
-                </div>
-                
-                <div class="contact-form-error" id="contactFormError" style="color: var(--color-error); font-size: 0.875rem; margin-bottom: var(--spacing-sm); display: none;"></div>
-                
-                <div style="display: flex; gap: var(--spacing-sm);">
-                  <button type="submit" class="btn btn-primary" style="flex: 1;">
-                    <i data-lucide="send" class="btn-icon"></i>
-                    Send
-                  </button>
-                  <button type="button" class="btn btn-secondary" id="contactFormCancel">
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
             
             <button class="btn btn-secondary btn-full" style="padding: var(--spacing-md);">
               <i data-lucide="heart" class="btn-icon"></i>
@@ -163,11 +137,53 @@
     </div>
   </main>
 
-  <!-- Contact Seller uses inline form (no modal needed) -->
+  <!-- Contact Seller Modal -->
+  <div class="contact-modal-overlay" id="contactModalOverlay">
+    <div class="contact-modal">
+      <div class="contact-modal-header">
+        <h3>Contact Seller</h3>
+        <button class="contact-modal-close" id="contactModalClose" aria-label="Close modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="contact-modal-body">
+        <form id="contactModalForm">
+          <input type="hidden" id="contactModalPostingId" name="postingId">
+          <input type="hidden" id="contactModalToUserId" name="toUserId">
+          
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="contactModalName" class="form-label">Your Name</label>
+            <input type="text" id="contactModalName" name="name" class="form-input" required placeholder="Enter your name">
+          </div>
+          
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="contactModalEmail" class="form-label">Your Email</label>
+            <input type="email" id="contactModalEmail" name="email" class="form-input" required placeholder="Enter your email">
+          </div>
+          
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="contactModalMessage" class="form-label">Message</label>
+            <textarea id="contactModalMessage" name="message" class="form-textarea" rows="5" required placeholder="Type your message..."></textarea>
+          </div>
+          
+          <div id="contactModalError" style="color: #c53030; font-size: 0.875rem; margin-bottom: var(--spacing-md); display: none;"></div>
+          
+          <div class="contact-modal-actions">
+            <button type="button" class="btn btn-secondary" id="contactModalCancel">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i data-lucide="send" class="btn-icon"></i>
+              Send Message
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script src="auth.js"></script>
   <script src="marketplace-api.js"></script>
   <script src="messages-api.js"></script>
+  <script src="contact-seller-modal.js"></script>
   <script>
     // Initialize Lucide icons
     lucide.createIcons();
@@ -501,216 +517,38 @@
       loadPosting(postingId);
     }
 
-    // Contact Seller Modal Functions
-    function openContactModal(data) {
-      const modal = document.getElementById('contactSellerModal');
-      const postingTitle = document.getElementById('contactModalPostingTitle');
-      const postingIdInput = document.getElementById('contactPostingId');
-      const toUserIdInput = document.getElementById('contactToUserId');
-      
-      if (!modal || !postingTitle || !postingIdInput || !toUserIdInput) {
-        console.error('Contact modal elements not found');
-        return;
-      }
-      
-      postingTitle.textContent = `About: ${data.postingTitle || 'Posting'}`;
-      postingIdInput.value = data.postingId || '';
-      toUserIdInput.value = data.toUserId || '';
-      
-      // Pre-fill name and email if user is logged in
-      const currentUser = getCurrentUser();
-      const contactName = document.getElementById('contactName');
-      if (currentUser && contactName) {
-        contactName.value = currentUser.username || '';
-      }
-      
-      modal.style.display = 'block';
-      document.body.style.overflow = 'hidden';
-      lucide.createIcons();
-    }
-    
-    function closeContactModal() {
-      const modal = document.getElementById('contactSellerModal');
-      const form = document.getElementById('contactSellerForm');
-      const errorDiv = document.getElementById('contactFormError');
-      
-      if (modal) {
-        modal.style.display = 'none';
-      }
-      document.body.style.overflow = '';
-      if (form) form.reset();
-      if (errorDiv) errorDiv.style.display = 'none';
-    }
-    
-    // Contact Seller button handler - hide button and show form
+    // Contact Seller button handler - open modal
     const contactSellerBtn = document.getElementById('contactSellerBtn');
-    const contactFormContainer = document.getElementById('contactFormContainer');
-    
-    if (contactSellerBtn && contactFormContainer) {
+    if (contactSellerBtn) {
       contactSellerBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
         
         if (!window.currentPosting) {
-          alert('Posting details are still loading. Please wait a moment and try again.');
-          return;
-        }
-        
-        // Hide button and show form
-        contactSellerBtn.style.display = 'none';
-        contactFormContainer.style.display = 'block';
-        
-        // Set hidden fields
-        const postingIdInput = document.getElementById('contactPostingId');
-        const toUserIdInput = document.getElementById('contactToUserId');
-        if (postingIdInput) postingIdInput.value = window.currentPosting.id;
-        if (toUserIdInput) toUserIdInput.value = window.currentPosting.userId;
-        
-        // Pre-fill name and email if user is logged in (hidden fields)
-        if (typeof getCurrentUser === 'function' && typeof isAuthenticated === 'function') {
-          const currentUser = getCurrentUser();
-          if (currentUser && isAuthenticated()) {
-            const nameInput = document.getElementById('contactName');
-            const emailInput = document.getElementById('contactEmail');
-            if (nameInput) nameInput.value = currentUser.username || '';
-            if (emailInput) emailInput.value = currentUser.email || '';
+          if (typeof showNotification === 'function') {
+            showNotification('Posting details are still loading. Please wait a moment and try again.');
+          } else {
+            alert('Posting details are still loading. Please wait a moment and try again.');
           }
-        }
-        
-        // Focus on textarea
-        const textarea = document.getElementById('contactMessage');
-        if (textarea) {
-          setTimeout(() => textarea.focus(), 100);
-        }
-        
-        contactFormContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        
-        // Re-initialize icons
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
-        }
-      });
-    }
-    
-    // Cancel button handler
-    const contactFormCancel = document.getElementById('contactFormCancel');
-    if (contactFormCancel && contactFormContainer) {
-      contactFormCancel.addEventListener('click', () => {
-        contactFormContainer.style.display = 'none';
-        const form = document.getElementById('contactFormInline');
-        if (form) form.reset();
-        const errorDiv = document.getElementById('contactFormError');
-        if (errorDiv) {
-          errorDiv.style.display = 'none';
-          errorDiv.textContent = '';
-        }
-      });
-    }
-    
-    // Inline form submission
-    const contactFormInline = document.getElementById('contactFormInline');
-    if (contactFormInline) {
-      contactFormInline.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const errorDiv = document.getElementById('contactFormError');
-        const postingIdInput = document.getElementById('contactPostingId');
-        const toUserIdInput = document.getElementById('contactToUserId');
-        const nameInput = document.getElementById('contactName');
-        const emailInput = document.getElementById('contactEmail');
-        const messageInput = document.getElementById('contactMessage');
-        
-        if (!errorDiv || !postingIdInput || !toUserIdInput || !nameInput || !emailInput || !messageInput) {
-          console.error('Contact form elements not found');
           return;
         }
         
-        errorDiv.style.display = 'none';
-        
-        const formData = {
-          postingId: parseInt(postingIdInput.value),
-          toUserId: parseInt(toUserIdInput.value),
-          name: nameInput.value.trim(),
-          email: emailInput.value.trim(),
-          message: messageInput.value.trim()
-        };
-        
-        // Pre-fill from logged-in user if available and fields are empty
-        if (typeof getCurrentUser === 'function' && typeof isAuthenticated === 'function') {
-          const currentUser = getCurrentUser();
-          if (currentUser && isAuthenticated()) {
-            if (!formData.name) formData.name = currentUser.username || '';
-            if (!formData.email) formData.email = currentUser.email || '';
-          }
-        }
-        
-        // Validation
-        if (!formData.message) {
-          errorDiv.textContent = 'Message is required';
-          errorDiv.style.display = 'block';
-          return;
-        }
-        
-        if (!formData.name || !formData.email) {
-          errorDiv.textContent = 'Please log in or provide your name and email';
-          errorDiv.style.display = 'block';
-          return;
-        }
-        
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.innerHTML = '<i data-lucide="loader" class="btn-icon spin"></i> Sending...';
-          if (typeof lucide !== 'undefined' && lucide.createIcons) {
-            lucide.createIcons();
-          }
-        }
-        
-        try {
-          // Get API base URL
-          const apiBaseUrl = typeof window !== 'undefined' && window.API_BASE_URL 
-            ? window.API_BASE_URL 
-            : 'https://autoilty-production.up.railway.app/api';
-          
-          const response = await fetch(`${apiBaseUrl}/messages`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
+        // Open modal using global function
+        if (typeof openContactSellerModal === 'function') {
+          openContactSellerModal({
+            postingId: window.currentPosting.id,
+            toUserId: window.currentPosting.userId,
+            sellerName: window.currentPosting.username || 'Seller'
           });
-          
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to send message');
-          }
-          
-          // Success - hide form and show button again
-          if (contactFormContainer) {
-            contactFormContainer.style.display = 'none';
-          }
-          
-          if (contactSellerBtn) {
-            contactSellerBtn.style.display = 'block';
-          }
-          
-          alert('Message sent successfully!');
-          contactFormInline.reset();
-          
-        } catch (error) {
-          console.error('Error sending message:', error);
-          errorDiv.textContent = error.message || 'Failed to send message. Please try again.';
-          errorDiv.style.display = 'block';
-        } finally {
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i data-lucide="send" class="btn-icon"></i> Send';
-            if (typeof lucide !== 'undefined' && lucide.createIcons) {
-              lucide.createIcons();
-            }
-          }
+        } else {
+          console.error('openContactSellerModal function not found');
         }
       });
+    }
+    
+    // Initialize Contact Seller modal
+    if (typeof initContactSellerModal === 'function') {
+      initContactSellerModal();
     }
 
     // Load posting on page ready

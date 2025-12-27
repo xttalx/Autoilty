@@ -167,11 +167,53 @@
     </div>
   </div>
 
-  <!-- Contact Seller uses inline form in product cards (no modal needed) -->
+  <!-- Contact Seller Modal -->
+  <div class="contact-modal-overlay" id="contactModalOverlay">
+    <div class="contact-modal">
+      <div class="contact-modal-header">
+        <h3>Contact Seller</h3>
+        <button class="contact-modal-close" id="contactModalClose" aria-label="Close modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="contact-modal-body">
+        <form id="contactModalForm">
+          <input type="hidden" id="contactModalPostingId" name="postingId">
+          <input type="hidden" id="contactModalToUserId" name="toUserId">
+          
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="contactModalName" class="form-label">Your Name</label>
+            <input type="text" id="contactModalName" name="name" class="form-input" required placeholder="Enter your name">
+          </div>
+          
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="contactModalEmail" class="form-label">Your Email</label>
+            <input type="email" id="contactModalEmail" name="email" class="form-input" required placeholder="Enter your email">
+          </div>
+          
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="contactModalMessage" class="form-label">Message</label>
+            <textarea id="contactModalMessage" name="message" class="form-textarea" rows="5" required placeholder="Type your message..."></textarea>
+          </div>
+          
+          <div id="contactModalError" style="color: #c53030; font-size: 0.875rem; margin-bottom: var(--spacing-md); display: none;"></div>
+          
+          <div class="contact-modal-actions">
+            <button type="button" class="btn btn-secondary" id="contactModalCancel">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i data-lucide="send" class="btn-icon"></i>
+              Send Message
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script src="auth.js"></script>
   <script src="marketplace-api.js"></script>
   <script src="messages-api.js"></script>
+  <script src="contact-seller-modal.js"></script>
   <script>
     // Initialize Lucide icons
     lucide.createIcons();
@@ -479,7 +521,10 @@
       }
     }
     
-    // Contact Seller now uses inline forms in product cards (handled by marketplace-api.js)
+    // Initialize Contact Seller modal
+    if (typeof initContactSellerModal === 'function') {
+      initContactSellerModal();
+    }
 
     // Load on page ready
     if (document.readyState === 'loading') {
