@@ -10,16 +10,30 @@
 function openContactSellerModal(options) {
   const { postingId, toUserId, sellerName } = options;
   
-  if (!postingId || !toUserId) {
-    console.error('Contact Seller modal: postingId and toUserId are required');
+  // Check if user is authenticated (required)
+  if (typeof isAuthenticated === 'function' && !isAuthenticated()) {
+    // Redirect to login if not authenticated
+    const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `login.html?return=${returnUrl}`;
+    return;
+  }
+  
+  // Double check with localStorage
+  const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+  if (!token) {
+    const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `login.html?return=${returnUrl}`;
+    return;
+  }
+  
+  if (!toUserId) {
+    console.error('Contact Seller modal: toUserId is required');
     return;
   }
   
   const overlay = document.getElementById('contactModalOverlay');
   const modal = document.getElementById('contactModal');
   const form = document.getElementById('contactModalForm');
-  const nameInput = document.getElementById('contactModalName');
-  const emailInput = document.getElementById('contactModalEmail');
   const messageInput = document.getElementById('contactModalMessage');
   const postingIdInput = document.getElementById('contactModalPostingId');
   const toUserIdInput = document.getElementById('contactModalToUserId');
@@ -31,17 +45,8 @@ function openContactSellerModal(options) {
   }
   
   // Set form values
-  if (postingIdInput) postingIdInput.value = postingId;
+  if (postingIdInput) postingIdInput.value = postingId || '';
   if (toUserIdInput) toUserIdInput.value = toUserId;
-  
-  // Pre-fill name/email if user is logged in
-  if (typeof getCurrentUser === 'function') {
-    const currentUser = getCurrentUser();
-    if (currentUser && nameInput && emailInput) {
-      nameInput.value = currentUser.username || '';
-      emailInput.value = currentUser.email || '';
-    }
-  }
   
   // Clear message and error
   if (messageInput) messageInput.value = '';
@@ -129,42 +134,35 @@ function initContactSellerModal() {
       
       const postingIdInput = document.getElementById('contactModalPostingId');
       const toUserIdInput = document.getElementById('contactModalToUserId');
-      const nameInput = document.getElementById('contactModalName');
-      const emailInput = document.getElementById('contactModalEmail');
       const messageInput = document.getElementById('contactModalMessage');
       const errorDiv = document.getElementById('contactModalError');
       const submitBtn = form.querySelector('button[type="submit"]');
       
-      if (!postingIdInput || !toUserIdInput || !nameInput || !emailInput || !messageInput) {
+      if (!toUserIdInput || !messageInput) {
         console.error('Contact Seller form: required inputs not found');
         return;
       }
       
-      const postingId = parseInt(postingIdInput.value);
+      // Check authentication again
+      const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+      if (!token) {
+        if (errorDiv) {
+          errorDiv.textContent = 'Please log in to send messages';
+          errorDiv.style.display = 'block';
+        }
+        closeContactSellerModal();
+        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        setTimeout(() => {
+          window.location.href = `login.html?return=${returnUrl}`;
+        }, 1000);
+        return;
+      }
+      
+      const postingId = postingIdInput ? parseInt(postingIdInput.value) : null;
       const toUserId = parseInt(toUserIdInput.value);
-      const name = nameInput.value.trim();
-      const email = emailInput.value.trim();
       const message = messageInput.value.trim();
       
       // Validation
-      if (!name) {
-        if (errorDiv) {
-          errorDiv.textContent = 'Please enter your name';
-          errorDiv.style.display = 'block';
-        }
-        if (nameInput) nameInput.focus();
-        return;
-      }
-      
-      if (!email || !email.includes('@')) {
-        if (errorDiv) {
-          errorDiv.textContent = 'Please enter a valid email address';
-          errorDiv.style.display = 'block';
-        }
-        if (emailInput) emailInput.focus();
-        return;
-      }
-      
       if (!message) {
         if (errorDiv) {
           errorDiv.textContent = 'Please enter a message';
@@ -195,26 +193,25 @@ function initContactSellerModal() {
             ? getApiBaseUrl() 
             : (window.API_BASE_URL || 'https://autoilty-production.up.railway.app/api');
           
-          // Get token if logged in
+          // Get token (required)
           const token = typeof getToken === 'function' 
             ? getToken() 
             : (localStorage.getItem('auth_token') || localStorage.getItem('token'));
           
-          const headers = { 'Content-Type': 'application/json' };
-          if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
+          if (!token) {
+            throw new Error('Authentication required. Please log in to send messages.');
           }
           
-          // Send message
+          // Send message (authentication required)
           const response = await fetch(`${apiBaseUrl}/messages`, {
             method: 'POST',
-            headers: headers,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({
               postingId: postingId,
               toUserId: toUserId,
-              name: name,
-              email: email,
-              phone: null,
               message: message
             })
           });
@@ -236,7 +233,17 @@ function initContactSellerModal() {
         } catch (error) {
           console.error('Error sending message:', error);
           if (errorDiv) {
-            errorDiv.textContent = error.message || 'Failed to send message. Please try again.';
+            let errorMessage = error.message || 'Failed to send message. Please try again.';
+            // Handle authentication errors
+            if (errorMessage.includes('401') || errorMessage.includes('403') || errorMessage.includes('Authentication')) {
+              errorMessage = 'Please log in to send messages.';
+              closeContactSellerModal();
+              setTimeout(() => {
+                const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+                window.location.href = `login.html?return=${returnUrl}`;
+              }, 1000);
+            }
+            errorDiv.textContent = errorMessage;
             errorDiv.style.display = 'block';
           }
           if (submitBtn) {

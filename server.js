@@ -965,112 +965,31 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Cannot send message to yourself' });
     }
 
-    // Ensure messages table exists (safety check)
-    try {
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS messages (
-          id SERIAL PRIMARY KEY,
-          from_user_id INTEGER,
-          to_user_id INTEGER NOT NULL,
-          posting_id INTEGER NOT NULL,
-          from_name TEXT NOT NULL,
-          from_email TEXT NOT NULL,
-          from_phone TEXT,
-          message TEXT NOT NULL,
-          read BOOLEAN DEFAULT FALSE,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE SET NULL,
-          FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE,
-          FOREIGN KEY (posting_id) REFERENCES postings(id) ON DELETE CASCADE
-        )
-      `);
-      
-      // Fix existing table: Make from_user_id nullable if it's not already
-      try {
-        await pool.query(`
-          ALTER TABLE messages 
-          ALTER COLUMN from_user_id DROP NOT NULL
-        `);
-      } catch (alterError) {
-        // Column might already be nullable or error might be different - ignore
-        if (!alterError.message.includes('does not exist') && !alterError.message.includes('already')) {
-          console.warn('Could not alter from_user_id column (may already be nullable):', alterError.message);
-        }
+    // Verify recipient user exists
+    const recipient = await dbGet('SELECT id FROM users WHERE id = $1', [toUserId]);
+    if (!recipient) {
+      return res.status(404).json({ error: 'Recipient user not found' });
+    }
+
+    // Verify posting exists if postingId is provided
+    let postingIdValue = null;
+    if (postingId) {
+      const posting = await dbGet('SELECT id, user_id FROM postings WHERE id = $1', [postingId]);
+      if (!posting) {
+        return res.status(404).json({ error: 'Posting not found' });
       }
-      
-      // Migration: Add "read" column if it doesn't exist (for existing tables)
-      try {
-        const columnCheck = await pool.query(`
-          SELECT column_name 
-          FROM information_schema.columns 
-          WHERE table_name = 'messages' AND column_name = 'read'
-        `);
-        
-        if (columnCheck.rows.length === 0) {
-          // Column doesn't exist, add it
-          await pool.query(`
-            ALTER TABLE messages 
-            ADD COLUMN read BOOLEAN DEFAULT FALSE NOT NULL
-          `);
-          console.log('✅ Added "read" column to messages table');
-        }
-      } catch (readColumnError) {
-        // Column might already exist or table might not exist yet - ignore
-        if (!readColumnError.message.includes('already exists') && !readColumnError.message.includes('does not exist')) {
-          console.warn('Could not add "read" column (may already exist):', readColumnError.message);
-        }
+      // If postingId is provided, ensure toUserId matches posting owner
+      if (posting.user_id !== parseInt(toUserId)) {
+        return res.status(400).json({ error: 'Recipient user ID does not match posting owner' });
       }
-      
-      // Create indexes if they don't exist
-      await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_to_user_id ON messages(to_user_id)`);
-      await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_posting_id ON messages(posting_id)`);
-      await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at DESC)`);
-    } catch (tableError) {
-      console.warn('Messages table creation check failed (may already exist):', tableError.message);
+      postingIdValue = postingId;
     }
 
-    // Get posting details
-    const posting = await dbGet(
-      `SELECT p.*, u.username, u.email as seller_email 
-       FROM postings p 
-       JOIN users u ON p.user_id = u.id 
-       WHERE p.id = $1`,
-      [postingId]
-    );
-
-    if (!posting) {
-      return res.status(404).json({ error: 'Posting not found' });
-    }
-
-    // Verify toUserId matches posting owner
-    if (posting.user_id !== parseInt(toUserId)) {
-      return res.status(400).json({ error: 'Recipient user ID does not match posting owner' });
-    }
-
-    // Get sender user ID if authenticated (optional)
-    let fromUserId = null;
-    try {
-      const authHeader = req.headers['authorization'];
-      const token = authHeader && authHeader.split(' ')[1];
-      if (token) {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        fromUserId = decoded.id;
-        
-        // Prevent sending message to yourself
-        if (fromUserId === parseInt(toUserId)) {
-          return res.status(400).json({ error: 'Cannot send message to yourself' });
-        }
-      }
-    } catch (authError) {
-      // Not authenticated - allow anonymous message
-      fromUserId = null;
-    }
-
-    // Create message in database (from_user_id can be null for anonymous)
+    // Create message in database
     const result = await pool.query(
-      `INSERT INTO messages (from_user_id, to_user_id, posting_id, from_name, from_email, from_phone, message)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-      [fromUserId, toUserId, postingId, name, email, phone || null, message]
+      `INSERT INTO messages (from_user_id, to_user_id, posting_id, message)
+       VALUES ($1, $2, $3, $4) RETURNING id`,
+      [fromUserId, toUserId, postingIdValue, message.trim()]
     );
 
     const messageId = result.rows[0].id;
