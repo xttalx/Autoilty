@@ -391,37 +391,77 @@
           // Determine click handler - use fromUserId for conversation (backend uses userId now)
           const clickHandler = `openChatWithUser(${group.fromUserId})`;
           
+          const cardId = `message-card-${group.fromUserId}-${group.postingId || 'direct'}`;
+          
           return `
-            <div class="message-card" 
-                 style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--spacing-md); margin-bottom: var(--spacing-md); cursor: pointer; transition: var(--transition); background: white;"
+            <div class="message-card" id="${cardId}"
+                 style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--spacing-md); margin-bottom: var(--spacing-md); transition: var(--transition); background: white;"
                  onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
-                 onmouseout="this.style.boxShadow='none'"
-                 onclick="${clickHandler}">
+                 onmouseout="this.style.boxShadow='none'">
               <div style="display: flex; gap: var(--spacing-md);">
                 <img src="${imageUrl}" 
                      alt="${group.postingTitle}" 
-                     style="width: 100px; height: 100px; object-fit: cover; border-radius: var(--radius); flex-shrink: 0;"
+                     style="width: 100px; height: 100px; object-fit: cover; border-radius: var(--radius); flex-shrink: 0; cursor: pointer;"
+                     onclick="${clickHandler}"
                      onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
                 <div style="flex: 1; min-width: 0;">
                   <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-xs);">
-                    <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--color-text);">
+                    <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--color-text); cursor: pointer;" onclick="${clickHandler}">
                       ${escapeHtml(group.postingTitle)}
                     </h3>
                     ${unreadCount > 0 ? `<span style="background: var(--color-primary); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; min-width: 20px; text-align: center; flex-shrink: 0;">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
                   </div>
-                  <p style="color: var(--color-text-light); font-size: 0.875rem; margin-bottom: var(--spacing-xs);">
+                  <p style="color: var(--color-text-light); font-size: 0.875rem; margin-bottom: var(--spacing-xs); cursor: pointer;" onclick="${clickHandler}">
                     From: <strong>${escapeHtml(group.fromUsername)}</strong>
                   </p>
-                  <p style="color: var(--color-text); margin-bottom: var(--spacing-xs); font-size: 0.9375rem; line-height: 1.5;">
+                  <p style="color: var(--color-text); margin-bottom: var(--spacing-xs); font-size: 0.9375rem; line-height: 1.5; cursor: pointer;" onclick="${clickHandler}">
                     ${escapeHtml(messagePreview)}
                   </p>
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-sm);">
-                    <span style="color: var(--color-text-light); font-size: 0.875rem;">
+                    <span style="color: var(--color-text-light); font-size: 0.875rem; cursor: pointer;" onclick="${clickHandler}">
                       ${dateStr}
                     </span>
-                    ${group.conversations.length > 1 ? `<span style="color: var(--color-text-light); font-size: 0.875rem;">${group.conversations.length} messages</span>` : ''}
+                    <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                      ${group.conversations.length > 1 ? `<span style="color: var(--color-text-light); font-size: 0.875rem;">${group.conversations.length} messages</span>` : ''}
+                      <button class="btn btn-secondary" 
+                              style="padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.875rem;"
+                              onclick="event.stopPropagation(); toggleReplyBox('${cardId}', ${group.fromUserId}, ${group.postingId || 'null'})"
+                              type="button">
+                        <i data-lucide="reply" style="width: 14px; height: 14px;"></i>
+                        Reply
+                      </button>
+                    </div>
                   </div>
                 </div>
+              </div>
+              
+              <!-- Inline Reply Box (hidden by default) -->
+              <div id="${cardId}-reply-box" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-border);">
+                <form onsubmit="event.preventDefault(); sendInboxReply(event, ${group.fromUserId}, ${group.postingId || 'null'}, '${cardId}')">
+                  <textarea 
+                    id="${cardId}-reply-text" 
+                    class="form-input" 
+                    rows="3" 
+                    placeholder="Type your reply..." 
+                    required
+                    style="width: 100%; margin-bottom: var(--spacing-sm); resize: vertical; min-height: 80px;"
+                  ></textarea>
+                  <div style="display: flex; gap: var(--spacing-sm); justify-content: flex-end;">
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            onclick="event.stopPropagation(); closeReplyBox('${cardId}')"
+                            style="padding: var(--spacing-xs) var(--spacing-md);">
+                      Cancel
+                    </button>
+                    <button type="submit" 
+                            class="btn btn-primary" 
+                            id="${cardId}-send-btn"
+                            style="padding: var(--spacing-xs) var(--spacing-md);">
+                      <i data-lucide="send" class="btn-icon" style="width: 14px; height: 14px;"></i>
+                      Send
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           `;
