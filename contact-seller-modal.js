@@ -202,7 +202,7 @@ function initContactSellerModal() {
             throw new Error('Authentication required. Please log in to send messages.');
           }
           
-          // Send message (authentication required)
+          // Send message using fetch (messages-api.js sendMessage requires different format)
           const response = await fetch(`${apiBaseUrl}/messages`, {
             method: 'POST',
             headers: {
@@ -210,22 +210,23 @@ function initContactSellerModal() {
               'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-              postingId: postingId,
+              postingId: postingId || null,
               toUserId: toUserId,
               message: message
             })
           });
           
           if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to send message');
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to send message');
           }
           
           // Success - show message and close modal
+          const successMessage = 'Message sent successfully!';
           if (typeof showNotification === 'function') {
-            showNotification('Message sent successfully!');
+            showNotification(successMessage);
           } else {
-            alert('Message sent successfully!');
+            alert(successMessage);
           }
           
           closeContactSellerModal();

@@ -219,7 +219,12 @@ function renderPostingsAsProducts(postings, container) {
 
           <p style="font-size: 0.875rem; color: var(--color-text-light); margin-bottom: var(--spacing-sm);">by ${product.username}</p>
 
-          <button class="btn btn-primary btn-full contact-seller-btn" data-posting-id="${product.id}" data-posting-user-id="${posting.user_id}" data-seller-username="${product.username}">
+          <button class="btn btn-primary btn-full contact-seller-btn" 
+                  data-posting-id="${product.id}" 
+                  data-posting-user-id="${posting.user_id}" 
+                  data-seller-username="${product.username || 'Seller'}"
+                  type="button"
+                  style="margin-top: var(--spacing-sm);">
             <i data-lucide="message-circle" class="btn-icon"></i>
             Contact Seller
           </button>
