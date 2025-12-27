@@ -112,11 +112,11 @@ async function getInboxMessages() {
 }
 
 /**
- * Get conversation for a specific posting
- * @param {number} postingId - ID of the posting
- * @returns {Promise<Object>} Response with posting details and messages
+ * Get conversation with a specific user
+ * @param {number} userId - ID of the user to get conversation with
+ * @returns {Promise<Object>} Response with user details and messages
  */
-async function getConversation(postingId) {
+async function getConversation(userId) {
   try {
     const token = getToken();
     if (!token) {
@@ -124,7 +124,7 @@ async function getConversation(postingId) {
       throw new Error('Authentication required');
     }
 
-    const response = await fetch(`${getApiBaseUrl()}/messages/conversation/${postingId}`, {
+    const response = await fetch(`${getApiBaseUrl()}/messages/conversation/${userId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`

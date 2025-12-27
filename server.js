@@ -1022,7 +1022,7 @@ app.get('/api/messages/inbox', authenticateToken, async (req, res) => {
     // Get all messages where user is recipient, grouped by sender
     // Return the latest message from each sender for the conversation list
     const conversations = await dbAll(`
-      SELECT DISTINCT ON (from_user_id)
+      SELECT DISTINCT ON (m.from_user_id)
         m.id,
         m.from_user_id,
         m.to_user_id,
@@ -1071,64 +1071,8 @@ app.get('/api/messages/inbox', authenticateToken, async (req, res) => {
     res.json({
       conversations: formattedConversations
     });
-
-    res.json({
-      messages: messages.map(m => ({
-        id: m.id,
-        postingId: m.posting_id,
-        postingTitle: m.posting_title,
-        postingPrice: parseFloat(m.posting_price),
-        postingImage: m.posting_image,
-        fromUserId: m.from_user_id,
-        fromUsername: m.from_username || null,
-        fromEmail: m.from_email,
-        fromName: m.from_name,
-        fromPhone: m.from_phone,
-        message: m.message,
-        read: hasReadColumn ? (m.read || false) : false, // Default to false if column doesn't exist
-        createdAt: m.created_at
-      }))
-    });
   } catch (error) {
     console.error('Get inbox error:', error);
-    // If error is about missing column, return messages with read = false
-    if (error.message && error.message.includes('column "read" does not exist')) {
-      console.warn('"read" column missing, returning messages with read = false');
-      try {
-        const messages = await dbAll(
-          `SELECT m.*, 
-                  p.title as posting_title, 
-                  p.price as posting_price,
-                  p.image_url as posting_image,
-                  u_from.username as from_username
-           FROM messages m
-           JOIN postings p ON m.posting_id = p.id
-           LEFT JOIN users u_from ON m.from_user_id = u_from.id
-           WHERE m.to_user_id = $1
-           ORDER BY m.created_at DESC`,
-          [req.user.id]
-        );
-        return res.json({
-          messages: messages.map(m => ({
-            id: m.id,
-            postingId: m.posting_id,
-            postingTitle: m.posting_title,
-            postingPrice: parseFloat(m.posting_price),
-            postingImage: m.posting_image,
-            fromUserId: m.from_user_id,
-            fromUsername: m.from_username || null,
-            fromEmail: m.from_email,
-            fromName: m.from_name,
-            fromPhone: m.from_phone,
-            message: m.message,
-            read: false, // Default to false if column doesn't exist
-            createdAt: m.created_at
-          }))
-        });
-      } catch (fallbackError) {
-        console.error('Fallback query also failed:', fallbackError);
-      }
-    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });
