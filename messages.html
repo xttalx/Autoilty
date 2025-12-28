@@ -525,7 +525,8 @@
       
       if (!message) return;
       
-      const sendBtn = event.target.querySelector('button[type="submit"]');
+      const form = event.target;
+      const sendBtn = form.querySelector('button[type="submit"]');
       const originalHTML = sendBtn.innerHTML;
       sendBtn.disabled = true;
       sendBtn.innerHTML = '<i data-lucide="loader" class="btn-icon spin"></i>';
