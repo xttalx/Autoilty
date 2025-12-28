@@ -62,27 +62,72 @@
   </nav>
 
   <!-- Messages Page -->
-  <main class="main-content">
-    <div class="container" style="max-width: 1200px; padding: var(--spacing-xl) var(--spacing-md);">
+  <main class="main-content" style="height: calc(100vh - 64px); overflow: hidden;">
+    <div class="inbox-container" style="display: flex; height: 100%; max-width: 100%;">
       
-      <h1 style="margin-bottom: var(--spacing-xl);">Messages</h1>
+      <!-- Conversations List (Left Panel) -->
+      <div class="conversations-panel" id="conversationsPanel" style="width: 350px; border-right: 1px solid var(--color-border); background: white; display: flex; flex-direction: column; overflow: hidden;">
+        <div style="padding: var(--spacing-md); border-bottom: 1px solid var(--color-border); flex-shrink: 0;">
+          <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600;">Messages</h2>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loadingState" style="flex: 1; overflow-y: auto; padding: var(--spacing-md);">
+          <div class="skeleton-card" style="height: 100px; margin-bottom: var(--spacing-md);"></div>
+          <div class="skeleton-card" style="height: 100px; margin-bottom: var(--spacing-md);"></div>
+          <div class="skeleton-card" style="height: 100px;"></div>
+        </div>
 
-      <!-- Loading State -->
-      <div id="loadingState" style="text-align: center; padding: var(--spacing-2xl);">
-        <div class="skeleton-card" style="height: 200px; margin-bottom: var(--spacing-md);"></div>
-        <div class="skeleton-card" style="height: 200px;"></div>
+        <!-- Empty State -->
+        <div id="emptyState" style="display: none; flex: 1; overflow-y: auto; text-align: center; padding: var(--spacing-2xl);">
+          <i data-lucide="mail" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
+          <h3 style="margin-bottom: var(--spacing-xs);">No messages yet</h3>
+          <p style="color: var(--color-text-light);">You haven't received any messages about your postings.</p>
+        </div>
+
+        <!-- Conversations List -->
+        <div id="messagesList" style="display: none; flex: 1; overflow-y: auto;">
+          <!-- Conversations will be loaded here -->
+        </div>
       </div>
 
-      <!-- Empty State -->
-      <div id="emptyState" style="display: none; text-align: center; padding: var(--spacing-2xl);">
-        <i data-lucide="mail" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
-        <h3 style="margin-bottom: var(--spacing-xs);">No messages yet</h3>
-        <p style="color: var(--color-text-light);">You haven't received any messages about your postings.</p>
-      </div>
-
-      <!-- Messages List -->
-      <div id="messagesList" style="display: none;">
-        <!-- Messages will be loaded here -->
+      <!-- Conversation View (Right Panel) -->
+      <div class="conversation-panel" id="conversationPanel" style="flex: 1; display: none; flex-direction: column; background: #f8f9fa; overflow: hidden;">
+        <!-- Conversation Header -->
+        <div id="conversationHeader" style="padding: var(--spacing-md); background: white; border-bottom: 1px solid var(--color-border); flex-shrink: 0; display: flex; align-items: center; gap: var(--spacing-md);">
+          <button id="backToConversationsBtn" class="btn btn-secondary" style="display: none; padding: var(--spacing-xs);" onclick="showConversationsList()">
+            <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+          </button>
+          <div style="flex: 1;">
+            <h3 id="conversationTitle" style="margin: 0; font-size: 1.125rem; font-weight: 600;"></h3>
+          </div>
+        </div>
+        
+        <!-- Messages Container -->
+        <div id="conversationMessages" style="flex: 1; overflow-y: auto; padding: var(--spacing-md);">
+          <!-- Messages will be loaded here -->
+        </div>
+        
+        <!-- Reply Form -->
+        <div style="padding: var(--spacing-md); background: white; border-top: 1px solid var(--color-border); flex-shrink: 0;">
+          <form id="conversationReplyForm" onsubmit="event.preventDefault(); sendConversationReply(event)">
+            <input type="hidden" id="conversationToUserId" name="toUserId">
+            <input type="hidden" id="conversationPostingId" name="postingId">
+            <div style="display: flex; gap: var(--spacing-sm); align-items: flex-end;">
+              <textarea 
+                id="conversationReplyText" 
+                class="form-input" 
+                rows="2" 
+                placeholder="Type a message..." 
+                required
+                style="flex: 1; resize: none; min-height: 44px; max-height: 120px; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: var(--radius);"
+              ></textarea>
+              <button type="submit" class="btn btn-primary" style="padding: var(--spacing-sm) var(--spacing-md); min-width: 60px;">
+                <i data-lucide="send" class="btn-icon"></i>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
     </div>
@@ -267,14 +312,29 @@
       
       document.getElementById('userMenuName').textContent = currentUser.username;
       
-      document.getElementById('userMenuButton').addEventListener('click', (e) => {
-        e.stopPropagation();
-        document.getElementById('userMenuDropdown').classList.toggle('show');
-      });
+      const userMenuButton = document.getElementById('userMenuButton');
+      const userMenuDropdown = document.getElementById('userMenuDropdown');
       
-      document.addEventListener('click', () => {
-        document.getElementById('userMenuDropdown').classList.remove('show');
-      });
+      if (userMenuButton && userMenuDropdown) {
+        userMenuButton.addEventListener('click', (e) => {
+          e.stopPropagation();
+          userMenuDropdown.classList.toggle('show');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
+            userMenuDropdown.classList.remove('show');
+          }
+        });
+        
+        // Close dropdown when clicking on dropdown items
+        userMenuDropdown.addEventListener('click', (e) => {
+          if (e.target.closest('.user-menu-item')) {
+            userMenuDropdown.classList.remove('show');
+          }
+        });
+      }
       
       document.getElementById('logoutButton').addEventListener('click', () => {
         if (confirm('Are you sure you want to logout?')) {
@@ -292,6 +352,10 @@
       window.location.href = 'login.html?return=messages.html';
     }
 
+    // Store conversations globally
+    let allConversations = [];
+    let currentConversation = null;
+
     // Load inbox messages
     async function loadMessages() {
       const loadingState = document.getElementById('loadingState');
@@ -306,153 +370,209 @@
         // Fetch inbox messages
         const data = await getInboxMessages();
         
-        // Debug: Log raw data
-        console.log('📬 Inbox data received:', data);
-        
-        // Backend returns { conversations: [...] } not { messages: [...] }
-        const conversations = data.conversations || data.messages || [];
-        
-        console.log('📋 Conversations count:', conversations.length);
-        console.log('📋 First conversation:', conversations[0]);
+        // Backend returns { conversations: [...] }
+        allConversations = data.conversations || [];
 
-        if (conversations.length === 0) {
-          console.log('📭 No conversations found');
+        if (allConversations.length === 0) {
           loadingState.style.display = 'none';
-          emptyState.style.display = 'block';
+          emptyState.style.display = 'flex';
           messagesList.style.display = 'none';
           lucide.createIcons();
           return;
         }
 
-        console.log('📦 Conversations received:', conversations.length);
-
-        // Render conversation cards with all messages in stack
-        messagesList.innerHTML = conversations.map(conv => {
-          const cardId = `message-card-${conv.fromUserId}-${conv.postingId || 'direct'}`;
+        // Render conversation list items in left panel
+        messagesList.innerHTML = allConversations.map((conv, index) => {
           const unreadCount = conv.unreadCount || 0;
           const messages = conv.messages || [];
+          const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+          const lastMessageDate = lastMessage ? new Date(lastMessage.createdAt) : new Date();
           
-          // Build image URL with fallback
-          let imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+          // Format date
+          const now = new Date();
+          const diffMs = now - lastMessageDate;
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMs / 3600000);
+          const diffDays = Math.floor(diffMs / 86400000);
           
-          if (conv.postingImage) {
-            if (conv.postingImage.startsWith('http://') || conv.postingImage.startsWith('https://')) {
-              imageUrl = conv.postingImage;
-            } else if (typeof getPostingImageUrl !== 'undefined') {
-              imageUrl = getPostingImageUrl(conv.postingImage);
-            } else {
-              imageUrl = conv.postingImage.startsWith('/') 
-                ? `https://autoilty-production.up.railway.app${conv.postingImage}`
-                : conv.postingImage;
-            }
+          let dateStr = '';
+          if (diffMins < 1) {
+            dateStr = 'Just now';
+          } else if (diffMins < 60) {
+            dateStr = `${diffMins}m ago`;
+          } else if (diffHours < 24) {
+            dateStr = `${diffHours}h ago`;
+          } else if (diffDays < 7) {
+            dateStr = `${diffDays}d ago`;
+          } else {
+            dateStr = lastMessageDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           }
           
+          const previewText = lastMessage ? (lastMessage.message.length > 50 ? lastMessage.message.substring(0, 50) + '...' : lastMessage.message) : 'No messages';
+          
           return `
-            <div class="message-card" id="${cardId}"
-                 style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--spacing-md); margin-bottom: var(--spacing-md); transition: var(--transition); background: white;"
-                 onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
-                 onmouseout="this.style.boxShadow='none'">
-              <!-- Conversation Header (Posting Title Only Once) -->
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md); padding-bottom: var(--spacing-md); border-bottom: 1px solid var(--color-border);">
-                <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--color-text);">
-                  ${escapeHtml(conv.postingTitle || 'Direct Message')}
-                </h3>
-                ${unreadCount > 0 ? `<span style="background: var(--color-primary); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; min-width: 20px; text-align: center; flex-shrink: 0;">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+            <div class="conversation-item" 
+                 onclick="openConversation(${index})"
+                 data-conversation-index="${index}">
+              <div class="conversation-item-header">
+                <h3 class="conversation-item-title">${escapeHtml(conv.postingTitle || 'Direct Message')}</h3>
+                ${unreadCount > 0 ? `<span class="conversation-item-unread">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
               </div>
-              
-              <!-- Messages Stack -->
-              <div style="margin-bottom: var(--spacing-md);">
-                ${messages.length > 0 ? messages.map((msg, index) => {
-                  const isFromMe = msg.isFromMe;
-                  const msgDate = new Date(msg.createdAt);
-                  const dateStr = msgDate.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit'
-                  });
-                  
-                  return `
-                    <div style="margin-bottom: var(--spacing-md); ${index < messages.length - 1 ? 'padding-bottom: var(--spacing-md); border-bottom: 1px solid #f0f0f0;' : ''}">
-                      <div style="display: flex; ${isFromMe ? 'justify-content: flex-end' : 'justify-content: flex-start'};">
-                        <div style="max-width: 75%; background: ${isFromMe ? 'var(--color-primary)' : '#f5f5f5'}; color: ${isFromMe ? 'white' : 'var(--color-text)'}; padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius);">
-                          <p style="margin: 0 0 var(--spacing-xs) 0; font-size: 0.9375rem; line-height: 1.5; word-wrap: break-word;">
-                            ${escapeHtml(msg.message || '')}
-                          </p>
-                          <p style="font-size: 0.7rem; margin: var(--spacing-xs) 0 0 0; opacity: 0.8;">
-                            ${dateStr}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  `;
-                }).join('') : '<p style="color: var(--color-text-light); text-align: center; padding: var(--spacing-md);">No messages</p>'}
-              </div>
-              
-              <!-- Single Reply Button at Bottom -->
-              <div style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-md);">
-                <button class="btn btn-primary" 
-                        style="width: 100%; padding: var(--spacing-sm) var(--spacing-md);"
-                        onclick="event.stopPropagation(); toggleReplyBox('${cardId}', ${conv.fromUserId}, ${conv.postingId || 'null'})"
-                        type="button">
-                  <i data-lucide="reply" style="width: 16px; height: 16px;"></i>
-                  Reply
-                </button>
-              </div>
-              
-              <!-- Inline Reply Box (hidden by default) -->
-              <div id="${cardId}-reply-box" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-border);">
-                <form onsubmit="event.preventDefault(); sendInboxReply(event, ${conv.fromUserId}, ${conv.postingId || 'null'}, '${cardId}')">
-                  <textarea 
-                    id="${cardId}-reply-text" 
-                    class="form-input" 
-                    rows="3" 
-                    placeholder="Type your reply..." 
-                    required
-                    style="width: 100%; margin-bottom: var(--spacing-sm); resize: vertical; min-height: 80px;"
-                  ></textarea>
-                  <div style="display: flex; gap: var(--spacing-sm); justify-content: flex-end;">
-                    <button type="button" 
-                            class="btn btn-secondary" 
-                            onclick="event.stopPropagation(); closeReplyBox('${cardId}')"
-                            style="padding: var(--spacing-xs) var(--spacing-md);">
-                      Cancel
-                    </button>
-                    <button type="submit" 
-                            class="btn btn-primary" 
-                            id="${cardId}-send-btn"
-                            style="padding: var(--spacing-xs) var(--spacing-md);">
-                      <i data-lucide="send" class="btn-icon" style="width: 14px; height: 14px;"></i>
-                      Send
-                    </button>
-                  </div>
-                </form>
-              </div>
+              <p class="conversation-item-preview">${escapeHtml(previewText)}</p>
+              <p class="conversation-item-date">${dateStr}</p>
             </div>
           `;
         }).join('');
 
         loadingState.style.display = 'none';
-        messagesList.style.display = 'block';
+        messagesList.style.display = 'flex';
         lucide.createIcons();
         
-        console.log('✅ Messages rendered successfully');
       } catch (error) {
         console.error('❌ Error loading messages:', error);
         loadingState.style.display = 'none';
-        emptyState.style.display = 'none';
+        emptyState.style.display = 'flex';
         messagesList.innerHTML = `
           <div style="text-align: center; padding: var(--spacing-xl);">
-            <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-error); display: block;"></i>
+            <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: #c53030; display: block;"></i>
             <h3 style="margin-bottom: var(--spacing-sm);">Error loading messages</h3>
             <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">${escapeHtml(error.message || 'Please try again later.')}</p>
             <button class="btn btn-primary" onclick="loadMessages()">Try Again</button>
           </div>
         `;
-        messagesList.style.display = 'block';
+        messagesList.style.display = 'flex';
         lucide.createIcons();
       }
     }
+
+    // Open conversation in right panel
+    async function openConversation(index) {
+      if (index < 0 || index >= allConversations.length) return;
+      
+      currentConversation = allConversations[index];
+      
+      // Update active state in list
+      document.querySelectorAll('.conversation-item').forEach((item, i) => {
+        if (i === index) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+      
+      // Show conversation panel
+      const conversationPanel = document.getElementById('conversationPanel');
+      const conversationTitle = document.getElementById('conversationTitle');
+      const conversationMessages = document.getElementById('conversationMessages');
+      const conversationToUserId = document.getElementById('conversationToUserId');
+      const conversationPostingId = document.getElementById('conversationPostingId');
+      const backBtn = document.getElementById('backToConversationsBtn');
+      
+      conversationTitle.textContent = currentConversation.postingTitle || 'Direct Message';
+      conversationToUserId.value = currentConversation.otherUserId;
+      conversationPostingId.value = currentConversation.postingId || '';
+      
+      // Render messages
+      const messages = currentConversation.messages || [];
+      conversationMessages.innerHTML = messages.map(msg => {
+        const isFromMe = msg.isFromMe;
+        const msgDate = new Date(msg.createdAt);
+        const dateStr = msgDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        
+        return `
+          <div class="conversation-message ${isFromMe ? 'from-me' : 'from-them'}">
+            <div class="conversation-message-bubble">
+              <p class="conversation-message-text">${escapeHtml(msg.message || '')}</p>
+            </div>
+            <p class="conversation-message-time">${dateStr}</p>
+          </div>
+        `;
+      }).join('');
+      
+      // Scroll to bottom
+      conversationMessages.scrollTop = conversationMessages.scrollHeight;
+      
+      // Show panel
+      conversationPanel.style.display = 'flex';
+      conversationPanel.classList.add('active');
+      
+      // Show back button on mobile
+      if (window.innerWidth <= 768) {
+        backBtn.style.display = 'block';
+      }
+      
+      lucide.createIcons();
+    }
+
+    // Show conversations list (mobile)
+    function showConversationsList() {
+      const conversationPanel = document.getElementById('conversationPanel');
+      const backBtn = document.getElementById('backToConversationsBtn');
+      
+      conversationPanel.style.display = 'none';
+      conversationPanel.classList.remove('active');
+      backBtn.style.display = 'none';
+    }
+
+    // Send reply in conversation panel
+    async function sendConversationReply(event) {
+      event.preventDefault();
+      
+      const toUserId = document.getElementById('conversationToUserId').value;
+      const postingId = document.getElementById('conversationPostingId').value;
+      const textarea = document.getElementById('conversationReplyText');
+      const message = textarea.value.trim();
+      
+      if (!message) return;
+      
+      const sendBtn = event.target.querySelector('button[type="submit"]');
+      const originalHTML = sendBtn.innerHTML;
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = '<i data-lucide="loader" class="btn-icon spin"></i>';
+      lucide.createIcons();
+      
+      try {
+        const messageData = {
+          postingId: postingId || null,
+          toUserId: parseInt(toUserId),
+          message: message
+        };
+        
+        if (typeof window.sendMessage === 'function') {
+          await window.sendMessage(messageData);
+        } else {
+          throw new Error('sendMessage function not available');
+        }
+        
+        // Clear textarea
+        textarea.value = '';
+        
+        // Reload messages to show new reply
+        await loadMessages();
+        
+        // Reopen current conversation
+        const currentIndex = allConversations.findIndex(c => 
+          c.otherUserId === parseInt(toUserId) && 
+          (c.postingId || null) === (postingId || null)
+        );
+        if (currentIndex >= 0) {
+          await openConversation(currentIndex);
+        }
+        
+      } catch (error) {
+        console.error('Error sending reply:', error);
+        alert('Error sending reply: ' + error.message);
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = originalHTML;
+        lucide.createIcons();
+      }
+    }
+
+    // Make functions globally available
+    window.openConversation = openConversation;
+    window.showConversationsList = showConversationsList;
+    window.sendConversationReply = sendConversationReply;
     
     // Helper function to escape HTML
     function escapeHtml(text) {
