@@ -1092,57 +1092,82 @@ app.get('/api/messages/inbox', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     
-    // Get all messages where user is recipient, grouped by sender
-    // Return the latest message from each sender for the conversation list
-    const conversations = await dbAll(`
-      SELECT DISTINCT ON (m.from_user_id)
-        m.id,
+    // Get all unique conversations (grouped by from_user_id and posting_id)
+    const uniqueConversations = await dbAll(`
+      SELECT DISTINCT 
         m.from_user_id,
-        m.to_user_id,
         m.posting_id,
-        m.message,
-        m.created_at,
-        m.read,
         u.username as from_username,
         p.title as posting_title,
         p.image_url as posting_image
       FROM messages m
       JOIN users u ON m.from_user_id = u.id
       LEFT JOIN postings p ON m.posting_id = p.id
-      WHERE m.to_user_id = $1
-      ORDER BY m.from_user_id, m.created_at DESC
+      WHERE m.to_user_id = $1 OR m.from_user_id = $1
+      ORDER BY m.from_user_id, m.posting_id
     `, [userId]);
 
-    // Get unread count per conversation
-    const unreadCounts = await dbAll(`
-      SELECT 
-        from_user_id,
-        COUNT(*) as unread_count
-      FROM messages
-      WHERE to_user_id = $1 AND read = FALSE
-      GROUP BY from_user_id
-    `, [userId]);
+    // Get all messages for each conversation
+    const conversationsWithMessages = await Promise.all(
+      uniqueConversations.map(async (conv) => {
+        // Get all messages in this conversation (bidirectional)
+        const messages = await dbAll(`
+          SELECT 
+            m.id,
+            m.from_user_id,
+            m.to_user_id,
+            m.posting_id,
+            m.message,
+            m.created_at,
+            m.read,
+            u_from.username as from_username,
+            u_to.username as to_username
+          FROM messages m
+          JOIN users u_from ON m.from_user_id = u_from.id
+          JOIN users u_to ON m.to_user_id = u_to.id
+          WHERE (
+            (m.from_user_id = $1 AND m.to_user_id = $2) OR
+            (m.from_user_id = $2 AND m.to_user_id = $1)
+          )
+          ${conv.posting_id ? 'AND m.posting_id = $3' : 'AND m.posting_id IS NULL'}
+          ORDER BY m.created_at ASC
+        `, conv.posting_id ? [userId, conv.from_user_id, conv.posting_id] : [userId, conv.from_user_id]);
 
-    const unreadMap = {};
-    unreadCounts.forEach(item => {
-      unreadMap[item.from_user_id] = parseInt(item.unread_count);
-    });
+        // Get unread count for this conversation
+        const unreadResult = await dbGet(`
+          SELECT COUNT(*) as unread_count
+          FROM messages
+          WHERE to_user_id = $1 
+            AND from_user_id = $2
+            ${conv.posting_id ? 'AND posting_id = $3' : 'AND posting_id IS NULL'}
+            AND read = FALSE
+        `, conv.posting_id ? [userId, conv.from_user_id, conv.posting_id] : [userId, conv.from_user_id]);
 
-    // Format conversations with unread counts
-    const formattedConversations = conversations.map(conv => ({
-      id: conv.id,
-      fromUserId: conv.from_user_id,
-      fromUsername: conv.from_username,
-      postingId: conv.posting_id,
-      postingTitle: conv.posting_title,
-      postingImage: conv.posting_image,
-      lastMessage: conv.message,
-      lastMessageDate: conv.created_at,
-      unreadCount: unreadMap[conv.from_user_id] || 0
-    }));
+        return {
+          fromUserId: conv.from_user_id,
+          fromUsername: conv.from_username,
+          postingId: conv.posting_id,
+          postingTitle: conv.posting_title,
+          postingImage: conv.posting_image,
+          messages: messages.map(msg => ({
+            id: msg.id,
+            fromUserId: msg.from_user_id,
+            fromUsername: msg.from_username,
+            toUserId: msg.to_user_id,
+            toUsername: msg.to_username,
+            postingId: msg.posting_id,
+            message: msg.message,
+            createdAt: msg.created_at,
+            read: msg.read,
+            isFromMe: msg.from_user_id === userId
+          })),
+          unreadCount: parseInt(unreadResult?.unread_count || 0)
+        };
+      })
+    );
 
     res.json({
-      conversations: formattedConversations
+      conversations: conversationsWithMessages
     });
   } catch (error) {
     console.error('Get inbox error:', error);

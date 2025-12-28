@@ -324,120 +324,103 @@
           return;
         }
 
-        // Group conversations by postingId (or use conversation key if no postingId)
-        const conversationsByKey = {};
-        conversations.forEach(conv => {
-          // Create a unique key: postingId + fromUserId (or just fromUserId if no posting)
-          const key = conv.postingId 
-            ? `posting-${conv.postingId}-user-${conv.fromUserId}`
-            : `user-${conv.fromUserId}`;
-          
-          if (!conversationsByKey[key]) {
-            conversationsByKey[key] = {
-              key: key,
-              postingId: conv.postingId || null,
-              postingTitle: conv.postingTitle || 'Direct Message',
-              postingImage: conv.postingImage || null,
-              fromUserId: conv.fromUserId,
-              fromUsername: conv.fromUsername || 'User',
-              conversations: []
-            };
-          }
-          conversationsByKey[key].conversations.push(conv);
-        });
+        console.log('📦 Conversations received:', conversations.length);
 
-        console.log('📦 Grouped conversations:', Object.keys(conversationsByKey).length, 'groups');
-
-        // Render conversation cards
-        messagesList.innerHTML = Object.values(conversationsByKey).map(group => {
-          // Get latest conversation (most recent message)
-          const latestConv = group.conversations.sort((a, b) => 
-            new Date(b.lastMessageDate || b.createdAt || 0) - new Date(a.lastMessageDate || a.createdAt || 0)
-          )[0];
-          
-          const unreadCount = latestConv.unreadCount || 0;
-          const lastMessage = latestConv.lastMessage || latestConv.message || 'No message';
-          const lastMessageDate = latestConv.lastMessageDate || latestConv.createdAt || new Date();
+        // Render conversation cards with all messages in stack
+        messagesList.innerHTML = conversations.map(conv => {
+          const cardId = `message-card-${conv.fromUserId}-${conv.postingId || 'direct'}`;
+          const unreadCount = conv.unreadCount || 0;
+          const messages = conv.messages || [];
           
           // Build image URL with fallback
           let imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
           
-          if (group.postingImage) {
-            // Check if it's already a full URL
-            if (group.postingImage.startsWith('http://') || group.postingImage.startsWith('https://')) {
-              imageUrl = group.postingImage;
+          if (conv.postingImage) {
+            if (conv.postingImage.startsWith('http://') || conv.postingImage.startsWith('https://')) {
+              imageUrl = conv.postingImage;
             } else if (typeof getPostingImageUrl !== 'undefined') {
-              imageUrl = getPostingImageUrl(group.postingImage);
+              imageUrl = getPostingImageUrl(conv.postingImage);
             } else {
-              // Assume it's a Supabase URL or construct full URL
-              imageUrl = group.postingImage.startsWith('/') 
-                ? `https://autoilty-production.up.railway.app${group.postingImage}`
-                : group.postingImage;
+              imageUrl = conv.postingImage.startsWith('/') 
+                ? `https://autoilty-production.up.railway.app${conv.postingImage}`
+                : conv.postingImage;
             }
           }
-          
-          // Format date
-          const dateStr = new Date(lastMessageDate).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: new Date(lastMessageDate).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
-          });
-          
-          // Truncate message preview
-          const messagePreview = lastMessage.length > 100 
-            ? lastMessage.substring(0, 100) + '...' 
-            : lastMessage;
-          
-          // Determine click handler - use fromUserId for conversation (backend uses userId now)
-          const clickHandler = `openChatWithUser(${group.fromUserId})`;
-          
-          const cardId = `message-card-${group.fromUserId}-${group.postingId || 'direct'}`;
           
           return `
             <div class="message-card" id="${cardId}"
                  style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--spacing-md); margin-bottom: var(--spacing-md); transition: var(--transition); background: white;"
                  onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
                  onmouseout="this.style.boxShadow='none'">
-              <div style="display: flex; gap: var(--spacing-md);">
+              <!-- Conversation Header -->
+              <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
                 <img src="${imageUrl}" 
-                     alt="${group.postingTitle}" 
-                     style="width: 100px; height: 100px; object-fit: cover; border-radius: var(--radius); flex-shrink: 0; cursor: pointer;"
-                     onclick="${clickHandler}"
+                     alt="${conv.postingTitle || 'Direct Message'}" 
+                     style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius); flex-shrink: 0;"
                      onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
                 <div style="flex: 1; min-width: 0;">
                   <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-xs);">
-                    <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--color-text); cursor: pointer;" onclick="${clickHandler}">
-                      ${escapeHtml(group.postingTitle)}
+                    <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--color-text);">
+                      ${escapeHtml(conv.postingTitle || 'Direct Message')}
                     </h3>
                     ${unreadCount > 0 ? `<span style="background: var(--color-primary); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; min-width: 20px; text-align: center; flex-shrink: 0;">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
                   </div>
-                  <p style="color: var(--color-text-light); font-size: 0.875rem; margin-bottom: var(--spacing-xs); cursor: pointer;" onclick="${clickHandler}">
-                    From: <strong>${escapeHtml(group.fromUsername)}</strong>
+                  <p style="color: var(--color-text-light); font-size: 0.875rem; margin-bottom: var(--spacing-sm);">
+                    Conversation with <strong>${escapeHtml(conv.fromUsername || 'User')}</strong>
                   </p>
-                  <p style="color: var(--color-text); margin-bottom: var(--spacing-xs); font-size: 0.9375rem; line-height: 1.5; cursor: pointer;" onclick="${clickHandler}">
-                    ${escapeHtml(messagePreview)}
-                  </p>
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-sm);">
-                    <span style="color: var(--color-text-light); font-size: 0.875rem; cursor: pointer;" onclick="${clickHandler}">
-                      ${dateStr}
-                    </span>
-                    <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
-                      ${group.conversations.length > 1 ? `<span style="color: var(--color-text-light); font-size: 0.875rem;">${group.conversations.length} messages</span>` : ''}
-                      <button class="btn btn-secondary" 
-                              style="padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.875rem;"
-                              onclick="event.stopPropagation(); toggleReplyBox('${cardId}', ${group.fromUserId}, ${group.postingId || 'null'})"
-                              type="button">
-                        <i data-lucide="reply" style="width: 14px; height: 14px;"></i>
-                        Reply
-                      </button>
-                    </div>
-                  </div>
                 </div>
+              </div>
+              
+              <!-- Messages Stack -->
+              <div style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                ${messages.length > 0 ? messages.map((msg, index) => {
+                  const isFromMe = msg.isFromMe;
+                  const msgDate = new Date(msg.createdAt);
+                  const dateStr = msgDate.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                  });
+                  
+                  return `
+                    <div style="margin-bottom: var(--spacing-md); ${index < messages.length - 1 ? 'padding-bottom: var(--spacing-md); border-bottom: 1px solid #f0f0f0;' : ''}">
+                      <div style="display: flex; ${isFromMe ? 'justify-content: flex-end' : 'justify-content: flex-start'}; margin-bottom: var(--spacing-xs);">
+                        <div style="max-width: 75%; background: ${isFromMe ? 'var(--color-primary)' : '#f5f5f5'}; color: ${isFromMe ? 'white' : 'var(--color-text)'}; padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius);">
+                          <div style="display: flex; justify-content: space-between; align-items: start; gap: var(--spacing-sm);">
+                            <div style="flex: 1;">
+                              <p style="font-size: 0.75rem; margin: 0 0 var(--spacing-xs) 0; opacity: 0.9; font-weight: 500;">
+                                ${escapeHtml(isFromMe ? 'You' : msg.fromUsername || 'User')}
+                              </p>
+                              <p style="margin: 0; font-size: 0.9375rem; line-height: 1.5; word-wrap: break-word;">
+                                ${escapeHtml(msg.message || '')}
+                              </p>
+                              <p style="font-size: 0.7rem; margin: var(--spacing-xs) 0 0 0; opacity: 0.8;">
+                                ${dateStr}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      ${!isFromMe ? `
+                        <div style="margin-top: var(--spacing-xs); ${isFromMe ? 'text-align: right;' : 'text-align: left;'}">
+                          <button class="btn btn-secondary" 
+                                  style="padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.75rem;"
+                                  onclick="event.stopPropagation(); toggleReplyBox('${cardId}', ${conv.fromUserId}, ${conv.postingId || 'null'})"
+                                  type="button">
+                            <i data-lucide="reply" style="width: 12px; height: 12px;"></i>
+                            Reply
+                          </button>
+                        </div>
+                      ` : ''}
+                    </div>
+                  `;
+                }).join('') : '<p style="color: var(--color-text-light); text-align: center; padding: var(--spacing-md);">No messages</p>'}
               </div>
               
               <!-- Inline Reply Box (hidden by default) -->
               <div id="${cardId}-reply-box" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-border);">
-                <form onsubmit="event.preventDefault(); sendInboxReply(event, ${group.fromUserId}, ${group.postingId || 'null'}, '${cardId}')">
+                <form onsubmit="event.preventDefault(); sendInboxReply(event, ${conv.fromUserId}, ${conv.postingId || 'null'}, '${cardId}')">
                   <textarea 
                     id="${cardId}-reply-text" 
                     class="form-input" 
