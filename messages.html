@@ -66,9 +66,9 @@
     <div class="inbox-container" style="display: flex; height: 100%; max-width: 100%;">
       
       <!-- Conversations List (Left Panel) -->
-      <div class="conversations-panel" id="conversationsPanel" style="width: 350px; border-right: 1px solid var(--color-border); background: white; display: flex; flex-direction: column; overflow: hidden;">
-        <div style="padding: var(--spacing-md); border-bottom: 1px solid var(--color-border); flex-shrink: 0;">
-          <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600;">Messages</h2>
+      <div class="conversations-panel" id="conversationsPanel" style="width: 350px; border-right: 1px solid var(--color-border); background: #f0f2f5; display: flex; flex-direction: column; overflow: hidden;">
+        <div style="padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--color-border); flex-shrink: 0; background: white;">
+          <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600; color: var(--color-text);">Messages</h2>
         </div>
         
         <!-- Loading State -->
@@ -86,44 +86,45 @@
         </div>
 
         <!-- Conversations List -->
-        <div id="messagesList" style="display: none; flex: 1; overflow-y: auto;">
+        <div id="messagesList" style="display: none; flex: 1; overflow-y: auto; background: white;">
           <!-- Conversations will be loaded here -->
         </div>
       </div>
 
       <!-- Conversation View (Right Panel) -->
-      <div class="conversation-panel" id="conversationPanel" style="flex: 1; display: none; flex-direction: column; background: #f8f9fa; overflow: hidden;">
+      <div class="conversation-panel" id="conversationPanel" style="flex: 1; display: none; flex-direction: column; background: #efeae2; background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMCAwaDQwdjQwSDB6Ii8+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0iI2YwZjJmNSIvPjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHoiIGZpbGw9IiNlZmVhZTIiLz48L2c+PC9zdmc+'); background-size: 40px 40px; overflow: hidden;">
         <!-- Conversation Header -->
-        <div id="conversationHeader" style="padding: var(--spacing-md); background: white; border-bottom: 1px solid var(--color-border); flex-shrink: 0; display: flex; align-items: center; gap: var(--spacing-md);">
-          <button id="backToConversationsBtn" class="btn btn-secondary" style="display: none; padding: var(--spacing-xs);" onclick="showConversationsList()">
-            <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+        <div id="conversationHeader" style="padding: var(--spacing-sm) var(--spacing-md); background: #f0f2f5; border-bottom: 1px solid #d1d7db; flex-shrink: 0; display: flex; align-items: center; gap: var(--spacing-md); box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+          <button id="backToConversationsBtn" class="btn btn-secondary" style="display: none; padding: var(--spacing-xs); background: transparent; border: none; color: var(--color-text);" onclick="showConversationsList()">
+            <i data-lucide="arrow-left" style="width: 24px; height: 24px;"></i>
           </button>
-          <div style="flex: 1;">
-            <h3 id="conversationTitle" style="margin: 0; font-size: 1.125rem; font-weight: 600;"></h3>
+          <div style="flex: 1; min-width: 0;">
+            <h3 id="conversationTitle" style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--color-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></h3>
           </div>
         </div>
         
         <!-- Messages Container -->
-        <div id="conversationMessages" style="flex: 1; overflow-y: auto; padding: var(--spacing-md);">
+        <div id="conversationMessages" style="flex: 1; overflow-y: auto; padding: var(--spacing-md) var(--spacing-lg); display: flex; flex-direction: column; gap: 2px;">
           <!-- Messages will be loaded here -->
         </div>
         
         <!-- Reply Form -->
-        <div style="padding: var(--spacing-md); background: white; border-top: 1px solid var(--color-border); flex-shrink: 0;">
+        <div style="padding: var(--spacing-sm) var(--spacing-md); background: #f0f2f5; border-top: 1px solid #d1d7db; flex-shrink: 0;">
           <form id="conversationReplyForm" onsubmit="event.preventDefault(); sendConversationReply(event)">
             <input type="hidden" id="conversationToUserId" name="toUserId">
             <input type="hidden" id="conversationPostingId" name="postingId">
-            <div style="display: flex; gap: var(--spacing-sm); align-items: flex-end;">
+            <div style="display: flex; gap: var(--spacing-xs); align-items: flex-end; background: white; border-radius: 24px; padding: 4px 8px; border: 1px solid #d1d7db;">
               <textarea 
                 id="conversationReplyText" 
                 class="form-input" 
-                rows="2" 
+                rows="1" 
                 placeholder="Type a message..." 
                 required
-                style="flex: 1; resize: none; min-height: 44px; max-height: 120px; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: var(--radius);"
+                style="flex: 1; resize: none; min-height: 40px; max-height: 120px; padding: 8px 12px; border: none; border-radius: 24px; font-size: 0.9375rem; background: transparent; outline: none;"
+                oninput="this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px';"
               ></textarea>
-              <button type="submit" class="btn btn-primary" style="padding: var(--spacing-sm) var(--spacing-md); min-width: 60px;">
-                <i data-lucide="send" class="btn-icon"></i>
+              <button type="submit" class="btn btn-primary" style="padding: 8px; min-width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary); border: none; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i data-lucide="send" class="btn-icon" style="width: 20px; height: 20px; color: white;"></i>
               </button>
             </div>
           </form>
@@ -410,16 +411,38 @@
           
           const previewText = lastMessage ? (lastMessage.message.length > 50 ? lastMessage.message.substring(0, 50) + '...' : lastMessage.message) : 'No messages';
           
+          // Get first letter for avatar
+          const firstLetter = (conv.postingTitle || 'D').charAt(0).toUpperCase();
+          const otherUsername = conv.otherUsername || 'User';
+          const otherFirstLetter = otherUsername.charAt(0).toUpperCase();
+          
           return `
             <div class="conversation-item" 
                  onclick="openConversation(${index})"
-                 data-conversation-index="${index}">
-              <div class="conversation-item-header">
-                <h3 class="conversation-item-title">${escapeHtml(conv.postingTitle || 'Direct Message')}</h3>
-                ${unreadCount > 0 ? `<span class="conversation-item-unread">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+                 data-conversation-index="${index}"
+                 style="padding: var(--spacing-sm) var(--spacing-md); border-bottom: 1px solid #f0f2f5; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: var(--spacing-md); background: white;">
+              <!-- Avatar -->
+              <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1.25rem; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                ${otherFirstLetter}
               </div>
-              <p class="conversation-item-preview">${escapeHtml(previewText)}</p>
-              <p class="conversation-item-date">${dateStr}</p>
+              
+              <!-- Content -->
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-xs);">
+                  <h3 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--color-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                    ${escapeHtml(conv.postingTitle || 'Direct Message')}
+                  </h3>
+                  ${unreadCount > 0 ? `<span style="background: #25d366; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; min-width: 20px; text-align: center; flex-shrink: 0; font-size: 0.6875rem;">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-xs);">
+                  <p style="margin: 0; font-size: 0.875rem; color: var(--color-text-light); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                    ${escapeHtml(previewText)}
+                  </p>
+                  <p style="margin: 0; font-size: 0.75rem; color: var(--color-text-light); flex-shrink: 0; white-space: nowrap;">
+                    ${dateStr}
+                  </p>
+                </div>
+              </div>
             </div>
           `;
         }).join('');
@@ -474,17 +497,61 @@
       
       // Render messages
       const messages = currentConversation.messages || [];
-      conversationMessages.innerHTML = messages.map(msg => {
+      conversationMessages.innerHTML = messages.map((msg, index) => {
         const isFromMe = msg.isFromMe;
         const msgDate = new Date(msg.createdAt);
         const dateStr = msgDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
         
-        return `
-          <div class="conversation-message ${isFromMe ? 'from-me' : 'from-them'}">
-            <div class="conversation-message-bubble">
-              <p class="conversation-message-text">${escapeHtml(msg.message || '')}</p>
+        // Check if this is a new day (different from previous message)
+        const prevMsg = index > 0 ? messages[index - 1] : null;
+        const prevDate = prevMsg ? new Date(prevMsg.createdAt) : null;
+        const showDateSeparator = !prevDate || 
+          msgDate.toDateString() !== prevDate.toDateString();
+        
+        // Format date separator
+        let dateSeparator = '';
+        if (showDateSeparator) {
+          const today = new Date();
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          
+          let separatorText = '';
+          if (msgDate.toDateString() === today.toDateString()) {
+            separatorText = 'Today';
+          } else if (msgDate.toDateString() === yesterday.toDateString()) {
+            separatorText = 'Yesterday';
+          } else {
+            separatorText = msgDate.toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              month: 'long', 
+              day: 'numeric',
+              year: msgDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+            });
+          }
+          
+          dateSeparator = `
+            <div style="text-align: center; margin: var(--spacing-md) 0; position: relative;">
+              <span style="background: rgba(225, 245, 254, 0.92); color: #546e7a; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; display: inline-block;">
+                ${separatorText}
+              </span>
             </div>
-            <p class="conversation-message-time">${dateStr}</p>
+          `;
+        }
+        
+        return `
+          ${dateSeparator}
+          <div class="conversation-message ${isFromMe ? 'from-me' : 'from-them'}" style="display: flex; flex-direction: column; align-items: ${isFromMe ? 'flex-end' : 'flex-start'}; margin-bottom: 2px;">
+            <div class="conversation-message-bubble" style="max-width: 65%; padding: 6px 12px 8px 12px; border-radius: ${isFromMe ? '7.5px 0 7.5px 7.5px' : '0 7.5px 7.5px 7.5px'}; background: ${isFromMe ? '#dcf8c6' : 'white'}; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; word-wrap: break-word;">
+              <p class="conversation-message-text" style="margin: 0; font-size: 0.9375rem; line-height: 1.4; color: ${isFromMe ? '#303030' : '#303030'};">
+                ${escapeHtml(msg.message || '')}
+              </p>
+              <div style="display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 2px; margin-left: 8px;">
+                <span style="font-size: 0.6875rem; color: ${isFromMe ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.45)'}; white-space: nowrap;">
+                  ${dateStr}
+                </span>
+                ${isFromMe ? '<i data-lucide="check" style="width: 16px; height: 16px; color: rgba(0,0,0,0.45);"></i>' : ''}
+              </div>
+            </div>
           </div>
         `;
       }).join('');
