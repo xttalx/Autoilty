@@ -295,15 +295,17 @@
     const userMenu = document.getElementById('userMenu');
     const loginLink = document.getElementById('loginLink');
     const myPostingsLink = document.getElementById('myPostingsLink');
-    const createPostingBtn = document.getElementById('createPostingBtn');
-    const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
+    const createPostingLink = document.getElementById('createPostingLink');
+    const createPostingLoginLink = document.getElementById('createPostingLoginLink');
+    const userProfileLink = document.getElementById('userProfileLink');
     
     if (currentUser && isAuthenticated()) {
-      userMenu.style.display = 'block';
-      loginLink.style.display = 'none';
-      myPostingsLink.style.display = 'block';
-      createPostingBtn.style.display = 'inline-flex';
-      createPostingLoginBtn.style.display = 'none';
+      if (userMenu) userMenu.style.display = 'block';
+      if (loginLink) loginLink.style.display = 'none';
+      if (myPostingsLink) myPostingsLink.style.display = 'flex';
+      if (createPostingLink) createPostingLink.style.display = 'block';
+      if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
+      if (userProfileLink) userProfileLink.style.display = 'block';
       
       document.getElementById('userMenuName').textContent = currentUser.username;
       
