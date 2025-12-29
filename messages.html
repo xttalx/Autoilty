@@ -540,12 +540,12 @@
         
         return `
           ${dateSeparator}
-          <div class="conversation-message ${isFromMe ? 'from-me' : 'from-them'}" style="display: flex; flex-direction: column; align-items: ${isFromMe ? 'flex-end' : 'flex-start'}; margin-bottom: 2px;">
-            <div class="conversation-message-bubble" style="max-width: 65%; padding: 6px 12px 8px 12px; border-radius: ${isFromMe ? '7.5px 0 7.5px 7.5px' : '0 7.5px 7.5px 7.5px'}; background: ${isFromMe ? '#dcf8c6' : 'white'}; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; word-wrap: break-word;">
-              <p class="conversation-message-text" style="margin: 0; font-size: 0.9375rem; line-height: 1.4; color: ${isFromMe ? '#303030' : '#303030'};">
+          <div class="conversation-message ${isFromMe ? 'from-me' : 'from-them'}" style="display: flex; flex-direction: column; align-items: ${isFromMe ? 'flex-end' : 'flex-start'}; margin-bottom: 8px; width: 100%;">
+            <div class="conversation-message-bubble" style="max-width: 70%; padding: 8px 12px 10px 12px; border-radius: ${isFromMe ? '7.5px 0 7.5px 7.5px' : '0 7.5px 7.5px 7.5px'}; background: ${isFromMe ? '#dcf8c6' : 'white'}; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; word-wrap: break-word;">
+              <p class="conversation-message-text" style="margin: 0; font-size: 0.9375rem; line-height: 1.5; color: ${isFromMe ? '#303030' : '#303030'};">
                 ${escapeHtml(msg.message || '')}
               </p>
-              <div style="display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 2px; margin-left: 8px;">
+              <div style="display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 4px; margin-left: 8px;">
                 <span style="font-size: 0.6875rem; color: ${isFromMe ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.45)'}; white-space: nowrap;">
                   ${dateStr}
                 </span>
