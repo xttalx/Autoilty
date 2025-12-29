@@ -420,22 +420,24 @@
             <div class="conversation-item" 
                  onclick="openConversation(${index})"
                  data-conversation-index="${index}"
-                 style="padding: 12px 16px; border-bottom: 1px solid #f0f2f5; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 12px; background: white;">
+                 style="padding: 12px 16px; border-bottom: 1px solid #f0f2f5; cursor: pointer; transition: background 0.2s; display: flex; align-items: flex-start; gap: 12px; background: white;">
               <!-- Avatar -->
               <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1.25rem; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 ${otherFirstLetter}
               </div>
               
               <!-- Content -->
-              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; overflow: hidden;">
-                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                  <h3 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--color-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; overflow: hidden;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                  <h3 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--color-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; line-height: 1.3;">
                     ${escapeHtml(conv.postingTitle || 'Direct Message')}
                   </h3>
-                  ${unreadCount > 0 ? `<span style="background: #25d366; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.6875rem; font-weight: 600; min-width: 20px; text-align: center; flex-shrink: 0;">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
-                  <p style="margin: 0; font-size: 0.75rem; color: var(--color-text-light); flex-shrink: 0; white-space: nowrap;">
-                    ${dateStr}
-                  </p>
+                  <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                    ${unreadCount > 0 ? `<span style="background: #25d366; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.6875rem; font-weight: 600; min-width: 20px; text-align: center;">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+                    <p style="margin: 0; font-size: 0.75rem; color: var(--color-text-light); white-space: nowrap;">
+                      ${dateStr}
+                    </p>
+                  </div>
                 </div>
                 <p style="margin: 0; font-size: 0.875rem; color: var(--color-text-light); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4;">
                   ${escapeHtml(previewText)}
