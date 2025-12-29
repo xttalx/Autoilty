@@ -632,10 +632,27 @@
       
       // If toUserId is empty, try to get it from currentConversation
       if (!toUserId && currentConversation) {
-        toUserId = currentConversation.otherUserId;
+        // Handle both otherUserId (from backend grouping) and fromUserId (direct from backend)
+        toUserId = currentConversation.otherUserId || currentConversation.fromUserId;
+        
+        // If still no toUserId, determine from current user context
+        if (!toUserId) {
+          const currentUser = getCurrentUser();
+          const currentUserId = currentUser ? currentUser.id : null;
+          
+          if (currentUserId) {
+            // If message is from someone else, reply to them
+            if (currentConversation.fromUserId && currentConversation.fromUserId !== currentUserId) {
+              toUserId = currentConversation.fromUserId;
+            } else if (currentConversation.toUserId && currentConversation.toUserId !== currentUserId) {
+              toUserId = currentConversation.toUserId;
+            }
+          }
+        }
+        
         console.log('Got toUserId from currentConversation:', toUserId);
-        if (toUserIdInput) {
-          toUserIdInput.value = toUserId;
+        if (toUserIdInput && toUserId) {
+          toUserIdInput.value = toUserId.toString();
         }
       }
       
