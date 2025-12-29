@@ -44,22 +44,39 @@ function redirectToLogin(returnUrl = null) {
  */
 async function sendMessage(messageData) {
   try {
-    // Get token if user is logged in (optional for anonymous messages)
+    // Validate required fields
+    if (!messageData.toUserId) {
+      throw new Error('Recipient user ID is required');
+    }
+    if (!messageData.message || !messageData.message.trim()) {
+      throw new Error('Message is required');
+    }
+    
+    // Get token - required for authenticated messages
     const token = getToken();
+    if (!token) {
+      redirectToLogin();
+      throw new Error('Authentication required to send messages');
+    }
     
     const headers = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
     };
-    
-    // Add auth header only if token exists
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+
+    // Prepare payload - only send what backend expects
+    const payload = {
+      postingId: messageData.postingId || null,
+      toUserId: parseInt(messageData.toUserId),
+      message: messageData.message.trim()
+    };
+
+    console.log('Sending message with payload:', payload);
 
     const response = await fetch(`${getApiBaseUrl()}/messages`, {
       method: 'POST',
       headers: headers,
-      body: JSON.stringify(messageData)
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
