@@ -24,7 +24,32 @@
         <div class="nav-links" id="navLinks">
           <a href="index.html" class="nav-link">Home</a>
           <a href="marketplace.html" class="nav-link">Marketplace</a>
-          <a href="login.html" class="nav-link">Login</a>
+          <a href="my-postings.html?create=true" class="nav-link" id="createPostingLink" style="display: none;">Create Posting</a>
+          <a href="login.html" class="nav-link" id="createPostingLoginLink">Create Posting</a>
+          <a href="my-postings.html" class="nav-link" id="userProfileLink" style="display: none;">Profile</a>
+          <div class="user-menu" id="userMenu" style="display: none;">
+            <button class="user-menu-button" id="userMenuButton">
+              <span id="userMenuName">User</span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="user-menu-dropdown" id="userMenuDropdown">
+              <a href="my-postings.html" class="user-menu-item" id="myPostingsLink">
+                <i data-lucide="file-text" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                My Postings
+              </a>
+              <a href="messages.html" class="user-menu-item" id="inboxLink">
+                <i data-lucide="mail" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Inbox
+                <span class="unread-badge" id="unreadBadge" style="display: none; margin-left: auto; background: var(--color-primary); color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.75rem; font-weight: 600; min-width: 18px; text-align: center;">0</span>
+              </a>
+              <button class="user-menu-item danger" id="logoutButton" style="width: 100%; text-align: left; border: none; cursor: pointer;">
+                <i data-lucide="log-out" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+          <a href="register.html" class="nav-link active">Register</a>
+          <a href="login.html" class="nav-link" id="loginLink">Login</a>
         </div>
       </div>
     </div>
@@ -289,6 +314,70 @@
     
     // Initialize mobile nav
     setupMobileNav();
+    
+    // Setup navigation based on auth status
+    function setupNavigation() {
+      const currentUser = getCurrentUser();
+      const userMenu = document.getElementById('userMenu');
+      const loginLink = document.getElementById('loginLink');
+      const myPostingsLink = document.getElementById('myPostingsLink');
+      const createPostingLink = document.getElementById('createPostingLink');
+      const createPostingLoginLink = document.getElementById('createPostingLoginLink');
+      const userProfileLink = document.getElementById('userProfileLink');
+      
+      if (currentUser && isAuthenticated()) {
+        // User is logged in
+        if (userMenu) {
+          userMenu.style.display = 'block';
+          userMenu.style.visibility = 'visible';
+        }
+        if (loginLink) loginLink.style.display = 'none';
+        if (myPostingsLink) myPostingsLink.style.display = 'flex';
+        if (createPostingLink) createPostingLink.style.display = 'block';
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
+        if (userProfileLink) userProfileLink.style.display = 'block';
+        
+        const userMenuName = document.getElementById('userMenuName');
+        if (userMenuName) userMenuName.textContent = currentUser.username;
+        
+        // User menu toggle
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userMenuDropdown = document.getElementById('userMenuDropdown');
+        if (userMenuButton && userMenuDropdown) {
+          userMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenuDropdown.classList.toggle('show');
+          });
+          
+          document.addEventListener('click', (e) => {
+            if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
+              userMenuDropdown.classList.remove('show');
+            }
+          });
+        }
+        
+        // Logout
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+          logoutButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+              logout();
+            }
+          });
+        }
+      } else {
+        // User is not logged in
+        if (userMenu) userMenu.style.display = 'none';
+        if (loginLink) loginLink.style.display = 'block';
+        if (myPostingsLink) myPostingsLink.style.display = 'none';
+        if (createPostingLink) createPostingLink.style.display = 'none';
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'block';
+        if (userProfileLink) userProfileLink.style.display = 'none';
+      }
+    }
+    
+    // Setup navigation on page load
+    setupNavigation();
   </script>
 </body>
 </html>
