@@ -28,23 +28,18 @@
         <div class="nav-links" id="navLinks">
           <a href="index.html" class="nav-link">Home</a>
           <a href="marketplace.html" class="nav-link active">Marketplace</a>
-          <a href="my-postings.html" class="btn btn-secondary" id="createPostingBtn" style="display: none;">
-            <i data-lucide="plus" class="btn-icon"></i>
-            Create Posting
-          </a>
-          <a href="login.html?return=marketplace.html" class="btn btn-secondary" id="createPostingLoginBtn">
-            <i data-lucide="plus" class="btn-icon"></i>
-            Create Posting
-          </a>
+          <a href="my-postings.html?create=true" class="nav-link" id="createPostingLink" style="display: none;">Create Posting</a>
+          <a href="login.html?return=marketplace.html" class="nav-link" id="createPostingLoginLink">Create Posting</a>
+          <a href="my-postings.html" class="nav-link" id="userProfileLink" style="display: none;">Profile</a>
           <div class="user-menu" id="userMenu" style="display: none;">
             <button class="user-menu-button" id="userMenuButton">
               <span id="userMenuName">User</span>
               <i data-lucide="chevron-down"></i>
             </button>
             <div class="user-menu-dropdown" id="userMenuDropdown">
-              <a href="my-postings.html" class="user-menu-item">
-                <i data-lucide="user" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-                Profile
+              <a href="my-postings.html" class="user-menu-item" id="myPostingsLink">
+                <i data-lucide="file-text" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                My Postings
               </a>
               <a href="messages.html" class="user-menu-item" id="inboxLink">
                 <i data-lucide="mail" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
@@ -344,14 +339,7 @@
     setupNavigation();
     setupMobileNav();
 
-    // Create posting button in nav - redirects based on auth status
-    const createPostingBtn = document.getElementById('createPostingBtn');
-    if (createPostingBtn) {
-      createPostingBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = 'my-postings.html';
-      });
-    }
+    // Create posting link is now a nav link, no need for click handler
     
     let allPostings = [];
     let filteredPostings = [];
