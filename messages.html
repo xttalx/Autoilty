@@ -413,7 +413,8 @@
           
           // Get first letter for avatar
           const firstLetter = (conv.postingTitle || 'D').charAt(0).toUpperCase();
-          const otherUsername = conv.otherUsername || 'User';
+          // Handle both otherUsername (from backend grouping) and fromUsername (direct from backend)
+          const otherUsername = conv.otherUsername || conv.fromUsername || 'User';
           const otherFirstLetter = otherUsername.charAt(0).toUpperCase();
           
           return `
@@ -494,18 +495,34 @@
       conversationTitle.textContent = currentConversation.postingTitle || 'Direct Message';
       
       // Ensure values are set correctly
-      const otherUserId = currentConversation.otherUserId;
+      // Handle both otherUserId (from backend grouping) and fromUserId (direct from backend)
+      let recipientUserId = currentConversation.otherUserId || currentConversation.fromUserId;
       const postingId = currentConversation.postingId;
       
-      if (!otherUserId) {
-        console.error('Missing otherUserId in currentConversation:', currentConversation);
+      // Get current user ID to determine the correct recipient
+      const currentUser = getCurrentUser();
+      const currentUserId = currentUser ? currentUser.id : null;
+      
+      // If we have fromUserId but not otherUserId, determine the other user
+      if (!recipientUserId && currentUserId) {
+        // If the message is from someone else, reply to them
+        if (currentConversation.fromUserId && currentConversation.fromUserId !== currentUserId) {
+          recipientUserId = currentConversation.fromUserId;
+        } else if (currentConversation.toUserId && currentConversation.toUserId !== currentUserId) {
+          recipientUserId = currentConversation.toUserId;
+        }
+      }
+      
+      if (!recipientUserId) {
+        console.error('Missing recipient user ID in currentConversation:', currentConversation);
+        console.error('Current user ID:', currentUserId);
         alert('Error: Cannot determine recipient. Please refresh the page.');
         return;
       }
       
       if (conversationToUserId) {
-        conversationToUserId.value = otherUserId.toString();
-        console.log('Set conversationToUserId to:', conversationToUserId.value, 'from otherUserId:', otherUserId);
+        conversationToUserId.value = recipientUserId.toString();
+        console.log('Set conversationToUserId to:', conversationToUserId.value, 'from recipientUserId:', recipientUserId);
       } else {
         console.error('conversationToUserId element not found!');
         alert('Error: Form elements not found. Please refresh the page.');
@@ -517,9 +534,9 @@
         console.log('Set conversationPostingId to:', conversationPostingId.value);
       }
       
-      // Double-check the value was set
+      // Double-check the value was set correctly
       if (!conversationToUserId.value) {
-        console.error('Failed to set toUserId. Element value:', conversationToUserId.value, 'otherUserId:', otherUserId);
+        console.error('Failed to set toUserId. Element value:', conversationToUserId.value, 'recipientUserId:', recipientUserId);
         alert('Error: Cannot set recipient. Please refresh the page.');
         return;
       }
