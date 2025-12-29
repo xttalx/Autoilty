@@ -25,24 +25,15 @@
         <div class="nav-links" id="navLinks">
           <a href="index.html" class="nav-link">Home</a>
           <a href="marketplace.html" class="nav-link">Marketplace</a>
-          <a href="my-postings.html" class="btn btn-secondary" id="createPostingBtn" style="display: none;">
-            <i data-lucide="plus" class="btn-icon"></i>
-            Create Posting
-          </a>
-          <a href="login.html?return=posting-detail.html" class="btn btn-secondary" id="createPostingLoginBtn">
-            <i data-lucide="plus" class="btn-icon"></i>
-            Create Posting
-          </a>
+          <a href="my-postings.html?create=true" class="nav-link" id="createPostingLink" style="display: none;">Create Posting</a>
+          <a href="login.html?return=posting-detail.html" class="nav-link" id="createPostingLoginLink">Create Posting</a>
+          <a href="my-postings.html" class="nav-link" id="userProfileLink" style="display: none;">Profile</a>
           <div class="user-menu" id="userMenu" style="display: none;">
             <button class="user-menu-button" id="userMenuButton">
               <span id="userMenuName">User</span>
               <i data-lucide="chevron-down"></i>
             </button>
             <div class="user-menu-dropdown" id="userMenuDropdown">
-              <a href="my-postings.html" class="user-menu-item">
-                <i data-lucide="user" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-                Profile
-              </a>
               <a href="my-postings.html" class="user-menu-item" id="myPostingsLink">
                 <i data-lucide="file-text" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
                 My Postings
@@ -324,10 +315,11 @@
         userMenu.style.display = 'none';
         loginLink.style.display = 'block';
         if (myPostingsLink) {
-        myPostingsLink.style.display = 'none';
-      }
-        createPostingBtn.style.display = 'none';
-        createPostingLoginBtn.style.display = 'inline-flex';
+          myPostingsLink.style.display = 'none';
+        }
+        createPostingLink.style.display = 'none';
+        createPostingLoginLink.style.display = 'block';
+        userProfileLink.style.display = 'none';
       }
     }
 

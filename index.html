@@ -31,7 +31,9 @@
         <div class="nav-links" id="navLinks">
           <a href="index.html" class="nav-link active">Home</a>
           <a href="marketplace.html" class="nav-link">Marketplace</a>
-          <a href="create-listing.html" class="nav-link">Create Listing</a>
+          <a href="my-postings.html?create=true" class="nav-link" id="createPostingLink" style="display: none;">Create Posting</a>
+          <a href="login.html" class="nav-link" id="createPostingLoginLink">Create Posting</a>
+          <a href="my-postings.html" class="nav-link" id="userProfileLink" style="display: none;">Profile</a>
           <button class="cart-toggle" aria-label="Shopping cart" id="cartToggle">
             <i data-lucide="shopping-cart"></i>
             <span class="cart-badge" id="cartBadge">0</span>
@@ -42,10 +44,6 @@
               <i data-lucide="chevron-down"></i>
             </button>
             <div class="user-menu-dropdown" id="userMenuDropdown">
-              <a href="my-postings.html" class="user-menu-item">
-                <i data-lucide="user" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-                Profile
-              </a>
               <a href="my-postings.html" class="user-menu-item" id="myPostingsLink">
                 <i data-lucide="file-text" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
                 My Postings

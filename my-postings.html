@@ -18,20 +18,17 @@
     <div class="container">
       <div class="nav-inner">
         <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
-        <div class="nav-links">
+        <div class="nav-links" id="navLinks">
           <a href="index.html" class="nav-link">Home</a>
           <a href="marketplace.html" class="nav-link">Marketplace</a>
-          <a href="my-postings.html" class="nav-link active">My Postings</a>
-          <div class="user-menu">
+          <a href="my-postings.html?create=true" class="nav-link" id="createPostingLink">Create Posting</a>
+          <a href="my-postings.html" class="nav-link active" id="userProfileLink">Profile</a>
+          <div class="user-menu" id="userMenu">
             <button class="user-menu-button" id="userMenuButton">
               <span id="userMenuName">User</span>
               <i data-lucide="chevron-down"></i>
             </button>
             <div class="user-menu-dropdown" id="userMenuDropdown">
-              <a href="my-postings.html" class="user-menu-item">
-                <i data-lucide="user" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-                Profile
-              </a>
               <a href="my-postings.html" class="user-menu-item" id="myPostingsLink">
                 <i data-lucide="file-text" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
                 My Postings

@@ -261,12 +261,13 @@
           });
         }
       } else {
-        // User is not logged in - show login link and create posting button that redirects to login
+        // User is not logged in - show login link and create posting link that redirects to login
         if (userMenu) userMenu.style.display = 'none';
         if (loginLink) loginLink.style.display = 'block';
         if (myPostingsLink) myPostingsLink.style.display = 'none';
-        if (createPostingBtn) createPostingBtn.style.display = 'none';
-        if (createPostingLoginBtn) createPostingLoginBtn.style.display = 'inline-flex';
+        if (createPostingLink) createPostingLink.style.display = 'none';
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'block';
+        if (userProfileLink) userProfileLink.style.display = 'none';
       }
     }
     
