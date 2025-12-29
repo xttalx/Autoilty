@@ -213,19 +213,21 @@
       const userMenu = document.getElementById('userMenu');
       const loginLink = document.getElementById('loginLink');
       const myPostingsLink = document.getElementById('myPostingsLink');
-      const createPostingBtn = document.getElementById('createPostingBtn');
-      const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
+      const createPostingLink = document.getElementById('createPostingLink');
+      const createPostingLoginLink = document.getElementById('createPostingLoginLink');
+      const userProfileLink = document.getElementById('userProfileLink');
       
       if (currentUser && isAuthenticated()) {
-        // User is logged in - show user menu and create posting button
+        // User is logged in - show user menu and create posting link
         if (userMenu) {
           userMenu.style.display = 'block';
           userMenu.style.visibility = 'visible';
         }
         if (loginLink) loginLink.style.display = 'none';
-        if (myPostingsLink) myPostingsLink.style.display = 'block';
-        if (createPostingBtn) createPostingBtn.style.display = 'inline-flex';
-        if (createPostingLoginBtn) createPostingLoginBtn.style.display = 'none';
+        if (myPostingsLink) myPostingsLink.style.display = 'flex';
+        if (createPostingLink) createPostingLink.style.display = 'block';
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
+        if (userProfileLink) userProfileLink.style.display = 'block';
         
         const userMenuName = document.getElementById('userMenuName');
         if (userMenuName) userMenuName.textContent = currentUser.username;
