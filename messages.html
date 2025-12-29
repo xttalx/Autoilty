@@ -593,12 +593,22 @@
       
       if (!toUserIdInput || !textarea) {
         console.error('Required form elements not found');
+        alert('Error: Form elements not found. Please refresh the page.');
         return;
       }
       
-      const toUserId = toUserIdInput.value;
+      let toUserId = toUserIdInput.value;
       const postingId = postingIdInput ? postingIdInput.value : null;
       const message = textarea.value.trim();
+      
+      // If toUserId is empty, try to get it from currentConversation
+      if (!toUserId && currentConversation) {
+        toUserId = currentConversation.otherUserId;
+        console.log('Got toUserId from currentConversation:', toUserId);
+        if (toUserIdInput) {
+          toUserIdInput.value = toUserId;
+        }
+      }
       
       if (!message) {
         alert('Please enter a message');
@@ -607,8 +617,14 @@
       }
       
       if (!toUserId) {
-        console.error('toUserId is missing:', { toUserId, postingId, message });
-        alert('Error: Cannot determine recipient. Please refresh the page.');
+        console.error('toUserId is missing:', { 
+          toUserId, 
+          postingId, 
+          message,
+          currentConversation,
+          toUserIdInputValue: toUserIdInput ? toUserIdInput.value : 'input not found'
+        });
+        alert('Error: Cannot determine recipient. Please refresh the page and try again.');
         return;
       }
       
