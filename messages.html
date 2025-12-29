@@ -614,8 +614,9 @@
           throw new Error('sendMessage function not available');
         }
         
-        // Clear textarea
+        // Clear textarea and reset height
         textarea.value = '';
+        textarea.style.height = 'auto';
         
         // Reload messages to show new reply
         await loadMessages();
@@ -628,6 +629,14 @@
         if (currentIndex >= 0) {
           await openConversation(currentIndex);
         }
+        
+        // Scroll to bottom after new message
+        setTimeout(() => {
+          const conversationMessages = document.getElementById('conversationMessages');
+          if (conversationMessages) {
+            conversationMessages.scrollTop = conversationMessages.scrollHeight;
+          }
+        }, 200);
         
       } catch (error) {
         console.error('Error sending reply:', error);
