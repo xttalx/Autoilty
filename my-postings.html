@@ -426,7 +426,23 @@
 
     document.getElementById('modalClose').addEventListener('click', closePostingModal);
     document.getElementById('cancelBtn').addEventListener('click', closePostingModal);
-    document.getElementById('createPostingBtn').addEventListener('click', openPostingModal);
+    
+    // Handle create posting button on page
+    const createPostingBtn = document.getElementById('createPostingBtn');
+    if (createPostingBtn) {
+      createPostingBtn.addEventListener('click', openPostingModal);
+    }
+    
+    // Check if we should open the modal from URL parameter (when coming from nav link)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('create') === 'true') {
+      // Remove the parameter from URL for cleaner navigation
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Open modal after a short delay to ensure page is loaded
+      setTimeout(() => {
+        openPostingModal();
+      }, 100);
+    }
 
     // Close modal on overlay click
     document.getElementById('postingModal').addEventListener('click', (e) => {
