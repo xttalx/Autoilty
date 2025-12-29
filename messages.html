@@ -556,8 +556,10 @@
         `;
       }).join('');
       
-      // Scroll to bottom
-      conversationMessages.scrollTop = conversationMessages.scrollHeight;
+      // Scroll to bottom with smooth animation
+      setTimeout(() => {
+        conversationMessages.scrollTop = conversationMessages.scrollHeight;
+      }, 100);
       
       // Show panel
       conversationPanel.style.display = 'flex';
