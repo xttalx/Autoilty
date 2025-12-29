@@ -492,8 +492,37 @@
       const backBtn = document.getElementById('backToConversationsBtn');
       
       conversationTitle.textContent = currentConversation.postingTitle || 'Direct Message';
-      conversationToUserId.value = currentConversation.otherUserId;
-      conversationPostingId.value = currentConversation.postingId || '';
+      
+      // Ensure values are set correctly
+      const otherUserId = currentConversation.otherUserId;
+      const postingId = currentConversation.postingId;
+      
+      if (!otherUserId) {
+        console.error('Missing otherUserId in currentConversation:', currentConversation);
+        alert('Error: Cannot determine recipient. Please refresh the page.');
+        return;
+      }
+      
+      if (conversationToUserId) {
+        conversationToUserId.value = otherUserId.toString();
+        console.log('Set conversationToUserId to:', conversationToUserId.value, 'from otherUserId:', otherUserId);
+      } else {
+        console.error('conversationToUserId element not found!');
+        alert('Error: Form elements not found. Please refresh the page.');
+        return;
+      }
+      
+      if (conversationPostingId) {
+        conversationPostingId.value = postingId ? postingId.toString() : '';
+        console.log('Set conversationPostingId to:', conversationPostingId.value);
+      }
+      
+      // Double-check the value was set
+      if (!conversationToUserId.value) {
+        console.error('Failed to set toUserId. Element value:', conversationToUserId.value, 'otherUserId:', otherUserId);
+        alert('Error: Cannot set recipient. Please refresh the page.');
+        return;
+      }
       
       // Render messages
       const messages = currentConversation.messages || [];
