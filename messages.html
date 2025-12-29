@@ -86,7 +86,7 @@
         </div>
 
         <!-- Conversations List -->
-        <div id="messagesList" style="display: none; flex: 1; overflow-y: auto; background: white;">
+        <div id="messagesList" style="display: none; flex: 1; overflow-y: auto; background: white; flex-direction: column;">
           <!-- Conversations will be loaded here -->
         </div>
       </div>
@@ -420,7 +420,7 @@
             <div class="conversation-item" 
                  onclick="openConversation(${index})"
                  data-conversation-index="${index}"
-                 style="padding: 12px 16px; border-bottom: 1px solid #e4e6eb; cursor: pointer; transition: background 0.15s ease; display: flex; align-items: center; gap: 12px; background: white; position: relative;">
+                 style="padding: 12px 16px; border-bottom: 1px solid #e4e6eb; cursor: pointer; transition: background 0.15s ease; display: flex; align-items: center; gap: 12px; background: white; position: relative; width: 100%; box-sizing: border-box;">
               <!-- Avatar -->
               <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #0084ff 0%, #0066cc 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1.125rem; flex-shrink: 0; position: relative;">
                 ${otherFirstLetter}
