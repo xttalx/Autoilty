@@ -304,15 +304,12 @@
     const myPostingsLink = document.getElementById('myPostingsLink');
     const createPostingLink = document.getElementById('createPostingLink');
     const createPostingLoginLink = document.getElementById('createPostingLoginLink');
-    const userProfileLink = document.getElementById('userProfileLink');
-    
     if (currentUser && isAuthenticated()) {
       if (userMenu) userMenu.style.display = 'block';
       if (loginLink) loginLink.style.display = 'none';
       if (myPostingsLink) myPostingsLink.style.display = 'flex';
       if (createPostingLink) createPostingLink.style.display = 'block';
       if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
-      if (userProfileLink) userProfileLink.style.display = 'block';
       
       document.getElementById('userMenuName').textContent = currentUser.username;
       
