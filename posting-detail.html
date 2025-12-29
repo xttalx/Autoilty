@@ -43,6 +43,10 @@
                 <i data-lucide="user" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
                 Profile
               </a>
+              <a href="my-postings.html" class="user-menu-item" id="myPostingsLink">
+                <i data-lucide="file-text" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                My Postings
+              </a>
               <a href="messages.html" class="user-menu-item" id="inboxLink">
                 <i data-lucide="mail" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
                 Inbox
@@ -276,7 +280,7 @@
         userMenu.style.display = 'block';
         userMenu.style.visibility = 'visible';
         loginLink.style.display = 'none';
-        myPostingsLink.style.display = 'block';
+        if (myPostingsLink) myPostingsLink.style.display = 'flex';
         createPostingBtn.style.display = 'inline-flex';
         createPostingLoginBtn.style.display = 'none';
         
