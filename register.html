@@ -26,13 +26,20 @@
           <a href="marketplace.html" class="nav-link">Marketplace</a>
           <a href="my-postings.html?create=true" class="nav-link" id="createPostingLink" style="display: none;">Create Posting</a>
           <a href="login.html" class="nav-link" id="createPostingLoginLink">Create Posting</a>
-          <a href="my-postings.html" class="nav-link" id="userProfileLink" style="display: none;">Profile</a>
+          <button class="cart-toggle" aria-label="Shopping cart" id="cartToggle">
+            <i data-lucide="shopping-cart"></i>
+            <span class="cart-badge" id="cartBadge">0</span>
+          </button>
           <div class="user-menu" id="userMenu" style="display: none;">
             <button class="user-menu-button" id="userMenuButton">
               <span id="userMenuName">User</span>
               <i data-lucide="chevron-down"></i>
             </button>
             <div class="user-menu-dropdown" id="userMenuDropdown">
+              <a href="my-postings.html" class="user-menu-item">
+                <i data-lucide="user" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Profile
+              </a>
               <a href="my-postings.html" class="user-menu-item" id="myPostingsLink">
                 <i data-lucide="file-text" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
                 My Postings
@@ -323,8 +330,6 @@
       const myPostingsLink = document.getElementById('myPostingsLink');
       const createPostingLink = document.getElementById('createPostingLink');
       const createPostingLoginLink = document.getElementById('createPostingLoginLink');
-      const userProfileLink = document.getElementById('userProfileLink');
-      
       if (currentUser && isAuthenticated()) {
         // User is logged in
         if (userMenu) {
@@ -335,7 +340,6 @@
         if (myPostingsLink) myPostingsLink.style.display = 'flex';
         if (createPostingLink) createPostingLink.style.display = 'block';
         if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
-        if (userProfileLink) userProfileLink.style.display = 'block';
         
         const userMenuName = document.getElementById('userMenuName');
         if (userMenuName) userMenuName.textContent = currentUser.username;
@@ -372,7 +376,6 @@
         if (myPostingsLink) myPostingsLink.style.display = 'none';
         if (createPostingLink) createPostingLink.style.display = 'none';
         if (createPostingLoginLink) createPostingLoginLink.style.display = 'block';
-        if (userProfileLink) userProfileLink.style.display = 'none';
       }
     }
     
