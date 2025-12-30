@@ -263,23 +263,23 @@
     function setupNavigation() {
       const currentUser = getCurrentUser();
       const userMenu = document.getElementById('userMenu');
-      const loginLink = document.getElementById('loginLink');
       const myPostingsLink = document.getElementById('myPostingsLink');
-      const createPostingBtn = document.getElementById('createPostingBtn');
-      const createPostingLoginBtn = document.getElementById('createPostingLoginBtn');
+      const createPostingLink = document.getElementById('createPostingLink');
+      const createPostingLoginLink = document.getElementById('createPostingLoginLink');
       
-      if (!userMenu || !loginLink || !myPostingsLink || !createPostingBtn || !createPostingLoginBtn) {
+      if (!userMenu || !myPostingsLink || !createPostingLink || !createPostingLoginLink) {
         console.warn('Navigation elements not found');
         return;
       }
       
       if (currentUser && isAuthenticated()) {
-        userMenu.style.display = 'block';
-        userMenu.style.visibility = 'visible';
-        loginLink.style.display = 'none';
+        if (userMenu) {
+          userMenu.style.display = 'block';
+          userMenu.style.visibility = 'visible';
+        }
         if (myPostingsLink) myPostingsLink.style.display = 'flex';
-        createPostingBtn.style.display = 'inline-flex';
-        createPostingLoginBtn.style.display = 'none';
+        if (createPostingLink) createPostingLink.style.display = 'block';
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
         
         const userMenuName = document.getElementById('userMenuName');
         if (userMenuName) {
