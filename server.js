@@ -338,9 +338,35 @@ async function initializeDatabase() {
         username TEXT UNIQUE NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
+        bio TEXT,
+        profile_picture_url TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Add bio and profile_picture_url columns if they don't exist (migration)
+    try {
+      await pool.query(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'users' AND column_name = 'bio'
+          ) THEN
+            ALTER TABLE users ADD COLUMN bio TEXT;
+          END IF;
+          
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'users' AND column_name = 'profile_picture_url'
+          ) THEN
+            ALTER TABLE users ADD COLUMN profile_picture_url TEXT;
+          END IF;
+        END $$;
+      `);
+    } catch (migrationError) {
+      console.warn('Profile columns migration:', migrationError.message);
+    }
 
     // Postings table
     await pool.query(`
