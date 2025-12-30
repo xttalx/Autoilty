@@ -56,7 +56,6 @@
               </button>
             </div>
           </div>
-          <a href="login.html?return=posting-detail.html" class="nav-link" id="loginLink">Login</a>
         </div>
       </div>
     </div>
@@ -319,13 +318,12 @@
           });
         }
       } else {
-        userMenu.style.display = 'none';
-        loginLink.style.display = 'block';
+        if (userMenu) userMenu.style.display = 'none';
         if (myPostingsLink) {
           myPostingsLink.style.display = 'none';
         }
-        createPostingLink.style.display = 'none';
-        createPostingLoginLink.style.display = 'block';
+        if (createPostingLink) createPostingLink.style.display = 'none';
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'block';
       }
     }
 
