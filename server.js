@@ -649,6 +649,111 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 });
 
 // ============================================
+// USER PROFILE ROUTES
+// ============================================
+
+// Get user profile (protected)
+app.get('/api/users/profile', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet(
+      'SELECT id, username, email, bio, profile_picture_url, created_at FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      bio: user.bio || null,
+      profile_picture_url: user.profile_picture_url || null,
+      created_at: user.created_at
+    });
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update user profile (protected)
+app.put('/api/users/profile', authenticateToken, async (req, res) => {
+  try {
+    const { bio } = req.body;
+    
+    // Validate bio length
+    if (bio && bio.length > 500) {
+      return res.status(400).json({ error: 'Bio must be 500 characters or less' });
+    }
+
+    // Update user profile
+    await pool.query(
+      'UPDATE users SET bio = $1 WHERE id = $2',
+      [bio || null, req.user.id]
+    );
+
+    // Fetch updated profile
+    const user = await dbGet(
+      'SELECT id, username, email, bio, profile_picture_url, created_at FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      bio: user.bio || null,
+      profile_picture_url: user.profile_picture_url || null,
+      created_at: user.created_at
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Upload profile picture (protected)
+app.post('/api/users/profile/picture', authenticateToken, upload.single('profilePicture'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Get current user to check for existing profile picture
+    const currentUser = await dbGet('SELECT profile_picture_url FROM users WHERE id = $1', [req.user.id]);
+    
+    // Delete old profile picture if exists
+    if (currentUser && currentUser.profile_picture_url) {
+      await deleteFromSupabaseStorage(currentUser.profile_picture_url);
+    }
+
+    // Upload new profile picture to Supabase Storage
+    try {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const fileName = `profile-${req.user.id}-${uniqueSuffix}${path.extname(req.file.originalname)}`;
+      const profilePictureUrl = await uploadToSupabaseStorage(req.file.buffer, fileName, req.file.mimetype);
+
+      // Update user profile picture URL
+      await pool.query(
+        'UPDATE users SET profile_picture_url = $1 WHERE id = $2',
+        [profilePictureUrl, req.user.id]
+      );
+
+      res.json({
+        message: 'Profile picture uploaded successfully',
+        profile_picture_url: profilePictureUrl
+      });
+    } catch (uploadError) {
+      console.error('Profile picture upload error:', uploadError);
+      return res.status(500).json({ error: 'Failed to upload profile picture. Please try again.' });
+    }
+  } catch (error) {
+    console.error('Upload profile picture error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ============================================
 // POSTINGS ROUTES
 // ============================================
 
