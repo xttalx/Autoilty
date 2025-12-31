@@ -543,6 +543,44 @@
         return;
       }
       
+      // Fetch conversation from backend (this marks messages as read)
+      try {
+        const conversationData = await getConversation(recipientUserId);
+        // Update currentConversation with fresh data from backend
+        if (conversationData && conversationData.messages) {
+          currentConversation.messages = conversationData.messages;
+        }
+      } catch (error) {
+        console.error('Error fetching conversation from backend:', error);
+        // Continue with cached messages if fetch fails
+      }
+      
+      // Reload conversations list to update unread counts
+      // Use a small delay to ensure backend has processed the read status
+      setTimeout(async () => {
+        await loadMessages();
+        // Update unread badge in navigation
+        if (typeof updateUnreadBadge === 'function') {
+          updateUnreadBadge();
+        }
+        // Restore active state on the conversation we just opened
+        const conversationIndex = allConversations.findIndex(c => {
+          const otherId = c.otherUserId || c.fromUserId;
+          return otherId === recipientUserId && c.postingId === postingId;
+        });
+        if (conversationIndex >= 0) {
+          document.querySelectorAll('.conversation-item').forEach((item, i) => {
+            if (i === conversationIndex) {
+              item.classList.add('active');
+            } else {
+              item.classList.remove('active');
+            }
+          });
+          // Update currentConversation reference
+          currentConversation = allConversations[conversationIndex];
+        }
+      }, 300);
+      
       // Render messages
       const messages = currentConversation.messages || [];
       conversationMessages.innerHTML = messages.map((msg, index) => {
