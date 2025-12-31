@@ -253,6 +253,9 @@ if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
     console.log('   URL:', SUPABASE_URL);
     console.log('   Bucket:', SUPABASE_STORAGE_BUCKET);
     console.log('   Service Key:', SUPABASE_SERVICE_KEY ? 'Set (' + SUPABASE_SERVICE_KEY.substring(0, 20) + '...)' : 'Missing');
+    
+    // Ensure bucket exists
+    ensureBucketExists();
   } catch (error) {
     console.error('❌ Error initializing Supabase Storage:', error);
     console.error('   Error details:', error.message);
@@ -262,6 +265,58 @@ if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
   console.warn('   SUPABASE_URL:', SUPABASE_URL ? 'Set' : 'Missing');
   console.warn('   SUPABASE_SERVICE_KEY:', SUPABASE_SERVICE_KEY ? 'Set' : 'Missing');
   console.warn('   Set these environment variables in Railway to enable image uploads.');
+}
+
+/**
+ * Ensure the storage bucket exists, create it if it doesn't
+ */
+async function ensureBucketExists() {
+  if (!supabaseStorage) {
+    return;
+  }
+
+  try {
+    // Check if bucket exists
+    const { data: buckets, error: listError } = await supabaseStorage.storage.listBuckets();
+    
+    if (listError) {
+      console.error('❌ Error listing buckets:', listError);
+      return;
+    }
+
+    const bucketExists = buckets?.some(bucket => bucket.name === SUPABASE_STORAGE_BUCKET);
+    
+    if (bucketExists) {
+      console.log(`✅ Bucket "${SUPABASE_STORAGE_BUCKET}" exists`);
+    } else {
+      console.log(`⚠️  Bucket "${SUPABASE_STORAGE_BUCKET}" not found. Creating...`);
+      
+      // Create bucket with public access
+      const { data, error: createError } = await supabaseStorage.storage.createBucket(SUPABASE_STORAGE_BUCKET, {
+        public: true,
+        fileSizeLimit: 5242880, // 5MB
+        allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+      });
+
+      if (createError) {
+        console.error(`❌ Failed to create bucket "${SUPABASE_STORAGE_BUCKET}":`, createError);
+        console.error('   Please create the bucket manually in Supabase Dashboard:');
+        console.error('   1. Go to Storage → Buckets');
+        console.error(`   2. Create a new bucket named "${SUPABASE_STORAGE_BUCKET}"`);
+        console.error('   3. Set it to Public');
+        console.error('   4. Set file size limit to 5MB');
+      } else {
+        console.log(`✅ Bucket "${SUPABASE_STORAGE_BUCKET}" created successfully`);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error checking/creating bucket:', error);
+    console.error('   Please create the bucket manually in Supabase Dashboard:');
+    console.error('   1. Go to Storage → Buckets');
+    console.error(`   2. Create a new bucket named "${SUPABASE_STORAGE_BUCKET}"`);
+    console.error('   3. Set it to Public');
+    console.error('   4. Set file size limit to 5MB');
+  }
 }
 
 /**
