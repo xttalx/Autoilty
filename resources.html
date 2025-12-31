@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Auto guides, tips, and resources for car buyers, sellers, and enthusiasts on Autoilty">
+  <title>Resources - Autoilty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="public/config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" style="display: none;">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="nav-links" id="navLinks">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="marketplace.html" class="nav-link">Marketplace</a>
+          <a href="resources.html" class="nav-link active">Resources</a>
+          <a href="#" class="nav-link" id="createPostingLink" style="display: none;">Create Posting</a>
+          <a href="login.html?return=resources.html" class="nav-link" id="createPostingLoginLink">Create Posting</a>
+          <button class="cart-toggle" aria-label="Shopping cart" id="cartToggle">
+            <i data-lucide="shopping-cart"></i>
+            <span class="cart-badge" id="cartBadge">0</span>
+          </button>
+          <div class="user-menu" id="userMenu" style="display: none;">
+            <button class="user-menu-button" id="userMenuButton">
+              <span id="userMenuName">User</span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="user-menu-dropdown" id="userMenuDropdown">
+              <a href="profile.html" class="user-menu-item">
+                <i data-lucide="user" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Profile
+              </a>
+              <a href="my-postings.html" class="user-menu-item" id="myPostingsLink">
+                <i data-lucide="file-text" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                My Postings
+              </a>
+              <a href="messages.html" class="user-menu-item" id="inboxLink">
+                <i data-lucide="mail" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Inbox
+                <span class="unread-badge" id="unreadBadge" style="display: none; margin-left: auto; background: var(--color-primary); color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.75rem; font-weight: 600; min-width: 18px; text-align: center;">0</span>
+              </a>
+              <button class="user-menu-item danger" id="logoutButton" style="width: 100%; text-align: left; border: none; cursor: pointer;">
+                <i data-lucide="log-out" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+          <a href="login.html?return=resources.html" class="nav-link" id="loginLink">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Resources/Blog Section -->
+  <main class="main-content">
+    <div class="container" style="padding: var(--spacing-xl) var(--spacing-md);">
+      
+      <!-- Header -->
+      <div style="text-align: center; margin-bottom: var(--spacing-2xl);">
+        <h1 style="font-size: 3rem; font-weight: 600; margin-bottom: var(--spacing-md); color: var(--color-text);">Auto Resources & Guides</h1>
+        <p style="font-size: 1.25rem; color: var(--color-text-light); max-width: 700px; margin: 0 auto;">
+          Expert tips, guides, and resources to help you buy, sell, and maintain your vehicles
+        </p>
+      </div>
+
+      <!-- Search and Filter Bar -->
+      <div style="background: white; border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--spacing-md); margin-bottom: var(--spacing-xl); box-shadow: var(--shadow-sm);">
+        <div style="display: flex; gap: var(--spacing-md); flex-wrap: wrap; align-items: center;">
+          <!-- Search Input -->
+          <div style="flex: 1; min-width: 250px;">
+            <div style="position: relative;">
+              <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--color-text-light); pointer-events: none;"></i>
+              <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Search articles..." 
+                style="width: 100%; padding: 0.75rem 0.75rem 0.75rem 40px; border: 1px solid var(--color-border); border-radius: var(--radius); font-size: 1rem;"
+              >
+            </div>
+          </div>
+          
+          <!-- Category Filter -->
+          <div style="display: flex; gap: var(--spacing-xs); flex-wrap: wrap;">
+            <button class="category-filter active" data-category="all" style="padding: 0.75rem 1.5rem; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-primary); color: white; cursor: pointer; font-weight: 500; transition: var(--transition);">
+              All
+            </button>
+            <button class="category-filter" data-category="Cars" style="padding: 0.75rem 1.5rem; border: 1px solid var(--color-border); border-radius: var(--radius); background: white; color: var(--color-text); cursor: pointer; font-weight: 500; transition: var(--transition);">
+              Cars
+            </button>
+            <button class="category-filter" data-category="Parts" style="padding: 0.75rem 1.5rem; border: 1px solid var(--color-border); border-radius: var(--radius); background: white; color: var(--color-text); cursor: pointer; font-weight: 500; transition: var(--transition);">
+              Parts
+            </button>
+            <button class="category-filter" data-category="Maintenance" style="padding: 0.75rem 1.5rem; border: 1px solid var(--color-border); border-radius: var(--radius); background: white; color: var(--color-text); cursor: pointer; font-weight: 500; transition: var(--transition);">
+              Maintenance
+            </button>
+            <button class="category-filter" data-category="Buying" style="padding: 0.75rem 1.5rem; border: 1px solid var(--color-border); border-radius: var(--radius); background: white; color: var(--color-text); cursor: pointer; font-weight: 500; transition: var(--transition);">
+              Buying Tips
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Articles Grid -->
+      <div id="articlesGrid" class="articles-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: var(--spacing-lg);">
+        <!-- Articles will be loaded here -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" style="display: none; text-align: center; padding: var(--spacing-2xl);">
+        <i data-lucide="file-text" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
+        <h3 style="margin-bottom: var(--spacing-xs);">No articles found</h3>
+        <p style="color: var(--color-text-light);">Try adjusting your search or filter criteria.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Autoilty</h3>
+          <p>Your trusted automotive marketplace for buying, selling, and discovering quality vehicles and parts.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="marketplace.html">Marketplace</a></li>
+            <li><a href="resources.html">Resources</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Account</h4>
+          <ul>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="register.html">Register</a></li>
+            <li><a href="my-postings.html">My Postings</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Autoilty. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="auth.js"></script>
+  <script src="messages-api.js"></script>
+  <script src="posting-form-modal.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Articles data
+    const articles = [
+      {
+        id: 1,
+        title: "10 Essential Car Buying Tips for First-Time Buyers",
+        category: "Buying",
+        excerpt: "Learn the fundamentals of purchasing your first vehicle, from setting a budget to inspecting the car and negotiating the best price.",
+        content: `
+          <h2>1. Set a Realistic Budget</h2>
+          <p>Before you start shopping, determine how much you can afford. Consider not just the purchase price, but also insurance, registration, taxes, and ongoing maintenance costs. A good rule of thumb is to spend no more than 20% of your monthly income on car-related expenses.</p>
+          
+          <h2>2. Research Extensively</h2>
+          <p>Use online resources to research makes, models, and years that fit your needs and budget. Check reliability ratings, fuel economy, safety scores, and common issues. Websites like Autoilty Marketplace provide detailed listings to help you compare options.</p>
+          
+          <h2>3. Check Vehicle History</h2>
+          <p>Always request a vehicle history report (like Carfax or AutoCheck) to check for accidents, title issues, odometer rollbacks, and service records. This can reveal hidden problems and save you from costly surprises.</p>
+          
+          <h2>4. Inspect the Car Thoroughly</h2>
+          <p>Even if you're not a mechanic, perform a basic inspection. Check for rust, paint inconsistencies, tire condition, and fluid levels. Look under the car for leaks and inspect the interior for wear and tear.</p>
+          
+          <h2>5. Get a Professional Inspection</h2>
+          <p>Before finalizing any purchase, have a trusted mechanic inspect the vehicle. They can identify potential issues that aren't visible to the untrained eye and give you peace of mind or leverage in negotiations.</p>
+          
+          <h2>6. Test Drive Multiple Options</h2>
+          <p>Don't settle for the first car you see. Test drive several vehicles to compare handling, comfort, visibility, and features. Pay attention to how the car feels on different road types and at various speeds.</p>
+          
+          <h2>7. Negotiate with Confidence</h2>
+          <p>Do your research on fair market value for the specific make, model, year, and condition. Come prepared with comparable listings and be willing to walk away if the price isn't right.</p>
+          
+          <h2>8. Understand Financing Options</h2>
+          <p>If you need financing, shop around for the best rates before visiting dealers. Compare offers from banks, credit unions, and online lenders. Pre-approval gives you negotiating power.</p>
+          
+          <h2>9. Review All Documentation</h2>
+          <p>Carefully review the title, registration, service records, and any warranty information. Ensure all paperwork is in order and that the seller has legal authority to sell the vehicle.</p>
+          
+          <h2>10. Trust Your Instincts</h2>
+          <p>If something feels off about the seller, the car, or the deal, trust your gut. There are always other cars available, and it's better to wait for the right opportunity than rush into a bad purchase.</p>
+        `,
+        image: "https://images.unsplash.com/photo-1603386329225-868b9d0a9f7d?w=800&h=400&fit=crop",
+        readTime: "8 min read",
+        date: "2025-01-15"
+      },
+      {
+        id: 2,
+        title: "Complete Guide to Car Maintenance: Keep Your Vehicle Running Smoothly",
+        category: "Maintenance",
+        excerpt: "Regular maintenance is key to extending your vehicle's life and preventing expensive repairs. Learn essential maintenance tasks and schedules.",
+        content: `
+          <h2>Regular Oil Changes</h2>
+          <p>Oil changes are the most important maintenance task. Most modern cars need an oil change every 5,000 to 7,500 miles, but check your owner's manual for specific recommendations. Fresh oil keeps your engine lubricated and prevents costly damage.</p>
+          
+          <h2>Tire Care</h2>
+          <p>Check tire pressure monthly and rotate tires every 6,000 to 8,000 miles. Proper tire maintenance improves fuel economy, handling, and safety. Replace tires when tread depth reaches 2/32 of an inch.</p>
+          
+          <h2>Brake System</h2>
+          <p>Have your brakes inspected at least annually. Listen for squealing or grinding sounds, which indicate worn brake pads. Brake fluid should be flushed every two years or 24,000 miles.</p>
+          
+          <h2>Fluid Levels</h2>
+          <p>Regularly check and top off engine coolant, transmission fluid, power steering fluid, and brake fluid. Each fluid has a specific interval for complete replacement - consult your manual.</p>
+          
+          <h2>Air Filter Replacement</h2>
+          <p>Replace the engine air filter every 12,000 to 15,000 miles (or more frequently in dusty conditions). A clean air filter improves engine performance and fuel economy.</p>
+          
+          <h2>Battery Maintenance</h2>
+          <p>Check battery terminals for corrosion and ensure connections are tight. Most car batteries last 3-5 years. If your battery is older, have it tested before winter.</p>
+          
+          <h2>Spark Plugs and Ignition</h2>
+          <p>Modern spark plugs can last 100,000 miles, but older vehicles may need replacement every 30,000 miles. Follow your manufacturer's recommendations.</p>
+          
+          <h2>Timing Belt</h2>
+          <p>The timing belt is critical - if it breaks, it can cause severe engine damage. Replace it according to your manufacturer's schedule (typically 60,000-100,000 miles).</p>
+        `,
+        image: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=400&fit=crop",
+        readTime: "10 min read",
+        date: "2025-01-12"
+      },
+      {
+        id: 3,
+        title: "How to Choose the Right Car Parts: OEM vs Aftermarket",
+        category: "Parts",
+        excerpt: "Understanding the difference between OEM and aftermarket parts can save you money while maintaining your vehicle's performance and reliability.",
+        content: `
+          <h2>What are OEM Parts?</h2>
+          <p>Original Equipment Manufacturer (OEM) parts are made by the same company that manufactured your vehicle. They're identical to the parts installed when your car was new and typically come with a warranty.</p>
+          
+          <h2>What are Aftermarket Parts?</h2>
+          <p>Aftermarket parts are made by third-party manufacturers. They're designed to fit and function like OEM parts but are often more affordable. Quality varies significantly between brands.</p>
+          
+          <h2>When to Choose OEM</h2>
+          <p>Choose OEM parts when: warranty coverage requires it, safety is critical (brakes, airbags), you want guaranteed compatibility, or you prefer factory specifications. OEM parts are also better for newer vehicles under warranty.</p>
+          
+          <h2>When Aftermarket Makes Sense</h2>
+          <p>Aftermarket parts are ideal when: you're on a budget, your vehicle is older, you want performance upgrades, or you're doing repairs that don't affect warranty. Many aftermarket parts offer equal or better quality at lower prices.</p>
+          
+          <h2>Research Brands</h2>
+          <p>Not all aftermarket parts are equal. Research brands and read reviews. Well-known aftermarket manufacturers like Bosch, Denso, and ACDelco often produce high-quality parts comparable to OEM.</p>
+          
+          <h2>Consider Your Needs</h2>
+          <p>For critical components like timing belts, water pumps, or suspension parts, OEM or premium aftermarket is worth the investment. For cosmetic items or non-critical components, quality aftermarket parts can save significant money.</p>
+        `,
+        image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=400&fit=crop",
+        readTime: "6 min read",
+        date: "2025-01-10"
+      },
+      {
+        id: 4,
+        title: "Top 10 Most Reliable Car Brands in 2025",
+        category: "Cars",
+        excerpt: "Discover which car manufacturers consistently produce the most dependable vehicles based on reliability ratings, owner satisfaction, and long-term value.",
+        content: `
+          <h2>1. Toyota</h2>
+          <p>Toyota continues to lead in reliability with models like the Camry, Corolla, and Highlander consistently ranking at the top. Known for exceptional build quality, low maintenance costs, and impressive resale value.</p>
+          
+          <h2>2. Lexus</h2>
+          <p>Toyota's luxury division combines premium features with Toyota's legendary reliability. Lexus vehicles offer exceptional quality and rarely require major repairs in their first decade of ownership.</p>
+          
+          <h2>3. Honda</h2>
+          <p>Honda's reputation for reliability is well-earned. The Accord, Civic, and CR-V are perennial favorites, known for their durable engines, efficient fuel economy, and excellent resale values.</p>
+          
+          <h2>4. Mazda</h2>
+          <p>Mazda has significantly improved reliability in recent years, combining engaging driving dynamics with dependable engineering. The CX-5 and Mazda3 are standout models.</p>
+          
+          <h2>5. Subaru</h2>
+          <p>Subaru's all-wheel-drive vehicles are built to last. Models like the Outback and Forester are known for longevity, safety, and excellent performance in all weather conditions.</p>
+          
+          <h2>6. Hyundai</h2>
+          <p>Hyundai has transformed from a budget brand to a reliability leader. With industry-leading warranties and improved quality, models like the Elantra and Tucson offer exceptional value.</p>
+          
+          <h2>7. Kia</h2>
+          <p>Kia shares Hyundai's engineering excellence and offers similar long warranties. The Telluride and Sorento demonstrate Kia's commitment to quality and reliability.</p>
+          
+          <h2>8. BMW</h2>
+          <p>Among luxury brands, BMW ranks highest in reliability. While maintenance costs are higher, BMWs are well-engineered and can last many years with proper care.</p>
+          
+          <h2>9. Porsche</h2>
+          <p>Porsche combines performance with reliability. The 911 and Cayenne are built to exacting standards and consistently score well in long-term reliability studies.</p>
+          
+          <h2>10. Genesis</h2>
+          <p>Hyundai's luxury division offers premium features with exceptional reliability. Genesis vehicles compete with established luxury brands while maintaining excellent dependability ratings.</p>
+        `,
+        image: "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=800&h=400&fit=crop",
+        readTime: "9 min read",
+        date: "2025-01-08"
+      },
+      {
+        id: 5,
+        title: "Winter Car Care: Essential Tips for Cold Weather Driving",
+        category: "Maintenance",
+        excerpt: "Prepare your vehicle for winter conditions with these essential maintenance tips to ensure safe and reliable cold-weather driving.",
+        content: `
+          <h2>Check Your Battery</h2>
+          <p>Cold weather significantly reduces battery capacity. Have your battery tested before winter arrives. Clean terminals and ensure connections are tight. If your battery is over 3 years old, consider replacement.</p>
+          
+          <h2>Winter Tires Are Essential</h2>
+          <p>Winter tires provide superior traction in cold temperatures, snow, and ice. They use special rubber compounds that remain flexible below 45°F. All-wheel drive helps, but winter tires are more important for stopping and turning.</p>
+          
+          <h2>Check Antifreeze Levels</h2>
+          <p>Ensure your coolant mixture is appropriate for your climate. A 50/50 mix of antifreeze and water typically protects down to -34°F. Test with an antifreeze tester or have it checked professionally.</p>
+          
+          <h2>Inspect Wiper Blades</h2>
+          <p>Replace worn wiper blades before winter. Consider winter-specific blades designed to prevent ice buildup. Keep windshield washer fluid topped off with winter-grade fluid that won't freeze.</p>
+          
+          <h2>Check Tire Pressure</h2>
+          <p>Tire pressure drops in cold weather. Check pressure regularly as temperatures drop. Properly inflated tires improve fuel economy and handling. Don't forget the spare tire.</p>
+          
+          <h2>Maintain Visibility</h2>
+          <p>Keep headlights, taillights, and signals clean and functional. Consider upgrading to LED bulbs for better visibility. Clear snow and ice from all windows, mirrors, and lights before driving.</p>
+          
+          <h2>Emergency Kit</h2>
+          <p>Carry an emergency kit including: blanket, flashlight, jumper cables, ice scraper, small shovel, first aid kit, and non-perishable snacks. Keep your phone charged and consider a portable charger.</p>
+          
+          <h2>Drive Smoothly</h2>
+          <p>Accelerate, brake, and turn gently on slick surfaces. Allow extra stopping distance. If you start to skid, steer in the direction you want to go and avoid sudden movements.</p>
+        `,
+        image: "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=800&h=400&fit=crop",
+        readTime: "7 min read",
+        date: "2025-01-05"
+      },
+      {
+        id: 6,
+        title: "Understanding Car Warranties: What You Need to Know",
+        category: "Buying",
+        excerpt: "Learn about different types of car warranties, what they cover, and how to make the most of your warranty protection.",
+        content: `
+          <h2>Manufacturer's Warranty</h2>
+          <p>New vehicles come with a manufacturer's warranty covering defects in materials and workmanship. Typical coverage includes: bumper-to-bumper (3 years/36,000 miles) and powertrain (5-10 years/60,000-100,000 miles).</p>
+          
+          <h2>Powertrain Warranty</h2>
+          <p>The powertrain warranty covers the engine, transmission, and drivetrain components. This is usually the longest-lasting warranty and covers the most expensive repairs. Coverage varies significantly between manufacturers.</p>
+          
+          <h2>Extended Warranties</h2>
+          <p>Extended warranties (service contracts) can be purchased separately. These may be from the manufacturer or third-party providers. Carefully review what's covered, deductibles, and transferability before purchasing.</p>
+          
+          <h2>What's Typically Not Covered</h2>
+          <p>Warranties usually exclude: normal wear and tear, damage from accidents or misuse, modifications, aftermarket parts (unless installed by dealer), and maintenance items like oil changes and tire rotations.</p>
+          
+          <h2>Warranty Transferability</h2>
+          <p>Many manufacturer warranties transfer to new owners, which can increase resale value. Extended warranties may or may not be transferable - check the terms. Transferability adds value to your vehicle.</p>
+          
+          <h2>Maintaining Warranty Coverage</h2>
+          <p>Follow the manufacturer's maintenance schedule and keep detailed records. Warranty claims can be denied if you don't maintain the vehicle properly. Use authorized service centers for warranty work.</p>
+          
+          <h2>Reading the Fine Print</h2>
+          <p>Understand your warranty's terms, conditions, and limitations. Know what requires dealer service versus what you can do yourself. Some warranties require using specific parts or service centers.</p>
+        `,
+        image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&h=400&fit=crop",
+        readTime: "8 min read",
+        date: "2025-01-03"
+      },
+      {
+        id: 7,
+        title: "Fuel Economy Tips: How to Save Money at the Pump",
+        category: "Maintenance",
+        excerpt: "Simple driving habits and maintenance practices can significantly improve your vehicle's fuel efficiency and save you hundreds of dollars annually.",
+        content: `
+          <h2>Drive Smoothly</h2>
+          <p>Aggressive acceleration and braking can reduce fuel economy by 15-30% on highways and 10-40% in stop-and-go traffic. Accelerate gradually, maintain steady speeds, and anticipate stops to coast when possible.</p>
+          
+          <h2>Observe Speed Limits</h2>
+          <p>Fuel economy decreases rapidly above 50 mph. Each 5 mph over 50 mph is like paying an additional $0.20 per gallon. Driving at 65 mph instead of 75 mph can improve fuel economy by 10-15%.</p>
+          
+          <h2>Remove Excess Weight</h2>
+          <p>Every 100 pounds of weight reduces fuel economy by about 1%. Remove unnecessary items from your trunk and avoid carrying cargo on your roof, which increases aerodynamic drag.</p>
+          
+          <h2>Keep Tires Properly Inflated</h2>
+          <p>Under-inflated tires can reduce fuel economy by up to 3%. Check tire pressure monthly and maintain the manufacturer's recommended pressure (found in your owner's manual or on the driver's door jamb).</p>
+          
+          <h2>Use the Right Motor Oil</h2>
+          <p>Using the manufacturer's recommended grade of motor oil can improve fuel economy by 1-2%. Look for "Energy Conserving" oils that reduce friction. Change oil regularly to maintain engine efficiency.</p>
+          
+          <h2>Replace Air Filters</h2>
+          <p>A dirty air filter can reduce fuel economy by up to 10%. Replace air filters according to your maintenance schedule or if you drive in dusty conditions. A clean filter allows proper air flow to the engine.</p>
+          
+          <h2>Plan Your Trips</h2>
+          <p>Combine errands into single trips to reduce cold starts. A warmed-up engine is more efficient. Avoid idling for more than 30 seconds - modern engines use less fuel restarting than idling for extended periods.</p>
+          
+          <h2>Use Cruise Control</h2>
+          <p>On highways, cruise control helps maintain a constant speed, which improves fuel economy. However, avoid using it in hilly terrain where it may cause unnecessary acceleration.</p>
+        `,
+        image: "https://images.unsplash.com/photo-1620706857370-e1b9770e8bb1?w=800&h=400&fit=crop",
+        readTime: "7 min read",
+        date: "2025-01-01"
+      },
+      {
+        id: 8,
+        title: "Electric vs Hybrid vs Gas: Choosing the Right Powertrain",
+        category: "Cars",
+        excerpt: "Compare electric, hybrid, and traditional gas vehicles to determine which powertrain best fits your lifestyle, budget, and driving needs.",
+        content: `
+          <h2>Gasoline Vehicles</h2>
+          <p>Traditional gas vehicles offer the most established infrastructure, lowest upfront costs, and fastest refueling. They're ideal for long-distance travel, towing, and areas without charging infrastructure. However, they have higher operating costs and emissions.</p>
+          
+          <h2>Hybrid Vehicles</h2>
+          <p>Hybrids combine a gas engine with an electric motor, offering improved fuel economy without range anxiety. They're excellent for city driving where regenerative braking maximizes efficiency. Popular options include the Toyota Prius, Honda Accord Hybrid, and Ford Escape Hybrid.</p>
+          
+          <h2>Plug-in Hybrid (PHEV)</h2>
+          <p>Plug-in hybrids offer the best of both worlds: electric-only range for daily commutes (typically 20-50 miles) with a gas engine for longer trips. They're perfect if you can charge at home but occasionally need long-range capability.</p>
+          
+          <h2>Electric Vehicles (EV)</h2>
+          <p>Pure electric vehicles offer the lowest operating costs, zero emissions, and instant torque. They're ideal if you have home charging, drive predictable routes, and want minimal maintenance. Range and charging infrastructure continue to improve rapidly.</p>
+          
+          <h2>Cost Considerations</h2>
+          <p>Compare total cost of ownership: purchase price, fuel/electricity costs, maintenance, insurance, and tax incentives. EVs have higher upfront costs but lower operating expenses. Hybrids offer moderate savings with lower upfront costs.</p>
+          
+          <h2>Your Driving Patterns</h2>
+          <p>Consider your daily commute, frequency of long trips, and access to charging. If you drive 40 miles or less daily and can charge at home, an EV might work well. Frequent long trips may favor hybrid or gas vehicles.</p>
+          
+          <h2>Environmental Impact</h2>
+          <p>EVs produce zero tailpipe emissions and, depending on your electricity source, significantly lower overall emissions. Hybrids reduce emissions compared to gas vehicles. Consider your local electricity grid's energy sources when evaluating environmental impact.</p>
+        `,
+        image: "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800&h=400&fit=crop",
+        readTime: "9 min read",
+        date: "2024-12-28"
+      },
+      {
+        id: 9,
+        title: "DIY Car Repairs: What You Can Do at Home vs When to Call a Pro",
+        category: "Maintenance",
+        excerpt: "Learn which car repairs are safe and cost-effective to do yourself, and when it's essential to hire a professional mechanic.",
+        content: `
+          <h2>Easy DIY Tasks</h2>
+          <p>Many basic maintenance tasks are perfect for DIY: changing oil and filters, replacing wiper blades, changing air filters, replacing light bulbs, checking and topping off fluids, and rotating tires. These require minimal tools and knowledge.</p>
+          
+          <h2>Intermediate DIY Projects</h2>
+          <p>With some experience and proper tools, you can tackle: brake pad replacement, spark plug changes, battery replacement, serpentine belt replacement, and replacing fuses. Always follow service manuals and safety procedures.</p>
+          
+          <h2>When to Call a Professional</h2>
+          <p>Leave these to professionals: timing belt/chain replacement, transmission work, electrical system diagnostics, airbag repairs, complex engine diagnostics, and anything involving safety systems. Mistakes here can be dangerous and expensive.</p>
+          
+          <h2>Safety First</h2>
+          <p>Always use jack stands (never just a jack), wear safety glasses, work in a well-ventilated area, and disconnect the battery when working on electrical systems. If you're unsure about safety, don't proceed.</p>
+          
+          <h2>Cost-Benefit Analysis</h2>
+          <p>Consider the cost of tools, your time, and the risk of mistakes. Simple tasks like oil changes are easy wins. Complex repairs may cost more if you make mistakes - factor in potential do-overs and part damage.</p>
+          
+          <h2>Learning Resources</h2>
+          <p>Use service manuals (Haynes or Chilton), online tutorials, and forums for your specific vehicle. Start with simple tasks and build experience. Many auto parts stores offer free diagnostic services.</p>
+          
+          <h2>Warranty Considerations</h2>
+          <p>DIY work typically doesn't void warranties, but keep detailed records of maintenance. Some warranty repairs must be done by authorized service centers. Check your warranty terms before major DIY work.</p>
+        `,
+        image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&h=400&fit=crop",
+        readTime: "8 min read",
+        date: "2024-12-25"
+      },
+      {
+        id: 10,
+        title: "Selling Your Car: A Complete Guide to Getting the Best Price",
+        category: "Buying",
+        excerpt: "Maximize your car's value with these proven strategies for preparing, pricing, and selling your vehicle successfully.",
+        content: `
+          <h2>Prepare Your Vehicle</h2>
+          <p>First impressions matter. Clean your car thoroughly inside and out, fix minor issues like burnt-out bulbs, address small dents and scratches, gather all documentation, and have maintenance records ready. A well-maintained car commands a higher price.</p>
+          
+          <h2>Determine Fair Market Value</h2>
+          <p>Research your car's value using resources like Kelley Blue Book, Edmunds, and Autoilty Marketplace. Consider condition, mileage, features, and local market conditions. Price competitively but leave room for negotiation.</p>
+          
+          <h2>Choose Your Selling Method</h2>
+          <p>Options include: private sale (highest price, most effort), trade-in (easiest, lowest price), dealer sale (quick, fair price), and online platforms like Autoilty Marketplace (good balance of price and convenience).</p>
+          
+          <h2>Create a Compelling Listing</h2>
+          <p>Write a detailed, honest description highlighting features and maintenance history. Take high-quality photos from multiple angles in good lighting. Include key information: mileage, condition, features, and maintenance records. Be transparent about any issues.</p>
+          
+          <h2>Be Available and Responsive</h2>
+          <p>Respond quickly to inquiries, be flexible with viewing times, and be prepared to answer questions about the vehicle's history. Good communication builds trust and leads to faster sales.</p>
+          
+          <h2>Negotiate Smartly</h2>
+          <p>Set a minimum acceptable price beforehand, be firm but reasonable, highlight your car's strengths when countering low offers, and be willing to walk away from offers that are too low. Don't be pressured into accepting less than fair value.</p>
+          
+          <h2>Complete the Sale Properly</h2>
+          <p>Verify payment method (cash or certified check), complete bill of sale, transfer title properly, cancel insurance after sale, and notify DMV of sale. Keep copies of all documents. Following proper procedures protects both buyer and seller.</p>
+        `,
+        image: "https://images.unsplash.com/photo-1494976687768-f90e2a4f8c8d?w=800&h=400&fit=crop",
+        readTime: "10 min read",
+        date: "2024-12-20"
+      }
+    ];
+
+    // Filter and search functionality
+    let currentCategory = 'all';
+    let currentSearch = '';
+
+    // Render articles
+    function renderArticles() {
+      const grid = document.getElementById('articlesGrid');
+      const emptyState = document.getElementById('emptyState');
+      
+      // Filter articles
+      let filteredArticles = articles.filter(article => {
+        const matchesCategory = currentCategory === 'all' || article.category === currentCategory;
+        const matchesSearch = currentSearch === '' || 
+          article.title.toLowerCase().includes(currentSearch.toLowerCase()) ||
+          article.excerpt.toLowerCase().includes(currentSearch.toLowerCase());
+        return matchesCategory && matchesSearch;
+      });
+
+      if (filteredArticles.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      emptyState.style.display = 'none';
+
+      grid.innerHTML = filteredArticles.map(article => `
+        <article class="article-card" style="background: white; border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; transition: var(--transition); cursor: pointer; box-shadow: var(--shadow-sm);" onclick="openArticle(${article.id})">
+          <div style="position: relative; width: 100%; height: 200px; overflow: hidden; background: var(--color-border);">
+            <img src="${article.image}" alt="${article.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;" onerror="this.style.display='none'">
+            <div style="position: absolute; top: 12px; right: 12px; background: var(--color-primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+              ${article.category}
+            </div>
+          </div>
+          <div style="padding: var(--spacing-md);">
+            <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: var(--spacing-sm); color: var(--color-text); line-height: 1.3;">
+              ${article.title}
+            </h3>
+            <p style="color: var(--color-text-light); font-size: 0.9375rem; line-height: 1.6; margin-bottom: var(--spacing-md);">
+              ${article.excerpt}
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; color: var(--color-text-light);">
+              <span>${article.readTime}</span>
+              <span>${new Date(article.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    // Open article (modal or new page)
+    function openArticle(articleId) {
+      const article = articles.find(a => a.id === articleId);
+      if (!article) return;
+
+      // Create modal
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 2000; overflow-y: auto; padding: 2rem;';
+      modal.innerHTML = `
+        <div style="max-width: 800px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+          <div style="position: relative; width: 100%; height: 400px; overflow: hidden; background: var(--color-border);">
+            <img src="${article.image}" alt="${article.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
+            <button onclick="this.closest('.article-modal').remove()" style="position: absolute; top: 20px; right: 20px; background: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+              <i data-lucide="x" style="width: 24px; height: 24px;"></i>
+            </button>
+            <div style="position: absolute; top: 20px; left: 20px; background: var(--color-primary); color: white; padding: 6px 16px; border-radius: 12px; font-size: 0.875rem; font-weight: 600;">
+              ${article.category}
+            </div>
+          </div>
+          <div style="padding: var(--spacing-xl);">
+            <h1 style="font-size: 2.5rem; font-weight: 600; margin-bottom: var(--spacing-md); color: var(--color-text);">
+              ${article.title}
+            </h1>
+            <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-xl); color: var(--color-text-light); font-size: 0.9375rem;">
+              <span>${article.readTime}</span>
+              <span>•</span>
+              <span>${new Date(article.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+            </div>
+            <div class="article-content" style="font-size: 1.0625rem; line-height: 1.8; color: var(--color-text);">
+              ${article.content}
+            </div>
+          </div>
+        </div>
+      `;
+      modal.className = 'article-modal';
+      document.body.appendChild(modal);
+      document.body.style.overflow = 'hidden';
+      lucide.createIcons();
+
+      // Close on overlay click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+          document.body.style.overflow = '';
+        }
+      });
+
+      // Close button
+      modal.querySelector('button').addEventListener('click', () => {
+        modal.remove();
+        document.body.style.overflow = '';
+      });
+    }
+
+    window.openArticle = openArticle;
+
+    // Category filter handlers
+    document.querySelectorAll('.category-filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.category-filter').forEach(b => {
+          b.classList.remove('active');
+          b.style.background = 'white';
+          b.style.color = 'var(--color-text)';
+        });
+        btn.classList.add('active');
+        btn.style.background = 'var(--color-primary)';
+        btn.style.color = 'white';
+        currentCategory = btn.dataset.category;
+        renderArticles();
+      });
+    });
+
+    // Search handler
+    const searchInput = document.getElementById('searchInput');
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        currentSearch = e.target.value;
+        renderArticles();
+      }, 300);
+    });
+
+    // Initial render
+    renderArticles();
+
+    // Setup navigation
+    function setupNavigation() {
+      const currentUser = getCurrentUser();
+      const userMenu = document.getElementById('userMenu');
+      const loginLink = document.getElementById('loginLink');
+      const myPostingsLink = document.getElementById('myPostingsLink');
+      const createPostingLink = document.getElementById('createPostingLink');
+      const createPostingLoginLink = document.getElementById('createPostingLoginLink');
+      
+      if (currentUser && isAuthenticated()) {
+        if (userMenu) {
+          userMenu.style.display = 'block';
+          userMenu.style.visibility = 'visible';
+        }
+        if (loginLink) loginLink.style.display = 'none';
+        if (myPostingsLink) myPostingsLink.style.display = 'flex';
+        if (createPostingLink) {
+          createPostingLink.style.display = 'block';
+          const newLink = createPostingLink.cloneNode(true);
+          createPostingLink.parentNode.replaceChild(newLink, createPostingLink);
+          const updatedLink = document.getElementById('createPostingLink');
+          if (updatedLink) {
+            updatedLink.addEventListener('click', (e) => {
+              e.preventDefault();
+              if (typeof openPostingFormModal === 'function') {
+                openPostingFormModal();
+              } else {
+                window.location.href = 'my-postings.html?create=true';
+              }
+            });
+          }
+        }
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
+        
+        const userMenuName = document.getElementById('userMenuName');
+        if (userMenuName) userMenuName.textContent = currentUser.username;
+        
+        if (typeof updateUnreadBadge === 'function') {
+          updateUnreadBadge();
+        }
+        
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userMenuDropdown = document.getElementById('userMenuDropdown');
+        if (userMenuButton && userMenuDropdown) {
+          userMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenuDropdown.classList.toggle('show');
+          });
+          
+          document.addEventListener('click', (e) => {
+            if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
+              userMenuDropdown.classList.remove('show');
+            }
+          });
+        }
+        
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+          logoutButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+              logout();
+            }
+          });
+        }
+      } else {
+        if (userMenu) userMenu.style.display = 'none';
+        if (loginLink) loginLink.style.display = 'block';
+        if (myPostingsLink) myPostingsLink.style.display = 'none';
+        if (createPostingLink) createPostingLink.style.display = 'none';
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'block';
+      }
+    }
+
+    function setupMobileNav() {
+      const navToggle = document.getElementById('navToggle');
+      const navLinks = document.getElementById('navLinks');
+      
+      if (!navToggle || !navLinks) return;
+      
+      const icon = navToggle.querySelector('i');
+      if (!icon) return;
+      
+      navToggle.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        const isActive = navLinks.classList.contains('active');
+        icon.setAttribute('data-lucide', isActive ? 'x' : 'menu');
+        lucide.createIcons();
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (!navToggle.contains(e.target) && !navLinks.contains(e.target)) {
+          navLinks.classList.remove('active');
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            lucide.createIcons();
+          }
+        }
+      });
+      
+      navLinks.querySelectorAll('a, button').forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.classList.remove('active');
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            lucide.createIcons();
+          }
+        });
+      });
+    }
+
+    if (typeof getCurrentUser !== 'undefined' && typeof isAuthenticated !== 'undefined') {
+      setupNavigation();
+    }
+    setupMobileNav();
+
+    // Cart functionality (if needed)
+    const cartToggle = document.getElementById('cartToggle');
+    if (cartToggle) {
+      cartToggle.addEventListener('click', () => {
+        window.location.href = 'cart.html';
+      });
+    }
+  </script>
+</body>
+</html>
+
