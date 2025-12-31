@@ -544,8 +544,43 @@
       }
       
       // Fetch conversation from backend (this marks messages as read on the backend)
+      // Then reload the conversations list to update unread counts
       try {
         await getConversation(recipientUserId);
+        
+        // Reload conversations list after marking messages as read
+        // Use a short delay to ensure backend has processed the update
+        setTimeout(async () => {
+          const savedRecipientId = recipientUserId;
+          const savedPostingId = postingId;
+          
+          // Reload conversations list to get updated unread counts
+          await loadMessages();
+          
+          // Update unread badge in navigation
+          if (typeof updateUnreadBadge === 'function') {
+            updateUnreadBadge();
+          }
+          
+          // Find and restore active state on the conversation we just opened
+          const updatedIndex = allConversations.findIndex(c => {
+            const otherId = c.otherUserId || c.fromUserId;
+            return otherId === savedRecipientId && (c.postingId || null) === (savedPostingId || null);
+          });
+          
+          if (updatedIndex >= 0) {
+            // Update active state in list
+            document.querySelectorAll('.conversation-item').forEach((item, i) => {
+              if (i === updatedIndex) {
+                item.classList.add('active');
+              } else {
+                item.classList.remove('active');
+              }
+            });
+            // Update currentConversation reference
+            currentConversation = allConversations[updatedIndex];
+          }
+        }, 300);
       } catch (error) {
         console.error('Error fetching conversation from backend:', error);
         // Continue with cached messages if fetch fails
