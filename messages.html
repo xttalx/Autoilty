@@ -555,29 +555,25 @@
         // Continue with cached messages if fetch fails
       }
       
-      // Reload conversations list to update unread counts
+      // Reload conversations list to update unread counts (this updates the badge on conversation items)
       // Use a small delay to ensure backend has processed the read status
+      const currentIndex = index; // Store the index before reloading
       setTimeout(async () => {
+        // Save the current conversation panel state
+        const panelWasVisible = conversationPanel.style.display !== 'none';
+        
+        // Reload the conversations list to get updated unread counts
         await loadMessages();
+        
         // Update unread badge in navigation
         if (typeof updateUnreadBadge === 'function') {
           updateUnreadBadge();
         }
-        // Restore active state on the conversation we just opened
-        const conversationIndex = allConversations.findIndex(c => {
-          const otherId = c.otherUserId || c.fromUserId;
-          return otherId === recipientUserId && c.postingId === postingId;
-        });
-        if (conversationIndex >= 0) {
-          document.querySelectorAll('.conversation-item').forEach((item, i) => {
-            if (i === conversationIndex) {
-              item.classList.add('active');
-            } else {
-              item.classList.remove('active');
-            }
-          });
-          // Update currentConversation reference
-          currentConversation = allConversations[conversationIndex];
+        
+        // If the panel was visible, restore it with the updated conversation
+        if (panelWasVisible && currentIndex >= 0 && currentIndex < allConversations.length) {
+          // Re-open the conversation to restore the panel
+          await openConversation(currentIndex);
         }
       }, 300);
       
