@@ -226,7 +226,18 @@
         }
         if (loginLink) loginLink.style.display = 'none';
         if (myPostingsLink) myPostingsLink.style.display = 'flex';
-        if (createPostingLink) createPostingLink.style.display = 'block';
+        if (createPostingLink) {
+          createPostingLink.style.display = 'block';
+          // Update link to use modal
+          createPostingLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (typeof openPostingFormModal === 'function') {
+              openPostingFormModal();
+            } else {
+              window.location.href = 'my-postings.html?create=true';
+            }
+          });
+        }
         if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
         
         const userMenuName = document.getElementById('userMenuName');
