@@ -544,17 +544,35 @@
       }
       
       // Fetch conversation from backend (this marks messages as read on the backend)
-      // Then reload the conversations list to update unread counts
       try {
         await getConversation(recipientUserId);
         
-        // Reload conversations list after marking messages as read
-        // Use a short delay to ensure backend has processed the update
+        // Immediately update the unread count for this conversation to 0
+        // Update the conversation object in memory
+        if (currentConversation) {
+          currentConversation.unreadCount = 0;
+        }
+        
+        // Update the conversation item badge in the UI immediately
+        const conversationItems = document.querySelectorAll('.conversation-item');
+        if (conversationItems[index]) {
+          const avatar = conversationItems[index].querySelector('div[style*="border-radius: 50%"]');
+          if (avatar) {
+            // Remove any existing unread badge
+            const existingBadge = avatar.querySelector('span[style*="background: #e41e3f"]');
+            if (existingBadge) {
+              existingBadge.remove();
+            }
+          }
+        }
+        
+        // Reload conversations list after a short delay to ensure backend has processed
+        // and to update navigation badge
         setTimeout(async () => {
           const savedRecipientId = recipientUserId;
           const savedPostingId = postingId;
           
-          // Reload conversations list to get updated unread counts
+          // Reload conversations list to get updated unread counts from backend
           await loadMessages();
           
           // Update unread badge in navigation
@@ -580,7 +598,7 @@
             // Update currentConversation reference
             currentConversation = allConversations[updatedIndex];
           }
-        }, 300);
+        }, 500);
       } catch (error) {
         console.error('Error fetching conversation from backend:', error);
         // Continue with cached messages if fetch fails
