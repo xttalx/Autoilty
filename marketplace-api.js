@@ -129,13 +129,29 @@ async function fetchPosting(id) {
  */
 
 function postingToProduct(posting) {
+  // Clean up image URL - ensure it's a valid full URL or use placeholder
+  let imageUrl = posting.image_url || '';
+  
+  // If image_url exists and is a full URL, use it as-is
+  if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+    // Fix any double slashes after https://
+    imageUrl = imageUrl.replace(/https:\/\/([^/])/, 'https://$1');
+  } else if (imageUrl && !imageUrl.startsWith('data:')) {
+    // Legacy support: if it's a relative path, prepend base URL
+    const baseUrl = 'https://autoilty-production.up.railway.app';
+    imageUrl = imageUrl.startsWith('/') ? `${baseUrl}${imageUrl}` : `${baseUrl}/${imageUrl}`;
+  } else if (!imageUrl) {
+    // Use placeholder if no image
+    imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+  }
+  
   return {
     id: posting.id,
     name: posting.title,
     title: posting.title,
     price: parseFloat(posting.price),
     category: posting.category.toLowerCase(),
-    image: posting.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==',
+    image: imageUrl,
     description: posting.description,
     location: posting.location,
     username: posting.username,

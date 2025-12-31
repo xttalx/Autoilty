@@ -386,8 +386,19 @@ async function uploadToSupabaseStorage(fileBuffer, fileName, contentType) {
       throw new Error('Failed to get public URL from Supabase');
     }
 
-    console.log('✅ Public URL generated:', urlData.publicUrl);
-    return urlData.publicUrl;
+    // Ensure the URL is clean and properly formatted
+    let publicUrl = urlData.publicUrl.trim();
+    
+    // Fix any double slashes in the URL (except after https://)
+    publicUrl = publicUrl.replace(/([^:]\/)\/+/g, '$1');
+    
+    // Ensure it starts with https://
+    if (!publicUrl.startsWith('http://') && !publicUrl.startsWith('https://')) {
+      publicUrl = `https://${publicUrl}`;
+    }
+
+    console.log('✅ Public URL generated:', publicUrl);
+    return publicUrl;
   } catch (error) {
     console.error('❌ Error uploading to Supabase Storage:', error);
     console.error('   Error type:', error.constructor.name);
