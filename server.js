@@ -250,11 +250,18 @@ if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
       }
     });
     console.log('✅ Supabase Storage client initialized');
+    console.log('   URL:', SUPABASE_URL);
+    console.log('   Bucket:', SUPABASE_STORAGE_BUCKET);
+    console.log('   Service Key:', SUPABASE_SERVICE_KEY ? 'Set (' + SUPABASE_SERVICE_KEY.substring(0, 20) + '...)' : 'Missing');
   } catch (error) {
     console.error('❌ Error initializing Supabase Storage:', error);
+    console.error('   Error details:', error.message);
   }
 } else {
-  console.warn('⚠️  Supabase Storage not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables.');
+  console.warn('⚠️  Supabase Storage not configured.');
+  console.warn('   SUPABASE_URL:', SUPABASE_URL ? 'Set' : 'Missing');
+  console.warn('   SUPABASE_SERVICE_KEY:', SUPABASE_SERVICE_KEY ? 'Set' : 'Missing');
+  console.warn('   Set these environment variables in Railway to enable image uploads.');
 }
 
 /**
