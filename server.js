@@ -266,22 +266,38 @@ if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
  */
 async function uploadToSupabaseStorage(fileBuffer, fileName, contentType) {
   if (!supabaseStorage) {
-    throw new Error('Supabase Storage not configured');
+    console.error('❌ Supabase Storage client not initialized');
+    console.error('   SUPABASE_URL:', SUPABASE_URL ? 'Set' : 'Missing');
+    console.error('   SUPABASE_SERVICE_KEY:', SUPABASE_SERVICE_KEY ? 'Set' : 'Missing');
+    console.error('   SUPABASE_STORAGE_BUCKET:', SUPABASE_STORAGE_BUCKET);
+    throw new Error('Supabase Storage not configured. Please check environment variables.');
   }
 
   try {
+    console.log(`📤 Uploading to Supabase Storage: ${fileName} (${(fileBuffer.length / 1024).toFixed(2)} KB)`);
+    console.log(`   Bucket: ${SUPABASE_STORAGE_BUCKET}`);
+    console.log(`   Content-Type: ${contentType}`);
+    
     // Upload file to Supabase Storage bucket
     const { data, error } = await supabaseStorage.storage
       .from(SUPABASE_STORAGE_BUCKET)
       .upload(fileName, fileBuffer, {
         contentType: contentType,
-        upsert: false
+        upsert: true // Allow overwriting if file exists
       });
 
     if (error) {
-      console.error('Supabase Storage upload error:', error);
-      throw error;
+      console.error('❌ Supabase Storage upload error:', error);
+      console.error('   Error code:', error.statusCode);
+      console.error('   Error message:', error.message);
+      throw new Error(`Supabase upload failed: ${error.message || 'Unknown error'}`);
     }
+
+    if (!data) {
+      throw new Error('No data returned from Supabase upload');
+    }
+
+    console.log('✅ File uploaded successfully:', data.path);
 
     // Get public URL
     const { data: urlData } = supabaseStorage.storage
@@ -289,13 +305,16 @@ async function uploadToSupabaseStorage(fileBuffer, fileName, contentType) {
       .getPublicUrl(fileName);
 
     if (!urlData?.publicUrl) {
-      throw new Error('Failed to get public URL');
+      console.error('❌ Failed to get public URL for:', fileName);
+      throw new Error('Failed to get public URL from Supabase');
     }
 
-    console.log('✅ Image uploaded to Supabase Storage:', urlData.publicUrl);
+    console.log('✅ Public URL generated:', urlData.publicUrl);
     return urlData.publicUrl;
   } catch (error) {
-    console.error('Error uploading to Supabase Storage:', error);
+    console.error('❌ Error uploading to Supabase Storage:', error);
+    console.error('   Error type:', error.constructor.name);
+    console.error('   Error stack:', error.stack);
     throw error;
   }
 }
@@ -915,12 +934,27 @@ app.post('/api/postings', authenticateToken, upload.single('image'), async (req,
     let imageUrl = null;
     if (req.file) {
       try {
+        console.log('📸 Processing image upload for new posting');
+        console.log('   Original filename:', req.file.originalname);
+        console.log('   File size:', req.file.size, 'bytes');
+        console.log('   MIME type:', req.file.mimetype);
+        
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const fileName = `posting-${uniqueSuffix}${path.extname(req.file.originalname)}`;
+        console.log('   Generated filename:', fileName);
+        
         imageUrl = await uploadToSupabaseStorage(req.file.buffer, fileName, req.file.mimetype);
+        console.log('✅ Image uploaded successfully:', imageUrl);
       } catch (uploadError) {
-        console.error('Image upload error:', uploadError);
-        return res.status(500).json({ error: 'Failed to upload image. Please try again.' });
+        console.error('❌ Image upload error:', uploadError);
+        console.error('   Error details:', {
+          message: uploadError.message,
+          stack: uploadError.stack
+        });
+        return res.status(500).json({ 
+          error: 'Failed to upload image. Please try again.',
+          details: isProduction ? undefined : uploadError.message
+        });
       }
     }
 
@@ -1004,16 +1038,31 @@ app.put('/api/postings/:id', authenticateToken, upload.single('image'), async (r
       
       // Upload new image to Supabase Storage
       try {
+        console.log('📸 Processing image upload for posting update');
+        console.log('   Original filename:', req.file.originalname);
+        console.log('   File size:', req.file.size, 'bytes');
+        console.log('   MIME type:', req.file.mimetype);
+        
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const fileName = `posting-${uniqueSuffix}${path.extname(req.file.originalname)}`;
+        console.log('   Generated filename:', fileName);
+        
         const imageUrl = await uploadToSupabaseStorage(req.file.buffer, fileName, req.file.mimetype);
+        console.log('✅ Image uploaded successfully:', imageUrl);
         
         paramNum++;
         updates.push(`image_url = $${paramNum}`);
         params.push(imageUrl);
       } catch (uploadError) {
-        console.error('Image upload error:', uploadError);
-        return res.status(500).json({ error: 'Failed to upload image. Please try again.' });
+        console.error('❌ Image upload error:', uploadError);
+        console.error('   Error details:', {
+          message: uploadError.message,
+          stack: uploadError.stack
+        });
+        return res.status(500).json({ 
+          error: 'Failed to upload image. Please try again.',
+          details: isProduction ? undefined : uploadError.message
+        });
       }
     }
 
