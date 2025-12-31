@@ -1120,7 +1120,7 @@ app.post('/api/postings', authenticateToken, upload.single('image'), async (req,
       posting: {
         ...posting,
         price: parseFloat(posting.price),
-        image_url: posting.image_url || null // Already full URL from Supabase
+        image_url: cleanImageUrl(posting.image_url) // Clean up any malformed URLs
       }
     });
   } catch (error) {
@@ -1228,7 +1228,7 @@ app.put('/api/postings/:id', authenticateToken, upload.single('image'), async (r
       posting: {
         ...posting,
         price: parseFloat(posting.price),
-        image_url: posting.image_url || null // Already full URL from Supabase
+        image_url: cleanImageUrl(posting.image_url) // Clean up any malformed URLs
       }
     });
   } catch (error) {
