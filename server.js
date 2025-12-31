@@ -336,6 +336,9 @@ async function uploadToSupabaseStorage(fileBuffer, fileName, contentType) {
   }
 
   try {
+    // Ensure bucket exists before uploading
+    await ensureBucketExists();
+    
     console.log(`📤 Uploading to Supabase Storage: ${fileName} (${(fileBuffer.length / 1024).toFixed(2)} KB)`);
     console.log(`   Bucket: ${SUPABASE_STORAGE_BUCKET}`);
     console.log(`   Content-Type: ${contentType}`);
@@ -352,6 +355,18 @@ async function uploadToSupabaseStorage(fileBuffer, fileName, contentType) {
       console.error('❌ Supabase Storage upload error:', error);
       console.error('   Error code:', error.statusCode);
       console.error('   Error message:', error.message);
+      
+      // If bucket not found, provide helpful instructions
+      if (error.message && error.message.includes('Bucket not found')) {
+        console.error('\n   📋 To fix this issue:');
+        console.error('   1. Go to your Supabase Dashboard');
+        console.error('   2. Navigate to Storage → Buckets');
+        console.error(`   3. Create a new bucket named "${SUPABASE_STORAGE_BUCKET}"`);
+        console.error('   4. Set it to Public');
+        console.error('   5. Set file size limit to 5MB');
+        console.error('   6. Add allowed MIME types: image/jpeg, image/jpg, image/png, image/gif, image/webp');
+      }
+      
       throw new Error(`Supabase upload failed: ${error.message || 'Unknown error'}`);
     }
 
