@@ -430,6 +430,41 @@ async function uploadToSupabaseStorage(fileBuffer, fileName, contentType) {
 }
 
 /**
+ * Clean up image URL - remove any incorrectly prepended Railway domain
+ * @param {string} imageUrl - Image URL that might be malformed
+ * @returns {string|null} Cleaned URL or null
+ */
+function cleanImageUrl(imageUrl) {
+  if (!imageUrl) {
+    return null;
+  }
+  
+  let cleanUrl = imageUrl.trim();
+  
+  // Check if Railway domain is incorrectly prepended to Supabase URL
+  const railwayDomain = 'https://autoilty-production.up.railway.app';
+  if (cleanUrl.includes(railwayDomain) && cleanUrl.includes('supabase.co')) {
+    // Extract just the Supabase URL part using regex
+    const supabaseMatch = cleanUrl.match(/https?:\/\/[^/]*supabase\.co[^\s"']*/);
+    if (supabaseMatch) {
+      cleanUrl = supabaseMatch[0];
+    } else {
+      // Fallback: remove Railway domain
+      cleanUrl = cleanUrl.replace(railwayDomain, '');
+      cleanUrl = cleanUrl.replace(/^\/+/, '');
+      if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+        cleanUrl = 'https://' + cleanUrl;
+      }
+    }
+  }
+  
+  // Fix any double slashes (except after https://)
+  cleanUrl = cleanUrl.replace(/([^:]\/)\/+/g, '$1');
+  
+  return cleanUrl;
+}
+
+/**
  * Delete file from Supabase Storage
  * @param {string} imageUrl - Full URL or path of the image
  */
