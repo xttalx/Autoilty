@@ -565,14 +565,20 @@
       const currentUser = getCurrentUser();
       const userMenu = document.getElementById('userMenu');
       const loginLink = document.getElementById('loginLink');
+      const myPostingsLink = document.getElementById('myPostingsLink');
+      const createPostingLink = document.getElementById('createPostingLink');
+      const createPostingLoginLink = document.getElementById('createPostingLoginLink');
       
       if (currentUser && isAuthenticated()) {
-        // User is logged in - show user menu
+        // User is logged in - show user menu and create posting link
         if (userMenu) {
           userMenu.style.display = 'block';
           userMenu.style.visibility = 'visible';
         }
         if (loginLink) loginLink.style.display = 'none';
+        if (myPostingsLink) myPostingsLink.style.display = 'flex';
+        if (createPostingLink) createPostingLink.style.display = 'block';
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
         
         const userMenuName = document.getElementById('userMenuName');
         if (userMenuName) userMenuName.textContent = currentUser.username;
@@ -608,9 +614,12 @@
           });
         }
       } else {
-        // User is not logged in - show login link
+        // User is not logged in - show login link and create posting link that redirects to login
         if (userMenu) userMenu.style.display = 'none';
         if (loginLink) loginLink.style.display = 'block';
+        if (myPostingsLink) myPostingsLink.style.display = 'none';
+        if (createPostingLink) createPostingLink.style.display = 'none';
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'block';
       }
     }
     
