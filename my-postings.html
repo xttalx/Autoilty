@@ -308,11 +308,32 @@
 
     // Open create modal
     function openPostingModal() {
-      editingPostingId = null;
-      document.getElementById('modalTitle').textContent = 'Create New Posting';
-      document.getElementById('postingForm').reset();
-      document.getElementById('imagePreview').style.display = 'none';
-      document.getElementById('postingModal').style.display = 'flex';
+      try {
+        editingPostingId = null;
+        const modal = document.getElementById('postingModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const postingForm = document.getElementById('postingForm');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        if (!modal) {
+          console.error('Posting modal element not found');
+          return;
+        }
+        
+        if (modalTitle) {
+          modalTitle.textContent = 'Create New Posting';
+        }
+        if (postingForm) {
+          postingForm.reset();
+        }
+        if (imagePreview) {
+          imagePreview.style.display = 'none';
+        }
+        modal.style.display = 'flex';
+        lucide.createIcons(); // Refresh icons in case they weren't initialized
+      } catch (error) {
+        console.error('Error opening posting modal:', error);
+      }
     }
 
     // Edit posting
