@@ -543,39 +543,13 @@
         return;
       }
       
-      // Fetch conversation from backend (this marks messages as read)
+      // Fetch conversation from backend (this marks messages as read on the backend)
       try {
-        const conversationData = await getConversation(recipientUserId);
-        // Update currentConversation with fresh data from backend
-        if (conversationData && conversationData.messages) {
-          currentConversation.messages = conversationData.messages;
-        }
+        await getConversation(recipientUserId);
       } catch (error) {
         console.error('Error fetching conversation from backend:', error);
         // Continue with cached messages if fetch fails
       }
-      
-      // Reload conversations list to update unread counts (this updates the badge on conversation items)
-      // Use a small delay to ensure backend has processed the read status
-      const currentIndex = index; // Store the index before reloading
-      setTimeout(async () => {
-        // Save the current conversation panel state
-        const panelWasVisible = conversationPanel.style.display !== 'none';
-        
-        // Reload the conversations list to get updated unread counts
-        await loadMessages();
-        
-        // Update unread badge in navigation
-        if (typeof updateUnreadBadge === 'function') {
-          updateUnreadBadge();
-        }
-        
-        // If the panel was visible, restore it with the updated conversation
-        if (panelWasVisible && currentIndex >= 0 && currentIndex < allConversations.length) {
-          // Re-open the conversation to restore the panel
-          await openConversation(currentIndex);
-        }
-      }, 300);
       
       // Render messages
       const messages = currentConversation.messages || [];
