@@ -963,7 +963,7 @@ app.get('/api/postings', async (req, res) => {
       postings: postings.map(p => ({
         ...p,
         price: parseFloat(p.price) || 0,
-        image_url: p.image_url || null // Already full URL from Supabase Storage
+        image_url: cleanImageUrl(p.image_url) // Clean up any malformed URLs
       })),
       pagination: {
         page: parseInt(page),
@@ -996,7 +996,7 @@ app.get('/api/postings/:id', async (req, res) => {
     res.json({
       ...posting,
       price: parseFloat(posting.price),
-      image_url: posting.image_url || null // Already full URL from Supabase Storage
+      image_url: cleanImageUrl(posting.image_url) // Clean up any malformed URLs
     });
   } catch (error) {
     console.error('Get posting error:', error);
@@ -1016,7 +1016,7 @@ app.get('/api/postings/user/my-postings', authenticateToken, async (req, res) =>
       postings: postings.map(p => ({
         ...p,
         price: parseFloat(p.price),
-        image_url: p.image_url || null // Already full URL from Supabase Storage
+        image_url: cleanImageUrl(p.image_url) // Clean up any malformed URLs
       }))
     });
   } catch (error) {
