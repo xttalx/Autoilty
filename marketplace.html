@@ -106,10 +106,10 @@
           <h3 style="margin-bottom: var(--spacing-xs); font-size: 1.5rem; font-weight: 600; color: var(--color-text);">Have something to sell?</h3>
           <p style="color: var(--color-text-light); margin: 0; font-size: 0.95rem;">List your automotive items and reach thousands of buyers in minutes.</p>
         </div>
-        <a href="my-postings.html?create=true" class="btn btn-primary" id="createPostingCtaBtn" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.75rem; font-weight: 600; font-size: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease; text-decoration: none; white-space: nowrap;">
+        <button class="btn btn-primary" id="createPostingCtaBtn" onclick="if(typeof openPostingFormModal === 'function') { openPostingFormModal(); } else { window.location.href = 'my-postings.html?create=true'; }" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.75rem; font-weight: 600; font-size: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease; white-space: nowrap; cursor: pointer;">
           <i data-lucide="plus" class="btn-icon" style="width: 1.25rem; height: 1.25rem;"></i>
           Create Posting
-        </a>
+        </button>
       </div>
     </div>
   </section>
@@ -130,10 +130,10 @@
         <i data-lucide="package" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
         <h3 style="margin-bottom: var(--spacing-xs);">No postings found</h3>
         <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">Try adjusting your filters or be the first to create a posting!</p>
-        <a href="my-postings.html?create=true" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.75rem; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease; text-decoration: none;">
+        <button class="btn btn-primary" onclick="if(typeof openPostingFormModal === 'function') { openPostingFormModal(); } else { window.location.href = 'my-postings.html?create=true'; }" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.75rem; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease; cursor: pointer;">
           <i data-lucide="plus" class="btn-icon" style="width: 1.25rem; height: 1.25rem;"></i>
           Create Posting
-        </a>
+        </button>
       </div>
     </div>
   </main>
