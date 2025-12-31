@@ -389,12 +389,34 @@ async function uploadToSupabaseStorage(fileBuffer, fileName, contentType) {
     // Ensure the URL is clean and properly formatted
     let publicUrl = urlData.publicUrl.trim();
     
+    // Remove any incorrectly prepended Railway domain
+    const railwayDomain = 'https://autoilty-production.up.railway.app';
+    if (publicUrl.includes(railwayDomain) && publicUrl.includes('supabase.co')) {
+      // Extract just the Supabase URL part
+      const supabaseMatch = publicUrl.match(/https?:\/\/[^/]*supabase\.co[^\s"']*/);
+      if (supabaseMatch) {
+        publicUrl = supabaseMatch[0];
+      } else {
+        // Fallback: remove Railway domain
+        publicUrl = publicUrl.replace(railwayDomain, '');
+        publicUrl = publicUrl.replace(/^\/+/, '');
+        if (!publicUrl.startsWith('http://') && !publicUrl.startsWith('https://')) {
+          publicUrl = 'https://' + publicUrl;
+        }
+      }
+    }
+    
     // Fix any double slashes in the URL (except after https://)
     publicUrl = publicUrl.replace(/([^:]\/)\/+/g, '$1');
     
     // Ensure it starts with https://
     if (!publicUrl.startsWith('http://') && !publicUrl.startsWith('https://')) {
       publicUrl = `https://${publicUrl}`;
+    }
+    
+    // Final validation: ensure it's a valid Supabase URL
+    if (!publicUrl.includes('supabase.co') && !publicUrl.startsWith('data:')) {
+      console.warn('⚠️  Generated URL does not appear to be a Supabase URL:', publicUrl);
     }
 
     console.log('✅ Public URL generated:', publicUrl);
