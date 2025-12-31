@@ -378,18 +378,30 @@
           let cleanUrl = imgUrl.trim();
           
           // Check if Railway domain is incorrectly prepended (common issue)
+          // Pattern: https://autoilty-production.up.railway.apphttps://... or https://autoilty-production.up.railway.apphttps//...
           const railwayDomain = 'https://autoilty-production.up.railway.app';
-          if (cleanUrl.startsWith(railwayDomain)) {
-            // Remove the Railway domain prefix
-            cleanUrl = cleanUrl.substring(railwayDomain.length);
-            // Remove any leading slashes
-            cleanUrl = cleanUrl.replace(/^\/+/, '');
+          if (cleanUrl.includes(railwayDomain) && cleanUrl.includes('supabase.co')) {
+            // Extract just the Supabase URL part
+            const supabaseMatch = cleanUrl.match(/https?:\/\/[^/]*supabase\.co[^\s"']*/);
+            if (supabaseMatch) {
+              cleanUrl = supabaseMatch[0];
+            } else {
+              // Fallback: remove Railway domain and fix the URL
+              cleanUrl = cleanUrl.replace(railwayDomain, '');
+              cleanUrl = cleanUrl.replace(/^\/+/, '');
+              // Ensure it starts with https://
+              if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+                cleanUrl = 'https://' + cleanUrl;
+              }
+            }
           }
           
           // If it already starts with http:// or https://, return as-is (full URL from Supabase)
           if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-            // Fix any double slashes after https:// or http://
+            // Fix any double slashes after https:// or http:// (but not the :// part)
             cleanUrl = cleanUrl.replace(/(https?:\/)\/([^/])/, '$1/$2');
+            // Fix any double slashes in the path
+            cleanUrl = cleanUrl.replace(/([^:]\/)\/+/g, '$1');
             return cleanUrl;
           }
           
@@ -421,7 +433,18 @@
         
         if (images.length > 0) {
           // Set main image
-          const mainImageUrl = getImageUrl(images[0]);
+          let mainImageUrl = getImageUrl(images[0]);
+          
+          // Additional cleanup: ensure no Railway domain is prepended to Supabase URLs
+          if (mainImageUrl.includes('supabase.co') && mainImageUrl.includes('autoilty-production.up.railway.app')) {
+            // Extract just the Supabase URL part using regex
+            const supabaseMatch = mainImageUrl.match(/https?:\/\/[^/]*supabase\.co[^\s"']*/);
+            if (supabaseMatch) {
+              mainImageUrl = supabaseMatch[0];
+            }
+          }
+          
+          console.log('Setting image URL:', mainImageUrl);
           postingImage.src = mainImageUrl;
           postingImage.alt = posting.title || 'Posting image';
           postingImage.onerror = function() {
