@@ -441,14 +441,28 @@
     }
     
     // Check if we should open the modal from URL parameter (when coming from nav link)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('create') === 'true') {
-      // Remove the parameter from URL for cleaner navigation
-      window.history.replaceState({}, document.title, window.location.pathname);
-      // Open modal after a short delay to ensure page is loaded
-      setTimeout(() => {
-        openPostingModal();
-      }, 100);
+    function checkUrlParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('create') === 'true') {
+        // Remove the parameter from URL for cleaner navigation
+        window.history.replaceState({}, document.title, window.location.pathname);
+        // Open modal after ensuring all elements are ready
+        setTimeout(() => {
+          const modal = document.getElementById('postingModal');
+          if (modal) {
+            openPostingModal();
+          } else {
+            console.error('Posting modal not found');
+          }
+        }, 200);
+      }
+    }
+    
+    // Check URL params after page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', checkUrlParams);
+    } else {
+      checkUrlParams();
     }
 
     // Close modal on overlay click
