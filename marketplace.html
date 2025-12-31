@@ -228,15 +228,20 @@
         if (myPostingsLink) myPostingsLink.style.display = 'flex';
         if (createPostingLink) {
           createPostingLink.style.display = 'block';
-          // Update link to use modal
-          createPostingLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (typeof openPostingFormModal === 'function') {
-              openPostingFormModal();
-            } else {
-              window.location.href = 'my-postings.html?create=true';
-            }
-          });
+          // Update link to use modal - clone to remove old listeners and add new one
+          const newLink = createPostingLink.cloneNode(true);
+          createPostingLink.parentNode.replaceChild(newLink, createPostingLink);
+          const updatedLink = document.getElementById('createPostingLink');
+          if (updatedLink) {
+            updatedLink.addEventListener('click', (e) => {
+              e.preventDefault();
+              if (typeof openPostingFormModal === 'function') {
+                openPostingFormModal();
+              } else {
+                window.location.href = 'my-postings.html?create=true';
+              }
+            });
+          }
         }
         if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
         
