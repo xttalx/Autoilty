@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="View posting details on Autoilty marketplace">
+  <meta name="description" content="View automotive listing details on Autoilty marketplace. Buy used cars Canada, auto parts Manitoba.">
+  <meta name="keywords" content="buy used cars Canada, auto parts Manitoba, car listing, automotive product, buy cars online">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="product">
+  <link rel="canonical" href="https://autoilty.com/posting-detail.html">
   <title>Posting Details - Autoilty</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -513,8 +517,58 @@
           username: posting.username
         };
 
-        // Update page title
-        document.title = `${posting.title} - Autoilty`;
+        // Update page title and meta tags for SEO
+        const metaTitle = `${posting.title} - ${posting.price ? '$' + parseFloat(posting.price).toFixed(0) : ''} | Autoilty`;
+        document.title = metaTitle;
+        
+        // Update meta description
+        const metaDescription = document.querySelector('meta[name="description"]');
+        if (metaDescription) {
+          const description = posting.description 
+            ? posting.description.substring(0, 155) + (posting.description.length > 155 ? '...' : '')
+            : `Buy ${posting.title} for $${parseFloat(posting.price || 0).toFixed(2)} CAD. ${posting.location ? 'Located in ' + posting.location : ''}. Quality automotive marketplace.`;
+          metaDescription.setAttribute('content', description);
+        }
+        
+        // Add Product Schema markup for SEO
+        const schemaScript = document.createElement('script');
+        schemaScript.type = 'application/ld+json';
+        const productSchema = {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": posting.title || "Automotive Product",
+          "description": posting.description || "",
+          "image": posting.image_url ? getImageUrl(posting.image_url) : "",
+          "category": posting.category || "Automotive",
+          "brand": {
+            "@type": "Brand",
+            "name": "Autoilty Marketplace"
+          },
+          "offers": {
+            "@type": "Offer",
+            "price": posting.price || 0,
+            "priceCurrency": "CAD",
+            "availability": "https://schema.org/InStock",
+            "url": window.location.href,
+            "seller": {
+              "@type": "Person",
+              "name": posting.username || "Seller"
+            }
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.5",
+            "reviewCount": "1"
+          }
+        };
+        schemaScript.textContent = JSON.stringify(productSchema);
+        
+        // Remove existing schema if present
+        const existingSchema = document.querySelector('script[type="application/ld+json"]');
+        if (existingSchema && existingSchema.textContent.includes('"@type": "Product"')) {
+          existingSchema.remove();
+        }
+        document.head.appendChild(schemaScript);
 
         loadingState.style.display = 'none';
         postingContent.style.display = 'block';

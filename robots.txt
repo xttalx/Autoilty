@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://autoilty.com/sitemap.xml
+
+# Disallow admin/private areas (if any)
+Disallow: /admin/
+Disallow: /api/
+Disallow: /uploads/
+
+# Allow all public pages
+Allow: /
+Allow: /index.html
+Allow: /marketplace.html
+Allow: /resources.html
+
