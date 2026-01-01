@@ -116,16 +116,20 @@
         </div>
 
         <div class="form-group">
-          <label for="postingDescription" class="form-label">Description *</label>
+          <label for="postingDescription" class="form-label">Description * <span style="font-weight: normal; color: var(--color-text-light); font-size: 0.875rem;">(Recommended: 200+ words for better SEO)</span></label>
           <textarea 
             id="postingDescription" 
             name="description" 
             class="form-textarea" 
-            rows="4"
-            placeholder="Describe your item in detail..."
+            rows="8"
+            placeholder="Provide a detailed description of your item. Include: condition, features, history, maintenance records, reason for selling, and any other relevant details. Longer descriptions help buyers make informed decisions and improve search visibility."
             required
             aria-required="true"
+            maxlength="2000"
           ></textarea>
+          <p class="form-hint" style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--color-text-light);">
+            <span id="descriptionCharCount">0</span> / 2000 characters
+          </p>
         </div>
 
         <div class="form-group-row">

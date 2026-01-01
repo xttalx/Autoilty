@@ -158,16 +158,20 @@ function createPostingFormModal() {
           </div>
 
           <div class="form-group" style="margin-bottom: var(--spacing-md);">
-            <label for="postingFormDescription" class="form-label" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500;">Description *</label>
+            <label for="postingFormDescription" class="form-label" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500;">Description * <span style="font-weight: normal; color: var(--color-text-light); font-size: 0.875rem;">(Recommended: 200+ words)</span></label>
             <textarea 
               id="postingFormDescription" 
               name="description" 
               class="form-input" 
-              rows="4"
-              placeholder="Describe your item in detail..."
+              rows="8"
+              placeholder="Provide a detailed description. Include: condition, features, history, maintenance records, reason for selling, and any other relevant details. Longer descriptions help buyers make informed decisions and improve search visibility."
               required
+              maxlength="2000"
               style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 1rem; resize: vertical; font-family: inherit;"
             ></textarea>
+            <p class="form-hint" style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--color-text-light);">
+              <span id="postingFormDescriptionCharCount">0</span> / 2000 characters
+            </p>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">

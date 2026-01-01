@@ -90,6 +90,19 @@
 
       <!-- Posting Content -->
       <div id="postingContent" style="display: none;">
+        <!-- Breadcrumbs -->
+        <nav aria-label="Breadcrumb" style="margin-bottom: var(--spacing-lg);">
+          <ol style="display: flex; align-items: center; gap: var(--spacing-xs); list-style: none; padding: 0; margin: 0; flex-wrap: wrap;">
+            <li><a href="index.html" style="color: var(--color-text-light); text-decoration: none; font-size: 0.9375rem;">Home</a></li>
+            <li style="color: var(--color-text-light);">/</li>
+            <li><a href="marketplace.html" style="color: var(--color-text-light); text-decoration: none; font-size: 0.9375rem;">Marketplace</a></li>
+            <li style="color: var(--color-text-light);">/</li>
+            <li id="breadcrumbCategory" style="color: var(--color-text-light); font-size: 0.9375rem;"></li>
+            <li style="color: var(--color-text-light);">/</li>
+            <li id="breadcrumbPostingTitle" style="color: var(--color-text); font-size: 0.9375rem; font-weight: 500;" aria-current="page"></li>
+          </ol>
+        </nav>
+        
         <!-- Back Button -->
         <div style="margin-bottom: var(--spacing-lg);">
           <a href="marketplace.html" class="btn btn-secondary" style="display: inline-flex;">
@@ -145,9 +158,39 @@
         </div>
 
         <!-- Description Section -->
-        <div style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-xl);">
+        <div style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-xl); margin-bottom: var(--spacing-xl);">
           <h2 style="font-size: 1.5rem; margin-bottom: var(--spacing-md);">Description</h2>
           <div id="postingDescription" style="color: var(--color-text); line-height: 1.8; white-space: pre-wrap;"></div>
+        </div>
+
+        <!-- Related Postings Section -->
+        <div style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-xl);">
+          <h2 style="font-size: 1.5rem; margin-bottom: var(--spacing-lg);">Related Postings</h2>
+          <div id="relatedPostings" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--spacing-lg);">
+            <!-- Related postings will be loaded here -->
+          </div>
+          <div id="relatedPostingsLoading" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-light); display: none;">
+            <div class="skeleton-card" style="height: 300px;"></div>
+            <div class="skeleton-card" style="height: 300px;"></div>
+            <div class="skeleton-card" style="height: 300px;"></div>
+          </div>
+          <div id="relatedPostingsEmpty" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-light); display: none;">
+            <p>No related postings found. <a href="marketplace.html?category=${encodeURIComponent(posting.category || '')}" style="color: var(--color-primary); text-decoration: underline;">Browse all ${posting.category || 'automotive'} listings</a></p>
+          </div>
+            <div class="loading-spinner"></div>
+            <p>Loading related postings...</p>
+          </div>
+          <div id="relatedPostingsEmpty" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-light); display: none;">
+            <p>No related postings found. <a href="marketplace.html" style="color: var(--color-primary); text-decoration: underline;">Browse all listings</a></p>
+          </div>
+        </div>
+            <div class="skeleton-card" style="height: 300px; margin-bottom: var(--spacing-md);"></div>
+            <div class="skeleton-card" style="height: 300px; margin-bottom: var(--spacing-md);"></div>
+            <div class="skeleton-card" style="height: 300px;"></div>
+          </div>
+          <div id="relatedPostingsEmpty" style="display: none; text-align: center; padding: var(--spacing-xl); color: var(--color-text-light);">
+            <p>No related postings found.</p>
+          </div>
         </div>
       </div>
 
@@ -496,6 +539,12 @@
         if (locationEl) locationEl.textContent = posting.location || 'Location not specified';
         if (usernameEl) usernameEl.textContent = posting.username || 'Unknown';
         if (descriptionEl) descriptionEl.textContent = posting.description || 'No description provided.';
+        
+        // Update breadcrumb
+        const breadcrumbTitle = document.getElementById('breadcrumbPostingTitle');
+        if (breadcrumbTitle) {
+          breadcrumbTitle.textContent = (posting.title || 'Posting Details').substring(0, 50) + ((posting.title || '').length > 50 ? '...' : '');
+        }
 
         // Format date
         if (posting.created_at && dateEl) {
@@ -530,15 +579,27 @@
           metaDescription.setAttribute('content', description);
         }
         
+        // Remove existing schema if present
+        const existingSchema = document.querySelector('script[type="application/ld+json"]');
+        if (existingSchema) {
+          existingSchema.remove();
+        }
+
         // Add Product Schema markup for SEO
         const schemaScript = document.createElement('script');
         schemaScript.type = 'application/ld+json';
+        
+        const imageUrl = posting.image_url ? getImageUrl(posting.image_url) : '';
+        const cleanImageUrl = imageUrl.includes('supabase.co') && imageUrl.includes('autoilty-production.up.railway.app')
+          ? (imageUrl.match(/https?:\/\/[^/]*supabase\.co[^\s"']*/)?.[0] || imageUrl)
+          : imageUrl;
+        
         const productSchema = {
           "@context": "https://schema.org",
           "@type": "Product",
           "name": posting.title || "Automotive Product",
-          "description": posting.description || "",
-          "image": posting.image_url ? getImageUrl(posting.image_url) : "",
+          "description": posting.description || `Buy ${posting.title || 'automotive product'} in Canada. ${posting.location ? 'Located in ' + posting.location + '. ' : ''}Quality ${posting.category || 'automotive'} from Autoilty marketplace.`,
+          "image": cleanImageUrl || "https://autoilty.com/og-image.jpg",
           "category": posting.category || "Automotive",
           "brand": {
             "@type": "Brand",
@@ -546,20 +607,23 @@
           },
           "offers": {
             "@type": "Offer",
-            "price": posting.price || 0,
+            "price": parseFloat(posting.price || 0),
             "priceCurrency": "CAD",
             "availability": "https://schema.org/InStock",
-            "url": window.location.href,
+            "url": `https://autoilty.com/posting-detail.html?id=${posting.id}`,
             "seller": {
               "@type": "Person",
               "name": posting.username || "Seller"
-            }
+            },
+            "itemCondition": "https://schema.org/UsedCondition"
           },
           "aggregateRating": {
             "@type": "AggregateRating",
             "ratingValue": "4.5",
             "reviewCount": "1"
-          }
+          },
+          "sku": `POSTING-${posting.id}`,
+          "mpn": posting.id.toString()
         };
         schemaScript.textContent = JSON.stringify(productSchema);
         
@@ -572,6 +636,9 @@
 
         loadingState.style.display = 'none';
         postingContent.style.display = 'block';
+
+        // Load related postings
+        loadRelatedPostings(posting);
 
         // Re-initialize icons after content is loaded
         lucide.createIcons();
@@ -592,6 +659,69 @@
         }
         if (postingContent) postingContent.style.display = 'none';
         lucide.createIcons();
+      }
+    }
+
+    // Load related postings
+    async function loadRelatedPostings(currentPosting) {
+      const relatedContainer = document.getElementById('relatedPostings');
+      const relatedLoading = document.getElementById('relatedPostingsLoading');
+      const relatedEmpty = document.getElementById('relatedPostingsEmpty');
+      
+      if (!relatedContainer || !relatedLoading) return;
+      
+      try {
+        relatedLoading.style.display = 'block';
+        relatedContainer.style.display = 'none';
+        relatedEmpty.style.display = 'none';
+        
+        // Fetch postings from the same category
+        const response = await fetch(`${window.API_BASE_URL || 'https://autoilty-production.up.railway.app/api'}/postings?category=${encodeURIComponent(currentPosting.category || 'Cars')}&limit=4`);
+        const data = await response.json();
+        
+        // Filter out the current posting
+        const related = (data.postings || []).filter(p => p.id !== currentPosting.id).slice(0, 3);
+        
+        if (related.length === 0) {
+          relatedLoading.style.display = 'none';
+          relatedEmpty.style.display = 'block';
+          return;
+        }
+        
+        // Render related postings
+        relatedContainer.innerHTML = related.map(posting => {
+          // Use getPostingImageUrl if available, otherwise fallback
+          const imageUrl = (typeof getPostingImageUrl === 'function' && posting.image_url)
+            ? getPostingImageUrl(posting.image_url)
+            : (posting.image_url 
+              ? (posting.image_url.startsWith('http') ? posting.image_url : `https://autoilty-production.up.railway.app${posting.image_url.startsWith('/') ? '' : '/'}${posting.image_url}`)
+              : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==');
+          
+          return `
+            <a href="posting-detail.html?id=${posting.id}" style="text-decoration: none; color: inherit;">
+              <div class="product-card" style="background: white; border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; transition: var(--transition); cursor: pointer; box-shadow: var(--shadow-sm); height: 100%; display: flex; flex-direction: column;">
+                <div class="product-image" style="width: 100%; height: 200px; overflow: hidden; background: var(--color-border);">
+                  <img src="${imageUrl}" alt="${posting.title || 'Posting'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';">
+                </div>
+                <div class="product-info" style="padding: var(--spacing-md); flex: 1; display: flex; flex-direction: column;">
+                  <span class="product-category" style="display: inline-block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--color-text-light); margin-bottom: var(--spacing-xs);">${posting.category || 'Other'}</span>
+                  <h3 class="product-name" style="font-size: 1.125rem; font-weight: 600; margin-bottom: var(--spacing-sm); color: var(--color-text); line-height: 1.4; flex: 1;">${(posting.title || 'Untitled').substring(0, 60)}${(posting.title || '').length > 60 ? '...' : ''}</h3>
+                  <p class="product-price" style="font-size: 1.5rem; font-weight: 600; color: var(--color-text); margin-top: auto;">$${parseFloat(posting.price || 0).toFixed(2)} CAD</p>
+                  ${posting.location ? `<p style="font-size: 0.875rem; color: var(--color-text-light); margin-top: var(--spacing-xs);"><i data-lucide="map-pin" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> ${posting.location}</p>` : ''}
+                </div>
+              </div>
+            </a>
+          `;
+        }).join('');
+        
+        relatedLoading.style.display = 'none';
+        relatedContainer.style.display = 'grid';
+        
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Error loading related postings:', error);
+        relatedLoading.style.display = 'none';
+        relatedEmpty.style.display = 'block';
       }
     }
 
