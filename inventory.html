@@ -14,16 +14,35 @@
     @media (max-width: 768px) {
       #searchButton {
         padding: 0.5rem !important;
-        min-width: 40px !important;
+        min-width: 44px !important;
+        width: 44px !important;
+        right: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
       }
       #searchButtonText {
         display: none !important;
       }
+      #searchButtonIcon {
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+      }
       #vehicleSearchInput {
-        padding-right: 50px !important;
+        padding-right: 55px !important;
       }
       #vehicleSearchClear {
-        right: 45px !important;
+        right: 52px !important;
+      }
+      .search-bar {
+        padding-right: 0 !important;
+      }
+    }
+    
+    /* Desktop search input padding */
+    @media (min-width: 769px) {
+      #vehicleSearchInput {
+        padding-right: 100px !important;
       }
     }
   </style>
@@ -123,13 +142,12 @@
             placeholder="Search by make, model, or variant..."
             aria-label="Search vehicles"
             autocomplete="off"
-            style="padding-right: 90px;"
           >
           <button class="search-clear" id="vehicleSearchClear" aria-label="Clear search" style="display: none; position: absolute; right: 50px; top: 50%; transform: translateY(-50%); z-index: 2; background: white; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px;">
             <i data-lucide="x" style="width: 1rem; height: 1rem;"></i>
           </button>
-          <button class="btn btn-primary" id="searchButton" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 0.5rem; height: auto; min-width: auto; z-index: 2;">
-            <i data-lucide="search" id="searchButtonIcon" style="width: 1rem; height: 1rem;"></i>
+          <button class="btn btn-primary" id="searchButton" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 0.5rem 1rem; height: auto; z-index: 2;">
+            <i data-lucide="search" id="searchButtonIcon" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></i>
             <span id="searchButtonText" style="display: inline;">Search</span>
           </button>
         </div>
