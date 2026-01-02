@@ -9,6 +9,24 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Mobile search button adjustments */
+    @media (max-width: 768px) {
+      #searchButton {
+        padding: 0.5rem !important;
+        min-width: 40px !important;
+      }
+      #searchButtonText {
+        display: none !important;
+      }
+      #vehicleSearchInput {
+        padding-right: 50px !important;
+      }
+      #vehicleSearchClear {
+        right: 45px !important;
+      }
+    }
+  </style>
   <script src="public/config.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -19,7 +37,7 @@
     <div class="container">
       <div class="nav-inner">
         <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
-        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" style="display: none;">
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
           <i data-lucide="menu"></i>
         </button>
         <div class="nav-links" id="navLinks">
@@ -105,14 +123,14 @@
             placeholder="Search by make, model, or variant..."
             aria-label="Search vehicles"
             autocomplete="off"
-            style="padding-right: 100px;"
+            style="padding-right: 90px;"
           >
-          <button class="search-clear" id="vehicleSearchClear" aria-label="Clear search" style="display: none; position: absolute; right: 110px; top: 50%; transform: translateY(-50%);">
-            <i data-lucide="x"></i>
+          <button class="search-clear" id="vehicleSearchClear" aria-label="Clear search" style="display: none; position: absolute; right: 50px; top: 50%; transform: translateY(-50%); z-index: 2; background: white; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px;">
+            <i data-lucide="x" style="width: 1rem; height: 1rem;"></i>
           </button>
-          <button class="btn btn-primary" id="searchButton" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 0.5rem 1rem; height: auto;">
-            <i data-lucide="search" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></i>
-            Search
+          <button class="btn btn-primary" id="searchButton" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 0.5rem; height: auto; min-width: auto; z-index: 2;">
+            <i data-lucide="search" id="searchButtonIcon" style="width: 1rem; height: 1rem;"></i>
+            <span id="searchButtonText" style="display: inline;">Search</span>
           </button>
         </div>
       </div>
@@ -714,7 +732,9 @@
         }
       }
 
+      // Initial check - run immediately and after a short delay to ensure CSS is applied
       checkMobile();
+      setTimeout(checkMobile, 100);
       window.addEventListener('resize', checkMobile);
 
       navToggle.addEventListener('click', (e) => {
