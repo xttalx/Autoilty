@@ -391,6 +391,8 @@
     // Store conversations globally
     let allConversations = [];
     let currentConversation = null;
+    // Track currently open conversation to prevent badge from reappearing
+    let currentlyOpenConversation = null; // { recipientUserId, postingId }
 
     // Load inbox messages
     async function loadMessages() {
@@ -419,7 +421,16 @@
 
         // Render conversation list items in left panel
         messagesList.innerHTML = allConversations.map((conv, index) => {
-          const unreadCount = conv.unreadCount || 0;
+          // If this conversation is currently open, force unread count to 0
+          let unreadCount = conv.unreadCount || 0;
+          if (currentlyOpenConversation) {
+            const otherId = conv.otherUserId || conv.fromUserId;
+            const postingId = conv.postingId || null;
+            if (otherId === currentlyOpenConversation.recipientUserId && 
+                (postingId || null) === (currentlyOpenConversation.postingId || null)) {
+              unreadCount = 0; // Force to 0 for currently open conversation
+            }
+          }
           const messages = conv.messages || [];
           const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
           const lastMessageDate = lastMessage ? new Date(lastMessage.createdAt) : new Date();
@@ -576,6 +587,12 @@
         return;
       }
       
+      // Track this conversation as currently open to prevent badge from reappearing
+      currentlyOpenConversation = {
+        recipientUserId: recipientUserId,
+        postingId: postingId || null
+      };
+      
       // Fetch conversation from backend (this marks messages as read on the backend)
       try {
         await getConversation(recipientUserId);
@@ -606,6 +623,7 @@
           const savedPostingId = postingId;
           
           // Reload conversations list to get updated unread counts from backend
+          // The currentlyOpenConversation variable will ensure badge doesn't reappear
           await loadMessages();
           
           // Update unread badge in navigation
@@ -723,6 +741,9 @@
       conversationPanel.style.display = 'none';
       conversationPanel.classList.remove('active');
       backBtn.style.display = 'none';
+      
+      // Clear currently open conversation tracking when closing the conversation view
+      currentlyOpenConversation = null;
     }
 
     // Send reply in conversation panel
