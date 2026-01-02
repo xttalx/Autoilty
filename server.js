@@ -2000,19 +2000,28 @@ app.get('/api/directory/business/:placeId', async (req, res) => {
 // Get vehicles with filters (public - no auth required)
 app.get('/api/vehicles', async (req, res) => {
   try {
-    const { make, model, year, fuel_type, body_type, price_min, price_max, page = 1, limit = 20 } = req.query;
+    const { make, model, year, fuel_type, body_type, price_min, price_max, search, page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
     
     let query = 'SELECT * FROM vehicles WHERE 1=1';
     const params = [];
     let paramCount = 0;
     
+    // General search across make, model, and variant
+    if (search) {
+      paramCount++;
+      query += ` AND (make ILIKE $${paramCount} OR model ILIKE $${paramCount} OR variant ILIKE $${paramCount})`;
+      params.push(`%${search}%`);
+    }
+    
+    // Make filter (works alongside search)
     if (make) {
       paramCount++;
       query += ` AND make ILIKE $${paramCount}`;
       params.push(`%${make}%`);
     }
     
+    // Model filter (works alongside search, but typically not used when search is active)
     if (model) {
       paramCount++;
       query += ` AND model ILIKE $${paramCount}`;

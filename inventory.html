@@ -332,6 +332,7 @@
 
         // Build query params
         const params = new URLSearchParams({ page, limit: 20 });
+        if (currentFilters.search) params.append('search', currentFilters.search);
         if (currentFilters.make) params.append('make', currentFilters.make);
         if (currentFilters.model) params.append('model', currentFilters.model);
         if (currentFilters.body_type) params.append('body_type', currentFilters.body_type);
@@ -546,19 +547,19 @@
 
       function applyFilters() {
         currentFilters = {};
+        
+        // Handle search first - use general search parameter
+        if (searchInput.value.trim()) {
+          currentFilters.search = searchInput.value.trim();
+        }
+        
+        // Apply dropdown filters (these work alongside search)
         if (filterMake.value) currentFilters.make = filterMake.value;
         if (filterBodyType.value) currentFilters.body_type = filterBodyType.value;
         if (filterFuelType.value) currentFilters.fuel_type = filterFuelType.value;
         if (filterYear.value) currentFilters.year = filterYear.value;
         if (filterPriceMin.value) currentFilters.price_min = filterPriceMin.value;
         if (filterPriceMax.value) currentFilters.price_max = filterPriceMax.value;
-        
-        // Handle search (could search make/model/variant)
-        if (searchInput.value.trim()) {
-          const searchTerm = searchInput.value.trim();
-          // Assume search is for model first, fallback to make
-          currentFilters.model = searchTerm;
-        }
 
         currentPage = 1;
         loadVehicles(1);
