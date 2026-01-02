@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Find the perfect vehicle in India. Browse cars, bikes, and commercial vehicles from top brands like Maruti Suzuki, Tata, Hyundai, and Mahindra.">
+  <title>Find Vehicle - Vehicle Inventory | Autoilty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="public/config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" style="display: none;">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="nav-links" id="navLinks">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="marketplace.html" class="nav-link">Marketplace</a>
+          <a href="inventory.html" class="nav-link active">Find Vehicle</a>
+          <a href="resources.html" class="nav-link">Resources</a>
+          <a href="#" class="nav-link" id="createPostingLink" style="display: none;">Create Posting</a>
+          <a href="login.html?return=inventory.html" class="nav-link" id="createPostingLoginLink">Create Posting</a>
+          <button class="cart-toggle" aria-label="Shopping cart" id="cartToggle">
+            <i data-lucide="shopping-cart"></i>
+            <span class="cart-badge" id="cartBadge">0</span>
+          </button>
+          <div class="user-menu" id="userMenu" style="display: none;">
+            <button class="user-menu-button" id="userMenuButton">
+              <span id="userMenuName">User</span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="user-menu-dropdown" id="userMenuDropdown">
+              <a href="profile.html" class="user-menu-item">
+                <i data-lucide="user" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Profile
+              </a>
+              <a href="my-postings.html" class="user-menu-item" id="myPostingsLink">
+                <i data-lucide="file-text" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                My Postings
+              </a>
+              <a href="messages.html" class="user-menu-item" id="inboxLink">
+                <i data-lucide="mail" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Inbox
+                <span class="unread-badge" id="unreadBadge" style="display: none; margin-left: auto; background: var(--color-primary); color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.75rem; font-weight: 600; min-width: 18px; text-align: center;">0</span>
+              </a>
+              <button class="user-menu-item danger" id="logoutButton" style="width: 100%; text-align: left; border: none; cursor: pointer;">
+                <i data-lucide="log-out" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+          <a href="login.html?return=inventory.html" class="nav-link" id="loginLink">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Breadcrumbs -->
+  <nav aria-label="Breadcrumb" style="background: #fafafa; border-bottom: 1px solid var(--color-border); padding: var(--spacing-sm) 0;">
+    <div class="container">
+      <ol style="display: flex; align-items: center; list-style: none; padding: 0; margin: 0; flex-wrap: wrap; gap: var(--spacing-xs);" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="index.html" itemprop="item" style="color: var(--color-text-light); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;">
+            <span itemprop="name">Home</span>
+          </a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <li style="color: var(--color-text-light); margin: 0 var(--spacing-xs); font-size: 0.875rem;">/</li>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" style="color: var(--color-text); font-size: 0.875rem; font-weight: 500;">
+          <span itemprop="name">Find Vehicle</span>
+          <meta itemprop="position" content="2" />
+        </li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="page-header" style="padding: var(--spacing-xl) 0; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-bottom: 1px solid var(--color-border);">
+    <div class="container">
+      <h1 style="margin-bottom: var(--spacing-sm); font-size: 2.5rem; font-weight: 600; color: var(--color-text);">Find Your Perfect Vehicle</h1>
+      <p style="color: var(--color-text-light); font-size: 1.125rem; margin: 0;">Browse thousands of vehicles from top Indian brands</p>
+    </div>
+  </section>
+
+  <!-- Search and Filters -->
+  <section class="filters-section" style="padding: var(--spacing-lg) 0; background: white; border-bottom: 1px solid var(--color-border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+    <div class="container">
+      <!-- Search Bar -->
+      <div class="search-bar-container" style="margin-bottom: var(--spacing-md);">
+        <div class="search-bar" style="max-width: 600px; margin: 0 auto;">
+          <i data-lucide="search" class="search-icon"></i>
+          <input 
+            type="text" 
+            id="vehicleSearchInput" 
+            class="search-input" 
+            placeholder="Search by make, model, or variant..."
+            aria-label="Search vehicles"
+            autocomplete="off"
+          >
+          <button class="search-clear" id="vehicleSearchClear" aria-label="Clear search" style="display: none;">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Row -->
+      <div style="display: flex; gap: var(--spacing-md); flex-wrap: wrap; justify-content: center; align-items: center;">
+        <select id="filterMake" class="form-select" style="min-width: 150px;">
+          <option value="">All Makes</option>
+          <option value="Maruti Suzuki">Maruti Suzuki</option>
+          <option value="Hyundai">Hyundai</option>
+          <option value="Tata">Tata</option>
+          <option value="Mahindra">Mahindra</option>
+        </select>
+
+        <select id="filterBodyType" class="form-select" style="min-width: 150px;">
+          <option value="">All Body Types</option>
+          <option value="Hatchback">Hatchback</option>
+          <option value="Sedan">Sedan</option>
+          <option value="SUV">SUV</option>
+          <option value="MUV">MUV</option>
+          <option value="Motorcycle">Motorcycle</option>
+          <option value="Scooter">Scooter</option>
+          <option value="Commercial">Commercial</option>
+        </select>
+
+        <select id="filterFuelType" class="form-select" style="min-width: 150px;">
+          <option value="">All Fuel Types</option>
+          <option value="Petrol">Petrol</option>
+          <option value="Diesel">Diesel</option>
+          <option value="Electric">Electric</option>
+          <option value="Hybrid">Hybrid</option>
+          <option value="CNG">CNG</option>
+          <option value="LPG">LPG</option>
+        </select>
+
+        <select id="filterYear" class="form-select" style="min-width: 120px;">
+          <option value="">All Years</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+          <option value="2022">2022</option>
+          <option value="2021">2021</option>
+          <option value="2020">2020</option>
+        </select>
+
+        <input 
+          type="number" 
+          id="filterPriceMin" 
+          class="form-input" 
+          placeholder="Min Price (₹)"
+          style="min-width: 120px;"
+        >
+
+        <input 
+          type="number" 
+          id="filterPriceMax" 
+          class="form-input" 
+          placeholder="Max Price (₹)"
+          style="min-width: 120px;"
+        >
+
+        <button class="btn btn-secondary" id="clearFilters" style="white-space: nowrap;">
+          <i data-lucide="x" style="width: 1rem; height: 1rem;"></i>
+          Clear
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vehicles Grid -->
+  <main class="main-content">
+    <div class="container" style="padding: var(--spacing-xl) 0;">
+      <!-- Results Count -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-md);">
+        <p id="resultsCount" style="color: var(--color-text-light); font-size: 0.9375rem; margin: 0;">
+          Loading vehicles...
+        </p>
+        <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+          <button class="btn btn-secondary" id="viewToggle" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+            <i data-lucide="grid" id="gridIcon" style="width: 1rem; height: 1rem;"></i>
+            <i data-lucide="list" id="listIcon" style="width: 1rem; height: 1rem; display: none;"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--spacing-lg);">
+        <div class="skeleton-card" style="height: 400px;"></div>
+        <div class="skeleton-card" style="height: 400px;"></div>
+        <div class="skeleton-card" style="height: 400px;"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" style="display: none; text-align: center; padding: var(--spacing-2xl);">
+        <i data-lucide="car" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
+        <h3 style="margin-bottom: var(--spacing-sm);">No vehicles found</h3>
+        <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">Try adjusting your filters or search terms.</p>
+        <button class="btn btn-primary" id="resetFilters">Reset Filters</button>
+      </div>
+
+      <!-- Vehicles Grid -->
+      <div id="vehiclesGrid" class="vehicles-grid" style="display: none; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--spacing-lg);">
+        <!-- Vehicles will be loaded here -->
+      </div>
+
+      <!-- Vehicles List -->
+      <div id="vehiclesList" class="vehicles-list" style="display: none; flex-direction: column; gap: var(--spacing-md);">
+        <!-- Vehicles will be loaded here -->
+      </div>
+
+      <!-- Pagination -->
+      <div id="pagination" style="display: none; margin-top: var(--spacing-xl); text-align: center;">
+        <div style="display: flex; justify-content: center; gap: var(--spacing-sm); align-items: center; flex-wrap: wrap;">
+          <button class="btn btn-secondary" id="prevPage" disabled>Previous</button>
+          <span id="pageInfo" style="color: var(--color-text-light); padding: 0 var(--spacing-md);"></span>
+          <button class="btn btn-secondary" id="nextPage" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- CTA Section -->
+  <section style="padding: var(--spacing-xl) 0; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-top: 1px solid var(--color-border);">
+    <div class="container">
+      <div style="text-align: center; padding: var(--spacing-xl); background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <h3 style="margin-bottom: var(--spacing-sm); font-size: 1.5rem; font-weight: 600;">Looking for Dealers?</h3>
+        <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">Find authorized dealers near you</p>
+        <a href="index.html#directory" class="btn btn-primary">Find Dealers</a>
+      </div>
+    </div>
+  </section>
+
+  <script src="auth.js"></script>
+  <script src="messages-api.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // API Base URL
+    const API_BASE_URL = window.API_BASE_URL || 'https://autoilty-production.up.railway.app/api';
+
+    // State
+    let currentPage = 1;
+    let currentFilters = {};
+    let viewMode = 'grid'; // 'grid' or 'list'
+    let totalPages = 1;
+
+    // Load vehicles
+    async function loadVehicles(page = 1) {
+      const loadingState = document.getElementById('loadingState');
+      const emptyState = document.getElementById('emptyState');
+      const vehiclesGrid = document.getElementById('vehiclesGrid');
+      const vehiclesList = document.getElementById('vehiclesList');
+      const resultsCount = document.getElementById('resultsCount');
+      const pagination = document.getElementById('pagination');
+
+      try {
+        loadingState.style.display = 'grid';
+        emptyState.style.display = 'none';
+        vehiclesGrid.style.display = 'none';
+        vehiclesList.style.display = 'none';
+        pagination.style.display = 'none';
+
+        // Build query params
+        const params = new URLSearchParams({ page, limit: 20 });
+        if (currentFilters.make) params.append('make', currentFilters.make);
+        if (currentFilters.model) params.append('model', currentFilters.model);
+        if (currentFilters.body_type) params.append('body_type', currentFilters.body_type);
+        if (currentFilters.fuel_type) params.append('fuel_type', currentFilters.fuel_type);
+        if (currentFilters.year) params.append('year', currentFilters.year);
+        if (currentFilters.price_min) params.append('price_min', currentFilters.price_min);
+        if (currentFilters.price_max) params.append('price_max', currentFilters.price_max);
+
+        const response = await fetch(`${API_BASE_URL}/vehicles?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch vehicles');
+
+        const data = await response.json();
+        const { vehicles, total, page: currentPageNum, totalPages: pages } = data;
+
+        currentPage = currentPageNum;
+        totalPages = pages;
+
+        // Update results count
+        resultsCount.textContent = `Showing ${vehicles.length} of ${total} vehicles`;
+
+        if (vehicles.length === 0) {
+          loadingState.style.display = 'none';
+          emptyState.style.display = 'block';
+          return;
+        }
+
+        // Render vehicles
+        renderVehicles(vehicles);
+
+        // Show pagination if needed
+        if (totalPages > 1) {
+          pagination.style.display = 'flex';
+          updatePagination();
+        }
+
+        loadingState.style.display = 'none';
+        if (viewMode === 'grid') {
+          vehiclesGrid.style.display = 'grid';
+        } else {
+          vehiclesList.style.display = 'flex';
+        }
+
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Error loading vehicles:', error);
+        loadingState.style.display = 'none';
+        emptyState.style.display = 'block';
+        emptyState.innerHTML = `
+          <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: #c53030; display: block;"></i>
+          <h3 style="margin-bottom: var(--spacing-sm);">Error loading vehicles</h3>
+          <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">${error.message}</p>
+          <button class="btn btn-primary" onclick="loadVehicles()">Try Again</button>
+        `;
+        lucide.createIcons();
+      }
+    }
+
+    // Render vehicles
+    function renderVehicles(vehicles) {
+      const grid = document.getElementById('vehiclesGrid');
+      const list = document.getElementById('vehiclesList');
+
+      // Grid view
+      grid.innerHTML = vehicles.map(vehicle => createVehicleCard(vehicle)).join('');
+
+      // List view
+      list.innerHTML = vehicles.map(vehicle => createVehicleListItem(vehicle)).join('');
+
+      // Add click handlers
+      document.querySelectorAll('.vehicle-card').forEach(card => {
+        card.addEventListener('click', () => {
+          // Could navigate to vehicle detail page
+          console.log('Vehicle clicked:', card.dataset.vehicleId);
+        });
+      });
+    }
+
+    // Create vehicle card (grid view)
+    function createVehicleCard(vehicle) {
+      const priceRange = vehicle.price_range_min && vehicle.price_range_max
+        ? `₹${(vehicle.price_range_min / 100000).toFixed(1)}L - ₹${(vehicle.price_range_max / 100000).toFixed(1)}L`
+        : 'Price on request';
+      
+      const imageUrl = vehicle.image_url || `https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&h=600&fit=crop`;
+      
+      return `
+        <div class="vehicle-card" data-vehicle-id="${vehicle.id}" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
+          <div style="position: relative; width: 100%; padding-top: 66.67%; background: #f5f5f5; overflow: hidden;">
+            <img 
+              src="${imageUrl}" 
+              alt="${vehicle.make} ${vehicle.model}" 
+              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
+              onerror="this.src='https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&h=600&fit=crop'"
+            >
+            <div style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; color: var(--color-text);">
+              ${vehicle.year}
+            </div>
+          </div>
+          <div style="padding: var(--spacing-md);">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-xs);">
+              <div style="flex: 1;">
+                <h3 style="margin: 0 0 4px 0; font-size: 1.125rem; font-weight: 600; color: var(--color-text);">
+                  ${escapeHtml(vehicle.make)} ${escapeHtml(vehicle.model)}
+                </h3>
+                <p style="margin: 0; font-size: 0.875rem; color: var(--color-text-light);">
+                  ${escapeHtml(vehicle.variant || '')}
+                </p>
+              </div>
+            </div>
+            <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap; margin-bottom: var(--spacing-sm);">
+              <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; color: var(--color-text);">
+                ${vehicle.fuel_type}
+              </span>
+              <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; color: var(--color-text);">
+                ${vehicle.transmission}
+              </span>
+              ${vehicle.body_type ? `<span style="background: #f0f0f0; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; color: var(--color-text);">${vehicle.body_type}</span>` : ''}
+            </div>
+            <p style="margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--color-primary);">
+              ${priceRange}
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Create vehicle list item
+    function createVehicleListItem(vehicle) {
+      const priceRange = vehicle.price_range_min && vehicle.price_range_max
+        ? `₹${(vehicle.price_range_min / 100000).toFixed(1)}L - ₹${(vehicle.price_range_max / 100000).toFixed(1)}L`
+        : 'Price on request';
+      
+      const imageUrl = vehicle.image_url || `https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&h=600&fit=crop`;
+      
+      return `
+        <div class="vehicle-card" data-vehicle-id="${vehicle.id}" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; display: flex; gap: var(--spacing-md);">
+          <div style="width: 200px; flex-shrink: 0; position: relative; background: #f5f5f5;">
+            <img 
+              src="${imageUrl}" 
+              alt="${vehicle.make} ${vehicle.model}" 
+              style="width: 100%; height: 100%; object-fit: cover;"
+              onerror="this.src='https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&h=600&fit=crop'"
+            >
+          </div>
+          <div style="flex: 1; padding: var(--spacing-md); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h3 style="margin: 0 0 8px 0; font-size: 1.25rem; font-weight: 600; color: var(--color-text);">
+                ${escapeHtml(vehicle.make)} ${escapeHtml(vehicle.model)} ${escapeHtml(vehicle.variant || '')}
+              </h3>
+              <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap; margin-bottom: var(--spacing-sm);">
+                <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; color: var(--color-text);">
+                  ${vehicle.year}
+                </span>
+                <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; color: var(--color-text);">
+                  ${vehicle.fuel_type}
+                </span>
+                <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; color: var(--color-text);">
+                  ${vehicle.transmission}
+                </span>
+                ${vehicle.body_type ? `<span style="background: #f0f0f0; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; color: var(--color-text);">${vehicle.body_type}</span>` : ''}
+              </div>
+            </div>
+            <p style="margin: 0; font-size: 1.25rem; font-weight: 600; color: var(--color-primary);">
+              ${priceRange}
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Update pagination
+    function updatePagination() {
+      const pageInfo = document.getElementById('pageInfo');
+      const prevBtn = document.getElementById('prevPage');
+      const nextBtn = document.getElementById('nextPage');
+
+      pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages;
+    }
+
+    // Filter handlers
+    function setupFilters() {
+      const searchInput = document.getElementById('vehicleSearchInput');
+      const searchClear = document.getElementById('vehicleSearchClear');
+      const filterMake = document.getElementById('filterMake');
+      const filterBodyType = document.getElementById('filterBodyType');
+      const filterFuelType = document.getElementById('filterFuelType');
+      const filterYear = document.getElementById('filterYear');
+      const filterPriceMin = document.getElementById('filterPriceMin');
+      const filterPriceMax = document.getElementById('filterPriceMax');
+      const clearFilters = document.getElementById('clearFilters');
+      const resetFilters = document.getElementById('resetFilters');
+
+      function applyFilters() {
+        currentFilters = {};
+        if (filterMake.value) currentFilters.make = filterMake.value;
+        if (filterBodyType.value) currentFilters.body_type = filterBodyType.value;
+        if (filterFuelType.value) currentFilters.fuel_type = filterFuelType.value;
+        if (filterYear.value) currentFilters.year = filterYear.value;
+        if (filterPriceMin.value) currentFilters.price_min = filterPriceMin.value;
+        if (filterPriceMax.value) currentFilters.price_max = filterPriceMax.value;
+        
+        // Handle search (could search make/model/variant)
+        if (searchInput.value.trim()) {
+          const searchTerm = searchInput.value.trim();
+          // Assume search is for model first, fallback to make
+          currentFilters.model = searchTerm;
+        }
+
+        currentPage = 1;
+        loadVehicles(1);
+      }
+
+      // Search
+      let searchTimeout;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(applyFilters, 500);
+        searchClear.style.display = searchInput.value ? 'block' : 'none';
+      });
+
+      searchClear.addEventListener('click', () => {
+        searchInput.value = '';
+        searchClear.style.display = 'none';
+        applyFilters();
+      });
+
+      // Filters
+      [filterMake, filterBodyType, filterFuelType, filterYear, filterPriceMin, filterPriceMax].forEach(filter => {
+        filter.addEventListener('change', applyFilters);
+        filter.addEventListener('input', () => {
+          if (filter.id === 'filterPriceMin' || filter.id === 'filterPriceMax') {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(applyFilters, 500);
+          }
+        });
+      });
+
+      // Clear filters
+      clearFilters.addEventListener('click', () => {
+        searchInput.value = '';
+        searchClear.style.display = 'none';
+        filterMake.value = '';
+        filterBodyType.value = '';
+        filterFuelType.value = '';
+        filterYear.value = '';
+        filterPriceMin.value = '';
+        filterPriceMax.value = '';
+        currentFilters = {};
+        currentPage = 1;
+        loadVehicles(1);
+      });
+
+      if (resetFilters) {
+        resetFilters.addEventListener('click', () => {
+          searchInput.value = '';
+          searchClear.style.display = 'none';
+          filterMake.value = '';
+          filterBodyType.value = '';
+          filterFuelType.value = '';
+          filterYear.value = '';
+          filterPriceMin.value = '';
+          filterPriceMax.value = '';
+          currentFilters = {};
+          currentPage = 1;
+          loadVehicles(1);
+        });
+      }
+    }
+
+    // View toggle
+    function setupViewToggle() {
+      const viewToggle = document.getElementById('viewToggle');
+      const gridIcon = document.getElementById('gridIcon');
+      const listIcon = document.getElementById('listIcon');
+      const vehiclesGrid = document.getElementById('vehiclesGrid');
+      const vehiclesList = document.getElementById('vehiclesList');
+
+      viewToggle.addEventListener('click', () => {
+        viewMode = viewMode === 'grid' ? 'list' : 'grid';
+        
+        if (viewMode === 'grid') {
+          gridIcon.style.display = 'inline';
+          listIcon.style.display = 'none';
+          vehiclesGrid.style.display = 'grid';
+          vehiclesList.style.display = 'none';
+        } else {
+          gridIcon.style.display = 'none';
+          listIcon.style.display = 'inline';
+          vehiclesGrid.style.display = 'none';
+          vehiclesList.style.display = 'flex';
+        }
+        
+        lucide.createIcons();
+      });
+    }
+
+    // Pagination handlers
+    function setupPagination() {
+      const prevBtn = document.getElementById('prevPage');
+      const nextBtn = document.getElementById('nextPage');
+
+      prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          loadVehicles(currentPage - 1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+
+      nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          loadVehicles(currentPage + 1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    }
+
+    // Setup navigation (from auth.js)
+    function setupNavigation() {
+      const currentUser = getCurrentUser();
+      const userMenu = document.getElementById('userMenu');
+      const loginLink = document.getElementById('loginLink');
+      const createPostingLink = document.getElementById('createPostingLink');
+      const createPostingLoginLink = document.getElementById('createPostingLoginLink');
+      const myPostingsLink = document.getElementById('myPostingsLink');
+
+      if (currentUser && isAuthenticated()) {
+        if (userMenu) userMenu.style.display = 'block';
+        if (loginLink) loginLink.style.display = 'none';
+        if (createPostingLink) createPostingLink.style.display = 'block';
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
+        if (myPostingsLink) myPostingsLink.style.display = 'flex';
+
+        document.getElementById('userMenuName').textContent = currentUser.username;
+
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userMenuDropdown = document.getElementById('userMenuDropdown');
+        if (userMenuButton && userMenuDropdown) {
+          userMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenuDropdown.classList.toggle('show');
+          });
+
+          document.addEventListener('click', (e) => {
+            if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
+              userMenuDropdown.classList.remove('show');
+            }
+          });
+        }
+
+        document.getElementById('logoutButton').addEventListener('click', () => {
+          if (confirm('Are you sure you want to logout?')) {
+            logout();
+          }
+        });
+      } else {
+        if (userMenu) userMenu.style.display = 'none';
+        if (loginLink) loginLink.style.display = 'block';
+        if (createPostingLink) createPostingLink.style.display = 'none';
+        if (createPostingLoginLink) createPostingLoginLink.style.display = 'block';
+        if (myPostingsLink) myPostingsLink.style.display = 'none';
+      }
+    }
+
+    // Setup mobile nav
+    function setupMobileNav() {
+      const navToggle = document.getElementById('navToggle');
+      const navLinks = document.getElementById('navLinks');
+
+      if (!navToggle || !navLinks) return;
+
+      function checkMobile() {
+        if (window.innerWidth <= 768) {
+          navToggle.style.display = 'block';
+        } else {
+          navToggle.style.display = 'none';
+          navLinks.classList.remove('active');
+        }
+      }
+
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+
+      navToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navLinks.classList.toggle('active');
+        const icon = navToggle.querySelector('i');
+        if (icon) {
+          icon.setAttribute('data-lucide', navLinks.classList.contains('active') ? 'x' : 'menu');
+          lucide.createIcons();
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
+          navLinks.classList.remove('active');
+          const icon = navToggle.querySelector('i');
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            lucide.createIcons();
+          }
+        }
+      });
+    }
+
+    // Helper function
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Initialize
+    setupNavigation();
+    setupMobileNav();
+    setupFilters();
+    setupViewToggle();
+    setupPagination();
+    loadVehicles(1);
+
+    // Update unread badge if authenticated
+    if (typeof updateUnreadBadge === 'function' && typeof isAuthenticated === 'function' && isAuthenticated()) {
+      updateUnreadBadge();
+    }
+  </script>
+</body>
+</html>
+

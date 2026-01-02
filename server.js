@@ -614,6 +614,27 @@ async function initializeDatabase() {
       }
     }
 
+    // Vehicles table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS vehicles (
+        id SERIAL PRIMARY KEY,
+        make TEXT NOT NULL,
+        model TEXT NOT NULL,
+        variant TEXT,
+        year INTEGER NOT NULL,
+        fuel_type TEXT NOT NULL CHECK (fuel_type IN ('Petrol', 'Diesel', 'Electric', 'Hybrid', 'CNG', 'LPG')),
+        transmission TEXT NOT NULL CHECK (transmission IN ('Manual', 'Automatic', 'AMT', 'CVT', 'DCT')),
+        price_range_min DECIMAL(10, 2),
+        price_range_max DECIMAL(10, 2),
+        body_type TEXT CHECK (body_type IN ('Hatchback', 'Sedan', 'SUV', 'MUV', 'Coupe', 'Convertible', 'Wagon', 'Pickup', 'Motorcycle', 'Scooter', 'Commercial')),
+        specs JSONB DEFAULT '{}'::jsonb,
+        image_url TEXT,
+        source_url TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Create indexes for better query performance
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_postings_user_id ON postings(user_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_postings_category ON postings(category)`);
@@ -621,6 +642,13 @@ async function initializeDatabase() {
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_to_user_id ON messages(to_user_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_posting_id ON messages(posting_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at DESC)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_vehicles_make ON vehicles(make)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_vehicles_model ON vehicles(model)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_vehicles_year ON vehicles(year)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_vehicles_fuel_type ON vehicles(fuel_type)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_vehicles_body_type ON vehicles(body_type)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_vehicles_price_range ON vehicles(price_range_min, price_range_max)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_vehicles_make_model_year ON vehicles(make, model, year)`);
     
     console.log('✅ Database tables initialized');
   } catch (error) {
@@ -1962,6 +1990,132 @@ app.get('/api/directory/business/:placeId', async (req, res) => {
       error: 'Internal server error',
       ...(isProduction ? {} : { message: error.message })
     });
+  }
+});
+
+// ============================================
+// VEHICLES INVENTORY ROUTES
+// ============================================
+
+// Get vehicles with filters (public - no auth required)
+app.get('/api/vehicles', async (req, res) => {
+  try {
+    const { make, model, year, fuel_type, body_type, price_min, price_max, page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+    
+    let query = 'SELECT * FROM vehicles WHERE 1=1';
+    const params = [];
+    let paramCount = 0;
+    
+    if (make) {
+      paramCount++;
+      query += ` AND make ILIKE $${paramCount}`;
+      params.push(`%${make}%`);
+    }
+    
+    if (model) {
+      paramCount++;
+      query += ` AND model ILIKE $${paramCount}`;
+      params.push(`%${model}%`);
+    }
+    
+    if (year) {
+      paramCount++;
+      query += ` AND year = $${paramCount}`;
+      params.push(parseInt(year));
+    }
+    
+    if (fuel_type) {
+      paramCount++;
+      query += ` AND fuel_type = $${paramCount}`;
+      params.push(fuel_type);
+    }
+    
+    if (body_type) {
+      paramCount++;
+      query += ` AND body_type = $${paramCount}`;
+      params.push(body_type);
+    }
+    
+    if (price_min) {
+      paramCount++;
+      query += ` AND price_range_max >= $${paramCount}`;
+      params.push(parseFloat(price_min));
+    }
+    
+    if (price_max) {
+      paramCount++;
+      query += ` AND price_range_min <= $${paramCount}`;
+      params.push(parseFloat(price_max));
+    }
+    
+    // Get total count
+    const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as total');
+    const countResult = await dbGet(countQuery, params);
+    const total = parseInt(countResult.total || 0);
+    
+    // Add ordering, limit, and offset
+    query += ` ORDER BY make, model, year DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    params.push(parseInt(limit), parseInt(offset));
+    
+    const vehicles = await dbAll(query, params);
+    
+    res.json({
+      vehicles: vehicles.map(v => ({
+        ...v,
+        price_range_min: parseFloat(v.price_range_min) || 0,
+        price_range_max: parseFloat(v.price_range_max) || 0,
+        specs: typeof v.specs === 'string' ? JSON.parse(v.specs) : (v.specs || {})
+      })),
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error('❌ Get vehicles error:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+// Get single vehicle by ID
+app.get('/api/vehicles/:id', async (req, res) => {
+  try {
+    const vehicle = await dbGet('SELECT * FROM vehicles WHERE id = $1', [req.params.id]);
+    if (!vehicle) {
+      return res.status(404).json({ error: 'Vehicle not found' });
+    }
+    
+    res.json({
+      ...vehicle,
+      price_range_min: parseFloat(vehicle.price_range_min) || 0,
+      price_range_max: parseFloat(vehicle.price_range_max) || 0,
+      specs: typeof vehicle.specs === 'string' ? JSON.parse(vehicle.specs) : (vehicle.specs || {})
+    });
+  } catch (error) {
+    console.error('❌ Get vehicle error:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+// Seed vehicles (admin route - in production, add authentication)
+app.post('/api/vehicles/seed', async (req, res) => {
+  try {
+    // In production, add authentication check here
+    // if (!req.user || !req.user.isAdmin) {
+    //   return res.status(403).json({ error: 'Admin access required' });
+    // }
+    
+    const { seedVehicles } = require('./seed-vehicles');
+    const result = await seedVehicles();
+    
+    res.json({
+      message: 'Vehicles seeded successfully',
+      ...result
+    });
+  } catch (error) {
+    console.error('❌ Seed vehicles error:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
 
