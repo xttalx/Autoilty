@@ -2049,16 +2049,18 @@ app.get('/api/vehicles', async (req, res) => {
       params.push(parseFloat(price_max));
     }
     
-    // Get total count
+    // Optimize: Run count and data queries in parallel for better performance
     const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as total');
-    const countResult = await dbGet(countQuery, params);
+    const dataQuery = query + ` ORDER BY make, model, year DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    const dataParams = [...params, parseInt(limit), parseInt(offset)];
+    
+    // Execute both queries in parallel
+    const [countResult, vehicles] = await Promise.all([
+      dbGet(countQuery, params),
+      dbAll(dataQuery, dataParams)
+    ]);
+    
     const total = parseInt(countResult.total || 0);
-    
-    // Add ordering, limit, and offset
-    query += ` ORDER BY make, model, year DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
-    params.push(parseInt(limit), parseInt(offset));
-    
-    const vehicles = await dbAll(query, params);
     
     res.json({
       vehicles: vehicles.map(v => ({

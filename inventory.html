@@ -292,6 +292,7 @@
         vehiclesGrid.style.display = 'none';
         vehiclesList.style.display = 'none';
         pagination.style.display = 'none';
+        resultsCount.textContent = 'Loading vehicles...';
 
         // Build query params
         const params = new URLSearchParams({ page, limit: 20 });
@@ -303,7 +304,20 @@
         if (currentFilters.price_min) params.append('price_min', currentFilters.price_min);
         if (currentFilters.price_max) params.append('price_max', currentFilters.price_max);
 
-        const response = await fetch(`${API_BASE_URL}/vehicles?${params.toString()}`);
+        // Add timeout and abort controller for better performance
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+        const response = await fetch(`${API_BASE_URL}/vehicles?${params.toString()}`, {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        
         if (!response.ok) throw new Error('Failed to fetch vehicles');
 
         const data = await response.json();
@@ -342,11 +356,16 @@
         console.error('Error loading vehicles:', error);
         loadingState.style.display = 'none';
         emptyState.style.display = 'block';
+        
+        const errorMessage = error.name === 'AbortError' 
+          ? 'Request timed out. Please try again.'
+          : error.message || 'Failed to load vehicles. Please try again.';
+        
         emptyState.innerHTML = `
           <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: #c53030; display: block;"></i>
           <h3 style="margin-bottom: var(--spacing-sm);">Error loading vehicles</h3>
-          <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">${error.message}</p>
-          <button class="btn btn-primary" onclick="loadVehicles()">Try Again</button>
+          <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">${errorMessage}</p>
+          <button class="btn btn-primary" onclick="loadVehicles(currentPage)">Try Again</button>
         `;
         lucide.createIcons();
       }
