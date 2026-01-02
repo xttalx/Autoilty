@@ -92,11 +92,11 @@
   </section>
 
   <!-- Search and Filters -->
-  <section class="filters-section" style="padding: var(--spacing-lg) 0; background: white; border-bottom: 1px solid var(--color-border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+  <section class="filters-section" style="padding: var(--spacing-md) 0; background: white; border-bottom: 1px solid var(--color-border);">
     <div class="container">
       <!-- Search Bar -->
       <div class="search-bar-container" style="margin-bottom: var(--spacing-md);">
-        <div class="search-bar" style="max-width: 600px; margin: 0 auto;">
+        <div class="search-bar" style="max-width: 600px; margin: 0 auto; position: relative;">
           <i data-lucide="search" class="search-icon"></i>
           <input 
             type="text" 
@@ -105,73 +105,96 @@
             placeholder="Search by make, model, or variant..."
             aria-label="Search vehicles"
             autocomplete="off"
+            style="padding-right: 100px;"
           >
-          <button class="search-clear" id="vehicleSearchClear" aria-label="Clear search" style="display: none;">
+          <button class="search-clear" id="vehicleSearchClear" aria-label="Clear search" style="display: none; position: absolute; right: 110px; top: 50%; transform: translateY(-50%);">
             <i data-lucide="x"></i>
+          </button>
+          <button class="btn btn-primary" id="searchButton" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 0.5rem 1rem; height: auto;">
+            <i data-lucide="search" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></i>
+            Search
           </button>
         </div>
       </div>
 
-      <!-- Filter Row -->
-      <div style="display: flex; gap: var(--spacing-md); flex-wrap: wrap; justify-content: center; align-items: center;">
-        <select id="filterMake" class="form-select" style="min-width: 150px;">
-          <option value="">All Makes</option>
-          <option value="Maruti Suzuki">Maruti Suzuki</option>
-          <option value="Hyundai">Hyundai</option>
-          <option value="Tata">Tata</option>
-          <option value="Mahindra">Mahindra</option>
-        </select>
-
-        <select id="filterBodyType" class="form-select" style="min-width: 150px;">
-          <option value="">All Body Types</option>
-          <option value="Hatchback">Hatchback</option>
-          <option value="Sedan">Sedan</option>
-          <option value="SUV">SUV</option>
-          <option value="MUV">MUV</option>
-          <option value="Motorcycle">Motorcycle</option>
-          <option value="Scooter">Scooter</option>
-          <option value="Commercial">Commercial</option>
-        </select>
-
-        <select id="filterFuelType" class="form-select" style="min-width: 150px;">
-          <option value="">All Fuel Types</option>
-          <option value="Petrol">Petrol</option>
-          <option value="Diesel">Diesel</option>
-          <option value="Electric">Electric</option>
-          <option value="Hybrid">Hybrid</option>
-          <option value="CNG">CNG</option>
-          <option value="LPG">LPG</option>
-        </select>
-
-        <select id="filterYear" class="form-select" style="min-width: 120px;">
-          <option value="">All Years</option>
-          <option value="2024">2024</option>
-          <option value="2023">2023</option>
-          <option value="2022">2022</option>
-          <option value="2021">2021</option>
-          <option value="2020">2020</option>
-        </select>
-
-        <input 
-          type="number" 
-          id="filterPriceMin" 
-          class="form-input" 
-          placeholder="Min Price (₹)"
-          style="min-width: 120px;"
-        >
-
-        <input 
-          type="number" 
-          id="filterPriceMax" 
-          class="form-input" 
-          placeholder="Max Price (₹)"
-          style="min-width: 120px;"
-        >
-
-        <button class="btn btn-secondary" id="clearFilters" style="white-space: nowrap;">
-          <i data-lucide="x" style="width: 1rem; height: 1rem;"></i>
-          Clear
+      <!-- Filter Toggle Button -->
+      <div style="text-align: center; margin-bottom: var(--spacing-md);">
+        <button class="btn btn-secondary" id="toggleFilters" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="filter" style="width: 1rem; height: 1rem;"></i>
+          <span>Show Filters</span>
+          <i data-lucide="chevron-down" id="filterToggleIcon" style="width: 1rem; height: 1rem;"></i>
         </button>
+      </div>
+
+      <!-- Filter Row (Collapsible) -->
+      <div id="filterRow" style="display: none; flex-direction: column; gap: var(--spacing-md); max-width: 1200px; margin: 0 auto;">
+        <div style="display: flex; gap: var(--spacing-md); flex-wrap: wrap; justify-content: center; align-items: center;">
+          <select id="filterMake" class="form-select" style="min-width: 150px; flex: 1; max-width: 200px;">
+            <option value="">All Makes</option>
+            <option value="Maruti Suzuki">Maruti Suzuki</option>
+            <option value="Hyundai">Hyundai</option>
+            <option value="Tata">Tata</option>
+            <option value="Mahindra">Mahindra</option>
+          </select>
+
+          <select id="filterBodyType" class="form-select" style="min-width: 150px; flex: 1; max-width: 200px;">
+            <option value="">All Body Types</option>
+            <option value="Hatchback">Hatchback</option>
+            <option value="Sedan">Sedan</option>
+            <option value="SUV">SUV</option>
+            <option value="MUV">MUV</option>
+            <option value="Motorcycle">Motorcycle</option>
+            <option value="Scooter">Scooter</option>
+            <option value="Commercial">Commercial</option>
+          </select>
+
+          <select id="filterFuelType" class="form-select" style="min-width: 150px; flex: 1; max-width: 200px;">
+            <option value="">All Fuel Types</option>
+            <option value="Petrol">Petrol</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Electric">Electric</option>
+            <option value="Hybrid">Hybrid</option>
+            <option value="CNG">CNG</option>
+            <option value="LPG">LPG</option>
+          </select>
+
+          <select id="filterYear" class="form-select" style="min-width: 120px; flex: 1; max-width: 150px;">
+            <option value="">All Years</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+            <option value="2020">2020</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: var(--spacing-md); flex-wrap: wrap; justify-content: center; align-items: center;">
+          <input 
+            type="number" 
+            id="filterPriceMin" 
+            class="form-input" 
+            placeholder="Min Price (₹)"
+            style="min-width: 120px; flex: 1; max-width: 150px;"
+          >
+
+          <input 
+            type="number" 
+            id="filterPriceMax" 
+            class="form-input" 
+            placeholder="Max Price (₹)"
+            style="min-width: 120px; flex: 1; max-width: 150px;"
+          >
+
+          <button class="btn btn-primary" id="applyFilters" style="white-space: nowrap;">
+            <i data-lucide="check" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></i>
+            Apply Filters
+          </button>
+
+          <button class="btn btn-secondary" id="clearFilters" style="white-space: nowrap;">
+            <i data-lucide="x" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></i>
+            Clear
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -486,12 +509,23 @@
         loadVehicles(1);
       }
 
-      // Search
-      let searchTimeout;
+      // Search button
+      const searchButton = document.getElementById('searchButton');
+      searchButton.addEventListener('click', () => {
+        applyFilters();
+      });
+
+      // Search input - show clear button
       searchInput.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(applyFilters, 500);
         searchClear.style.display = searchInput.value ? 'block' : 'none';
+      });
+
+      // Enter key on search input
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyFilters();
+        }
       });
 
       searchClear.addEventListener('click', () => {
@@ -500,15 +534,23 @@
         applyFilters();
       });
 
-      // Filters
-      [filterMake, filterBodyType, filterFuelType, filterYear, filterPriceMin, filterPriceMax].forEach(filter => {
-        filter.addEventListener('change', applyFilters);
-        filter.addEventListener('input', () => {
-          if (filter.id === 'filterPriceMin' || filter.id === 'filterPriceMax') {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(applyFilters, 500);
-          }
-        });
+      // Apply Filters button
+      const applyFiltersBtn = document.getElementById('applyFilters');
+      applyFiltersBtn.addEventListener('click', () => {
+        applyFilters();
+      });
+
+      // Filter toggle
+      const toggleFilters = document.getElementById('toggleFilters');
+      const filterRow = document.getElementById('filterRow');
+      const filterToggleIcon = document.getElementById('filterToggleIcon');
+      
+      toggleFilters.addEventListener('click', () => {
+        const isVisible = filterRow.style.display !== 'none';
+        filterRow.style.display = isVisible ? 'none' : 'flex';
+        toggleFilters.querySelector('span').textContent = isVisible ? 'Show Filters' : 'Hide Filters';
+        filterToggleIcon.setAttribute('data-lucide', isVisible ? 'chevron-down' : 'chevron-up');
+        lucide.createIcons();
       });
 
       // Clear filters
