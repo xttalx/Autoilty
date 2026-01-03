@@ -757,42 +757,66 @@
     function setupMobileNav() {
       const navToggle = document.getElementById('navToggle');
       const navLinks = document.getElementById('navLinks');
-
+      
       if (!navToggle || !navLinks) return;
-
+      
+      // Show/hide toggle button based on screen size
       function checkMobile() {
-        // Ensure hamburger menu is visible on mobile
         if (window.innerWidth <= 768) {
-          navToggle.style.display = '';
+          navToggle.style.display = 'block';
         } else {
           navToggle.style.display = 'none';
           navLinks.classList.remove('active');
         }
       }
-
+      
       // Initial check
       checkMobile();
       window.addEventListener('resize', checkMobile);
-
+      
+      // Toggle menu on click
       navToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         navLinks.classList.toggle('active');
         const icon = navToggle.querySelector('i');
         if (icon) {
-          icon.setAttribute('data-lucide', navLinks.classList.contains('active') ? 'x' : 'menu');
-          lucide.createIcons();
+          if (navLinks.classList.contains('active')) {
+            icon.setAttribute('data-lucide', 'x');
+          } else {
+            icon.setAttribute('data-lucide', 'menu');
+          }
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
         }
       });
-
+      
+      // Close menu when clicking outside
       document.addEventListener('click', (e) => {
         if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
           navLinks.classList.remove('active');
           const icon = navToggle.querySelector('i');
           if (icon) {
             icon.setAttribute('data-lucide', 'menu');
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
           }
         }
+      });
+      
+      // Close menu when clicking a link
+      navLinks.querySelectorAll('a, button').forEach(item => {
+        item.addEventListener('click', () => {
+          navLinks.classList.remove('active');
+          const icon = navToggle.querySelector('i');
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
+        });
       });
     }
 
