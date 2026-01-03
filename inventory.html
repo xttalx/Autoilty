@@ -761,9 +761,11 @@
       if (!navToggle || !navLinks) return;
 
       function checkMobile() {
-        // CSS handles display via @media query with !important
-        // Only manage active state, not display
-        if (window.innerWidth > 768) {
+        // Ensure hamburger menu is visible on mobile
+        if (window.innerWidth <= 768) {
+          navToggle.style.display = '';
+        } else {
+          navToggle.style.display = 'none';
           navLinks.classList.remove('active');
         }
       }
