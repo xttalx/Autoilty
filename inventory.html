@@ -831,6 +831,17 @@
     if (typeof updateUnreadBadge === 'function' && typeof isAuthenticated === 'function' && isAuthenticated()) {
       updateUnreadBadge();
     }
+    
+    // Force hamburger menu to show on mobile after DOM is fully ready
+    setTimeout(() => {
+      const navToggle = document.getElementById('navToggle');
+      if (navToggle && window.innerWidth <= 768) {
+        console.log('🔧 Force showing hamburger menu on mobile');
+        navToggle.style.display = 'block';
+        navToggle.style.visibility = 'visible';
+        navToggle.style.opacity = '1';
+      }
+    }, 200);
   </script>
 </body>
 </html>
