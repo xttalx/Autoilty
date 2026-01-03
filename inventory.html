@@ -10,6 +10,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
+    /* Ensure hamburger menu is visible on mobile */
+    @media (max-width: 768px) {
+      .nav-toggle {
+        display: block !important;
+      }
+    }
+    
     /* Mobile search button adjustments */
     @media (max-width: 768px) {
       .search-bar {
@@ -757,13 +764,8 @@
         }
       }
 
-      // Initial check - run immediately and after DOM is ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', checkMobile);
-      } else {
-        checkMobile();
-      }
-      setTimeout(checkMobile, 100);
+      // Initial check
+      checkMobile();
       window.addEventListener('resize', checkMobile);
 
       navToggle.addEventListener('click', (e) => {
