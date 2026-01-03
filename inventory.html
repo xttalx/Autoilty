@@ -12,8 +12,12 @@
   <style>
     /* Ensure hamburger menu is visible on mobile */
     @media (max-width: 768px) {
-      .nav-toggle {
+      #navToggle.nav-toggle,
+      .nav-toggle#navToggle,
+      #navToggle {
         display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
     }
     
