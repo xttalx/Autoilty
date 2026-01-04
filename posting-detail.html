@@ -628,11 +628,7 @@
         };
         schemaScript.textContent = JSON.stringify(productSchema);
         
-        // Remove existing schema if present
-        const existingSchema = document.querySelector('script[type="application/ld+json"]');
-        if (existingSchema && existingSchema.textContent.includes('"@type": "Product"')) {
-          existingSchema.remove();
-        }
+        // Append the schema script (existing schema was already removed above)
         document.head.appendChild(schemaScript);
 
         loadingState.style.display = 'none';
