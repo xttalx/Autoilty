@@ -841,6 +841,11 @@
     // Setup navigation and user menu
     setupNavigation();
     
+    // Re-initialize icons after navigation setup to ensure hamburger menu icon renders
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+    
     // Initialize other features
     setupFilters();
     setupViewToggle();
