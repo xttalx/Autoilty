@@ -780,13 +780,6 @@
       function checkMobile() {
         if (window.innerWidth <= 768) {
           navToggle.style.display = 'block';
-          // Ensure icon is rendered when button becomes visible
-          const icon = navToggle.querySelector('i');
-          if (icon && !icon.querySelector('svg')) {
-            if (typeof lucide !== 'undefined' && lucide.createIcons) {
-              lucide.createIcons();
-            }
-          }
         } else {
           navToggle.style.display = 'none';
           navLinks.classList.remove('active');
