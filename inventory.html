@@ -842,6 +842,19 @@
     setupViewToggle();
     setupPagination();
     loadVehicles(1);
+    
+    // Ensure hamburger menu icon is rendered after initialization
+    setTimeout(() => {
+      const navToggle = document.getElementById('navToggle');
+      if (navToggle) {
+        const icon = navToggle.querySelector('i');
+        if (icon && !icon.querySelector('svg')) {
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
+        }
+      }
+    }, 100);
 
     // Update unread badge if authenticated
     if (typeof updateUnreadBadge === 'function' && typeof isAuthenticated === 'function' && isAuthenticated()) {
