@@ -765,12 +765,17 @@
       const navToggle = document.getElementById('navToggle');
       const navLinks = document.getElementById('navLinks');
       
-      if (!navToggle || !navLinks) return;
+      if (!navToggle || !navLinks) {
+        console.error('❌ Navigation elements not found:', { navToggle, navLinks });
+        return;
+      }
       
       // Show/hide toggle button based on screen size
       function checkMobile() {
         if (window.innerWidth <= 768) {
           navToggle.style.display = 'block';
+          navToggle.style.visibility = 'visible';
+          console.log('✅ Hamburger menu shown on mobile');
         } else {
           navToggle.style.display = 'none';
           navLinks.classList.remove('active');
