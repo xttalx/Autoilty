@@ -308,18 +308,9 @@
   <script src="auth.js"></script>
   <script src="messages-api.js"></script>
   <script>
-    // Initialize Lucide icons when DOM is ready
-    function initializeIcons() {
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-    
-    // Initialize icons immediately and after DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeIcons);
-    } else {
-      initializeIcons();
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
     }
 
     // API Base URL
