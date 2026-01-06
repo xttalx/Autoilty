@@ -706,24 +706,35 @@
       });
     }
 
-    // Setup navigation (from auth.js)
+    // Setup navigation and user menu
     function setupNavigation() {
       const currentUser = getCurrentUser();
       const userMenu = document.getElementById('userMenu');
       const loginLink = document.getElementById('loginLink');
+      const myPostingsLink = document.getElementById('myPostingsLink');
       const createPostingLink = document.getElementById('createPostingLink');
       const createPostingLoginLink = document.getElementById('createPostingLoginLink');
-      const myPostingsLink = document.getElementById('myPostingsLink');
 
       if (currentUser && isAuthenticated()) {
-        if (userMenu) userMenu.style.display = 'block';
+        // User is logged in - show user menu and create posting link
+        if (userMenu) {
+          userMenu.style.display = 'block';
+          userMenu.style.visibility = 'visible';
+        }
         if (loginLink) loginLink.style.display = 'none';
+        if (myPostingsLink) myPostingsLink.style.display = 'flex';
         if (createPostingLink) createPostingLink.style.display = 'block';
         if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
-        if (myPostingsLink) myPostingsLink.style.display = 'flex';
-
-        document.getElementById('userMenuName').textContent = currentUser.username;
-
+        
+        const userMenuName = document.getElementById('userMenuName');
+        if (userMenuName) userMenuName.textContent = currentUser.username;
+        
+        // Update unread badge
+        if (typeof updateUnreadBadge === 'function') {
+          updateUnreadBadge();
+        }
+        
+        // User menu toggle
         const userMenuButton = document.getElementById('userMenuButton');
         const userMenuDropdown = document.getElementById('userMenuDropdown');
         if (userMenuButton && userMenuDropdown) {
@@ -731,25 +742,30 @@
             e.stopPropagation();
             userMenuDropdown.classList.toggle('show');
           });
-
+          
           document.addEventListener('click', (e) => {
             if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
               userMenuDropdown.classList.remove('show');
             }
           });
         }
-
-        document.getElementById('logoutButton').addEventListener('click', () => {
-          if (confirm('Are you sure you want to logout?')) {
-            logout();
-          }
-        });
+        
+        // Logout
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+          logoutButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+              logout();
+            }
+          });
+        }
       } else {
+        // User is not logged in - show login link and create posting link that redirects to login
         if (userMenu) userMenu.style.display = 'none';
         if (loginLink) loginLink.style.display = 'block';
+        if (myPostingsLink) myPostingsLink.style.display = 'none';
         if (createPostingLink) createPostingLink.style.display = 'none';
         if (createPostingLoginLink) createPostingLoginLink.style.display = 'block';
-        if (myPostingsLink) myPostingsLink.style.display = 'none';
       }
     }
 
@@ -835,31 +851,17 @@
       return div.innerHTML;
     }
 
-    // Initialize
-    setupNavigation();
+    // Initialize navigation
     setupMobileNav();
+    
+    // Setup navigation and user menu
+    setupNavigation();
+    
+    // Initialize other features
     setupFilters();
     setupViewToggle();
     setupPagination();
     loadVehicles(1);
-    
-    // Ensure hamburger menu icon is rendered after initialization
-    setTimeout(() => {
-      const navToggle = document.getElementById('navToggle');
-      if (navToggle) {
-        const icon = navToggle.querySelector('i');
-        if (icon && !icon.querySelector('svg')) {
-          if (typeof lucide !== 'undefined' && lucide.createIcons) {
-            lucide.createIcons();
-          }
-        }
-      }
-    }, 100);
-
-    // Update unread badge if authenticated
-    if (typeof updateUnreadBadge === 'function' && typeof isAuthenticated === 'function' && isAuthenticated()) {
-      updateUnreadBadge();
-    }
   </script>
 </body>
 </html>
