@@ -840,22 +840,47 @@
       return div.innerHTML;
     }
 
-    // Initialize navigation
-    setupMobileNav();
-    
-    // Setup navigation and user menu
-    setupNavigation();
-    
-    // Re-initialize icons after navigation setup to ensure hamburger menu icon renders
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons();
+    // Initialize navigation when DOM is ready
+    function initializePage() {
+      // Setup mobile nav first
+      setupMobileNav();
+      
+      // Setup navigation and user menu
+      setupNavigation();
+      
+      // Re-initialize icons after navigation setup to ensure hamburger menu icon renders
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+      
+      // Force hamburger menu visibility on mobile after a short delay
+      setTimeout(() => {
+        const navToggle = document.getElementById('navToggle');
+        if (navToggle && window.innerWidth <= 768) {
+          navToggle.style.display = 'block';
+          navToggle.style.visibility = 'visible';
+          const icon = navToggle.querySelector('i');
+          if (icon && !icon.querySelector('svg')) {
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
+        }
+      }, 100);
+      
+      // Initialize other features
+      setupFilters();
+      setupViewToggle();
+      setupPagination();
+      loadVehicles(1);
     }
     
-    // Initialize other features
-    setupFilters();
-    setupViewToggle();
-    setupPagination();
-    loadVehicles(1);
+    // Run initialization when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializePage);
+    } else {
+      initializePage();
+    }
   </script>
 </body>
 </html>
