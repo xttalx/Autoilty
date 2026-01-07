@@ -765,17 +765,12 @@
       const navToggle = document.getElementById('navToggle');
       const navLinks = document.getElementById('navLinks');
       
-      if (!navToggle || !navLinks) {
-        console.error('❌ Navigation elements not found:', { navToggle, navLinks });
-        return;
-      }
+      if (!navToggle || !navLinks) return;
       
       // Show/hide toggle button based on screen size
       function checkMobile() {
         if (window.innerWidth <= 768) {
           navToggle.style.display = 'block';
-          navToggle.style.visibility = 'visible';
-          console.log('✅ Hamburger menu shown on mobile');
         } else {
           navToggle.style.display = 'none';
           navLinks.classList.remove('active');
@@ -840,47 +835,22 @@
       return div.innerHTML;
     }
 
-    // Initialize navigation when DOM is ready
-    function initializePage() {
-      // Setup mobile nav first
-      setupMobileNav();
-      
-      // Setup navigation and user menu
-      setupNavigation();
-      
-      // Re-initialize icons after navigation setup to ensure hamburger menu icon renders
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-      
-      // Force hamburger menu visibility on mobile after a short delay
-      setTimeout(() => {
-        const navToggle = document.getElementById('navToggle');
-        if (navToggle && window.innerWidth <= 768) {
-          navToggle.style.display = 'block';
-          navToggle.style.visibility = 'visible';
-          const icon = navToggle.querySelector('i');
-          if (icon && !icon.querySelector('svg')) {
-            if (typeof lucide !== 'undefined' && lucide.createIcons) {
-              lucide.createIcons();
-            }
-          }
-        }
-      }, 100);
-      
-      // Initialize other features
-      setupFilters();
-      setupViewToggle();
-      setupPagination();
-      loadVehicles(1);
+    // Initialize navigation
+    setupMobileNav();
+    
+    // Setup navigation and user menu
+    setupNavigation();
+    
+    // Re-initialize icons after navigation setup to ensure hamburger menu icon renders
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
     }
     
-    // Run initialization when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializePage);
-    } else {
-      initializePage();
-    }
+    // Initialize other features
+    setupFilters();
+    setupViewToggle();
+    setupPagination();
+    loadVehicles(1);
   </script>
 </body>
 </html>
