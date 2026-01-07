@@ -846,6 +846,17 @@
       lucide.createIcons();
     }
     
+    // Force icon rendering for hamburger menu on mobile
+    setTimeout(() => {
+      const navToggle = document.getElementById('navToggle');
+      if (navToggle && window.innerWidth <= 768) {
+        const icon = navToggle.querySelector('i');
+        if (icon && typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+      }
+    }, 100);
+    
     // Initialize other features
     setupFilters();
     setupViewToggle();

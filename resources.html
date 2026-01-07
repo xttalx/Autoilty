@@ -26,7 +26,7 @@
     <div class="container">
       <div class="nav-inner">
         <a href="index.html" class="logo" aria-label="Autoilty Home">Autoilty</a>
-        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" style="display: none;">
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
           <i data-lucide="menu"></i>
         </button>
         <div class="nav-links" id="navLinks">
@@ -754,41 +754,89 @@
       
       if (!navToggle || !navLinks) return;
       
-      const icon = navToggle.querySelector('i');
-      if (!icon) return;
-      
-      navToggle.addEventListener('click', () => {
-        navLinks.classList.toggle('active');
-        const isActive = navLinks.classList.contains('active');
-        icon.setAttribute('data-lucide', isActive ? 'x' : 'menu');
-        lucide.createIcons();
-      });
-      
-      document.addEventListener('click', (e) => {
-        if (!navToggle.contains(e.target) && !navLinks.contains(e.target)) {
+      // Show/hide toggle button based on screen size
+      function checkMobile() {
+        if (window.innerWidth <= 768) {
+          navToggle.style.display = 'block';
+        } else {
+          navToggle.style.display = 'none';
           navLinks.classList.remove('active');
-          if (icon) {
+        }
+      }
+      
+      // Initial check
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      
+      // Toggle menu on click
+      navToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navLinks.classList.toggle('active');
+        const icon = navToggle.querySelector('i');
+        if (icon) {
+          if (navLinks.classList.contains('active')) {
+            icon.setAttribute('data-lucide', 'x');
+          } else {
             icon.setAttribute('data-lucide', 'menu');
+          }
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
             lucide.createIcons();
           }
         }
       });
       
-      navLinks.querySelectorAll('a, button').forEach(link => {
-        link.addEventListener('click', () => {
+      // Close menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
           navLinks.classList.remove('active');
+          const icon = navToggle.querySelector('i');
           if (icon) {
             icon.setAttribute('data-lucide', 'menu');
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
+        }
+      });
+      
+      // Close menu when clicking a link
+      navLinks.querySelectorAll('a, button').forEach(item => {
+        item.addEventListener('click', () => {
+          navLinks.classList.remove('active');
+          const icon = navToggle.querySelector('i');
+          if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
           }
         });
       });
     }
 
+    // Initialize navigation
+    setupMobileNav();
+    
+    // Setup navigation and user menu
     if (typeof getCurrentUser !== 'undefined' && typeof isAuthenticated !== 'undefined') {
       setupNavigation();
     }
-    setupMobileNav();
+    
+    // Re-initialize icons after navigation setup to ensure hamburger menu icon renders
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+    
+    // Force icon rendering for hamburger menu on mobile
+    setTimeout(() => {
+      const navToggle = document.getElementById('navToggle');
+      if (navToggle && window.innerWidth <= 768) {
+        const icon = navToggle.querySelector('i');
+        if (icon && typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+      }
+    }, 100);
 
     // Cart functionality (if needed)
     const cartToggle = document.getElementById('cartToggle');
