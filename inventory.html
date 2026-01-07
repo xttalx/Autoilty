@@ -10,15 +10,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* Mobile search button adjustments */
+    /* Mobile search button adjustments - improved for small screens */
     @media (max-width: 768px) {
       .search-bar {
         display: flex !important;
         flex-direction: column !important;
         gap: var(--spacing-sm, 0.5rem) !important;
+        width: 100% !important;
       }
       #searchButton {
-        position: relative !important;
+        position: static !important;
         right: auto !important;
         top: auto !important;
         transform: none !important;
@@ -38,9 +39,27 @@
       }
       #vehicleSearchInput {
         padding-right: 2.5rem !important;
+        padding-left: 2.5rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
       }
       #vehicleSearchClear {
-        right: 12px !important;
+        right: 0.5rem !important;
+      }
+    }
+    
+    /* Very small screens - iPhone SE */
+    @media (max-width: 575px) {
+      #vehicleSearchInput {
+        padding-left: 2.25rem !important;
+        padding-right: 0.75rem !important;
+        font-size: 0.9375rem !important;
+      }
+      .search-icon {
+        left: 0.75rem !important;
+      }
+      #vehicleSearchClear {
+        right: 0.5rem !important;
       }
     }
     
@@ -48,6 +67,20 @@
     @media (min-width: 769px) {
       #vehicleSearchInput {
         padding-right: 100px !important;
+      }
+    }
+    
+    /* Breadcrumb improvements for mobile */
+    @media (max-width: 575px) {
+      nav[aria-label="Breadcrumb"] {
+        padding: 0.5rem 0 !important;
+      }
+      nav[aria-label="Breadcrumb"] ol {
+        font-size: 0.8125rem !important;
+        gap: 0.25rem !important;
+      }
+      nav[aria-label="Breadcrumb"] li {
+        margin: 0 0.25rem !important;
       }
     }
   </style>
