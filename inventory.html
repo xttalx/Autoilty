@@ -771,14 +771,19 @@
       function checkMobile() {
         if (window.innerWidth <= 768) {
           navToggle.style.display = 'block';
+          navToggle.style.visibility = 'visible';
+          navToggle.style.opacity = '1';
         } else {
           navToggle.style.display = 'none';
           navLinks.classList.remove('active');
         }
       }
       
-      // Initial check
-      checkMobile();
+      // Initial check - use setTimeout to ensure DOM is ready
+      setTimeout(() => {
+        checkMobile();
+      }, 0);
+      
       window.addEventListener('resize', checkMobile);
       
       // Toggle menu on click
@@ -835,27 +840,47 @@
       return div.innerHTML;
     }
 
-    // Initialize navigation
-    setupMobileNav();
-    
-    // Setup navigation and user menu
-    setupNavigation();
+    // Initialize navigation when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        setupMobileNav();
+        setupNavigation();
+      });
+    } else {
+      setupMobileNav();
+      setupNavigation();
+    }
     
     // Re-initialize icons after navigation setup to ensure hamburger menu icon renders
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
       lucide.createIcons();
     }
     
-    // Force icon rendering for hamburger menu on mobile
-    setTimeout(() => {
+    // Force hamburger menu visibility and icon rendering on mobile (multiple checks for reliability)
+    function forceMobileNavVisible() {
       const navToggle = document.getElementById('navToggle');
-      if (navToggle && window.innerWidth <= 768) {
-        const icon = navToggle.querySelector('i');
-        if (icon && typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
+      if (navToggle) {
+        if (window.innerWidth <= 768) {
+          // Force visibility on mobile
+          navToggle.style.display = 'block';
+          navToggle.style.visibility = 'visible';
+          navToggle.style.opacity = '1';
+          
+          // Ensure icon renders
+          const icon = navToggle.querySelector('i');
+          if (icon && typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
         }
       }
-    }, 100);
+    }
+    
+    // Check immediately
+    setTimeout(forceMobileNavVisible, 0);
+    // Check after a short delay
+    setTimeout(forceMobileNavVisible, 100);
+    // Check after icons might be loaded
+    setTimeout(forceMobileNavVisible, 300);
     
     // Initialize other features
     setupFilters();
