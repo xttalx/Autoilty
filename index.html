@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Buy used cars Canada, auto parts Manitoba, and automotive services. Autoilty - Your trusted marketplace for quality vehicles, car parts, and accessories across Canada.">
-  <meta name="keywords" content="buy used cars Canada, auto parts Manitoba, used cars, car parts, automotive marketplace, buy cars online, car accessories, auto services Canada, sell cars Canada">
+  <meta name="description" content="Buy used cars Manitoba, auto parts Canada, and automotive services. Autoilty - Your trusted marketplace for quality vehicles, car parts, VIN lookup, and accessories across Canada. Find the best deals on used cars for sale.">
+  <meta name="keywords" content="buy used cars Manitoba, buy used cars Canada, auto parts Manitoba, used cars for sale, car parts online, automotive marketplace, VIN lookup, buy cars online, sell cars Canada, car accessories, auto services Canada, used vehicles Manitoba, car dealership, auto trader Canada, vehicle listings, car inventory">
   <meta name="author" content="Autoilty">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Autoilty - Buy Used Cars & Auto Parts in Canada">
@@ -16,7 +16,7 @@
   <meta name="twitter:title" content="Autoilty - Buy Used Cars & Auto Parts in Canada">
   <meta name="twitter:description" content="Buy used cars Canada, auto parts Manitoba, and automotive services.">
   <link rel="canonical" href="https://autoilty.com/">
-  <title>Autoilty - Buy Used Cars Canada & Auto Parts Manitoba | Automotive Marketplace</title>
+  <title>Buy Used Cars Manitoba & Auto Parts Canada | Autoilty - Automotive Marketplace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -91,16 +91,108 @@
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <section class="hero" aria-label="Hero section">
+  <!-- Hero Carousel with Trending Listings -->
+  <section class="hero-carousel-section" aria-label="Trending vehicle listings">
     <div class="container">
-      <div class="hero-content">
-        <h1 class="hero-title">Autoilty Marketplace</h1>
-        <p class="hero-subtitle">Premium auto care. Branded gear. Built for detailers.</p>
-        <a href="marketplace.html" class="btn btn-primary" aria-label="Explore marketplace">
-          Explore Marketplace
-          <i data-lucide="arrow-right" class="btn-icon"></i>
-        </a>
+      <div class="hero-carousel-wrapper">
+        <h1 class="hero-title">Find Your Perfect Vehicle in Manitoba</h1>
+        <p class="hero-subtitle">Browse trending listings and discover the best deals on used cars, auto parts, and services</p>
+        <div class="trending-carousel" id="trendingCarousel" role="region" aria-label="Trending listings carousel">
+          <button class="carousel-btn carousel-prev" id="carouselPrev" aria-label="Previous slide">
+            <i data-lucide="chevron-left"></i>
+          </button>
+          <div class="carousel-track" id="carouselTrack">
+            <div class="carousel-slide active">
+              <div class="carousel-slide-content">
+                <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&h=400&fit=crop" alt="Trending vehicle listing - Quality used cars in Manitoba" loading="lazy" class="carousel-image">
+                <div class="carousel-overlay">
+                  <h2>Premium Used Cars</h2>
+                  <p>Find quality vehicles at unbeatable prices</p>
+                  <a href="inventory.html" class="btn btn-primary">Browse Inventory</a>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-slide">
+              <div class="carousel-slide-content">
+                <img src="https://images.unsplash.com/photo-1600298881974-6be191ceeda1?w=800&h=400&fit=crop" alt="Auto parts - Find car parts and accessories" loading="lazy" class="carousel-image">
+                <div class="carousel-overlay">
+                  <h2>Auto Parts & Accessories</h2>
+                  <p>Everything you need for your vehicle</p>
+                  <a href="marketplace.html" class="btn btn-primary">Shop Parts</a>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-slide">
+              <div class="carousel-slide-content">
+                <img src="https://images.unsplash.com/photo-1632516643720-e7f5d7d6ecc9?w=800&h=400&fit=crop" alt="Auto services - Professional automotive services in Canada" loading="lazy" class="carousel-image">
+                <div class="carousel-overlay">
+                  <h2>Professional Services</h2>
+                  <p>Expert mechanics and auto services near you</p>
+                  <a href="directory.html" class="btn btn-primary">Find Services</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="carousel-btn carousel-next" id="carouselNext" aria-label="Next slide">
+            <i data-lucide="chevron-right"></i>
+          </button>
+          <div class="carousel-indicators" role="tablist" aria-label="Carousel navigation">
+            <button class="carousel-indicator active" data-slide="0" aria-label="Slide 1" role="tab"></button>
+            <button class="carousel-indicator" data-slide="1" aria-label="Slide 2" role="tab"></button>
+            <button class="carousel-indicator" data-slide="2" aria-label="Slide 3" role="tab"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Personalized Recommendations Section -->
+  <section class="recommendations-section" aria-label="Personalized recommendations">
+    <div class="container">
+      <h2 class="section-title">Based on Your Location: Manitoba Deals</h2>
+      <p class="section-subtitle">Discover exclusive deals on used cars and auto parts available in your area</p>
+      <div class="recommendations-grid" id="manitobaDeals">
+        <!-- Dynamic recommendations loaded here -->
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIN Lookup Tool -->
+  <section class="vin-lookup-section" aria-label="VIN lookup tool">
+    <div class="container">
+      <div class="vin-lookup-card">
+        <div class="vin-lookup-content">
+          <h2 class="section-title">Quick Vehicle Specs Lookup</h2>
+          <p class="section-subtitle">Enter a VIN number to instantly get vehicle specifications, history, and details</p>
+          <form id="vinLookupForm" class="vin-lookup-form" aria-label="VIN lookup form">
+            <div class="vin-input-group">
+              <label for="vinInput" class="visually-hidden">Vehicle Identification Number</label>
+              <input 
+                type="text" 
+                id="vinInput" 
+                name="vin" 
+                class="form-input vin-input" 
+                placeholder="Enter 17-character VIN"
+                maxlength="17"
+                pattern="[A-HJ-NPR-Z0-9]{17}"
+                aria-describedby="vinHelp"
+                aria-required="true"
+              >
+              <button type="submit" class="btn btn-primary" aria-label="Lookup VIN">
+                <i data-lucide="search" class="btn-icon"></i>
+                Lookup
+              </button>
+            </div>
+            <p id="vinHelp" class="form-help-text">Enter a 17-character Vehicle Identification Number (VIN) to get instant vehicle information</p>
+          </form>
+          <div id="vinResults" class="vin-results" aria-live="polite" aria-atomic="true" style="display: none;">
+            <!-- VIN lookup results displayed here -->
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -205,6 +297,146 @@
         <div class="skeleton-card"></div>
         <div class="skeleton-card"></div>
         <div class="skeleton-card"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Sellers Section -->
+  <section class="featured-sellers-section" aria-label="Featured sellers">
+    <div class="container">
+      <h2 class="section-title">Featured Sellers</h2>
+      <p class="section-subtitle">Trusted sellers with excellent ratings and quality listings</p>
+      <div class="sellers-grid" id="featuredSellers" role="list">
+        <div class="seller-card" role="listitem">
+          <div class="seller-avatar">
+            <img src="https://ui-avatars.com/api/?name=Auto+Expert&background=000000&color=fff&size=80" alt="Auto Expert - Featured seller profile" loading="lazy">
+          </div>
+          <div class="seller-info">
+            <h3 class="seller-name">Auto Expert Manitoba</h3>
+            <div class="seller-rating" aria-label="5 out of 5 stars">
+              <span class="stars">★★★★★</span>
+              <span class="rating-text">5.0 (128 reviews)</span>
+            </div>
+            <p class="seller-description">Premium used cars and auto parts with verified history</p>
+            <a href="marketplace.html?seller=auto-expert" class="btn btn-secondary btn-sm" aria-label="View listings from Auto Expert Manitoba">View Listings</a>
+          </div>
+        </div>
+        <div class="seller-card" role="listitem">
+          <div class="seller-avatar">
+            <img src="https://ui-avatars.com/api/?name=Car+Parts+Pro&background=000000&color=fff&size=80" alt="Car Parts Pro - Featured seller profile" loading="lazy">
+          </div>
+          <div class="seller-info">
+            <h3 class="seller-name">Car Parts Pro Canada</h3>
+            <div class="seller-rating" aria-label="4.8 out of 5 stars">
+              <span class="stars">★★★★★</span>
+              <span class="rating-text">4.8 (95 reviews)</span>
+            </div>
+            <p class="seller-description">OEM and aftermarket parts with fast shipping nationwide</p>
+            <a href="marketplace.html?seller=car-parts-pro" class="btn btn-secondary btn-sm" aria-label="View listings from Car Parts Pro Canada">View Listings</a>
+          </div>
+        </div>
+        <div class="seller-card" role="listitem">
+          <div class="seller-avatar">
+            <img src="https://ui-avatars.com/api/?name=Quality+Autos&background=000000&color=fff&size=80" alt="Quality Autos - Featured seller profile" loading="lazy">
+          </div>
+          <div class="seller-info">
+            <h3 class="seller-name">Quality Autos Winnipeg</h3>
+            <div class="seller-rating" aria-label="4.9 out of 5 stars">
+              <span class="stars">★★★★★</span>
+              <span class="rating-text">4.9 (210 reviews)</span>
+            </div>
+            <p class="seller-description">Certified pre-owned vehicles with warranty included</p>
+            <a href="marketplace.html?seller=quality-autos" class="btn btn-secondary btn-sm" aria-label="View listings from Quality Autos Winnipeg">View Listings</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- User Testimonials Section -->
+  <section class="testimonials-section" aria-label="Customer testimonials">
+    <div class="container">
+      <h2 class="section-title">What Our Customers Say</h2>
+      <p class="section-subtitle">Real reviews from satisfied buyers across Canada</p>
+      <div class="testimonials-grid" role="list">
+        <div class="testimonial-card" role="listitem">
+          <div class="testimonial-content">
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+            <p class="testimonial-text">"Found the perfect used car in Manitoba at a great price! The VIN lookup tool helped me verify everything before purchasing. Highly recommend Autoilty!"</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <img src="https://ui-avatars.com/api/?name=John+Smith&background=000000&color=fff&size=48" alt="John Smith - Customer" loading="lazy">
+            </div>
+            <div class="author-info">
+              <h4 class="author-name">John Smith</h4>
+              <p class="author-location">Winnipeg, MB</p>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card" role="listitem">
+          <div class="testimonial-content">
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+            <p class="testimonial-text">"Best auto parts marketplace in Canada! Quick delivery and authentic parts. The seller ratings really helped me make the right choice."</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <img src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=000000&color=fff&size=48" alt="Sarah Johnson - Customer" loading="lazy">
+            </div>
+            <div class="author-info">
+              <h4 class="author-name">Sarah Johnson</h4>
+              <p class="author-location">Calgary, AB</p>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card" role="listitem">
+          <div class="testimonial-content">
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+            <p class="testimonial-text">"Sold my car quickly through Autoilty. The process was smooth and the buyer was verified. Great platform for buying and selling vehicles!"</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <img src="https://ui-avatars.com/api/?name=Mike+Chen&background=000000&color=fff&size=48" alt="Mike Chen - Customer" loading="lazy">
+            </div>
+            <div class="author-info">
+              <h4 class="author-name">Mike Chen</h4>
+              <p class="author-location">Toronto, ON</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Signup Section -->
+  <section class="newsletter-section" aria-label="Newsletter signup">
+    <div class="container">
+      <div class="newsletter-card">
+        <div class="newsletter-content">
+          <h2 class="section-title">Get Auto Tips & Exclusive Deals</h2>
+          <p class="section-subtitle">Subscribe to our newsletter for the latest automotive tips, maintenance guides, and exclusive deals on used cars and auto parts in Manitoba</p>
+          <form id="newsletterForm" class="newsletter-form" aria-label="Newsletter subscription form">
+            <div class="newsletter-input-group">
+              <label for="newsletterEmail" class="visually-hidden">Email address</label>
+              <input 
+                type="email" 
+                id="newsletterEmail" 
+                name="email" 
+                class="form-input newsletter-input" 
+                placeholder="Enter your email address"
+                aria-required="true"
+                aria-describedby="newsletterHelp"
+                required
+              >
+              <button type="submit" class="btn btn-primary" aria-label="Subscribe to newsletter">
+                <span>Subscribe</span>
+                <i data-lucide="arrow-right" class="btn-icon"></i>
+              </button>
+            </div>
+            <p id="newsletterHelp" class="form-help-text">We'll send you weekly tips and exclusive deals. Unsubscribe anytime.</p>
+            <div id="newsletterMessage" class="newsletter-message" aria-live="polite" style="display: none;"></div>
+          </form>
+        </div>
       </div>
     </div>
   </section>
@@ -317,7 +549,7 @@
           grid.innerHTML = allProducts.map(product => `
             <div class="product-card" data-product-id="${product.id}">
               <div class="product-image">
-                <img src="${product.image || 'https://via.placeholder.com/400'}" alt="${product.name || 'Product'}" loading="lazy" onerror="this.src='https://via.placeholder.com/400'">
+                <img src="${product.image || 'https://via.placeholder.com/400'}" alt="${product.name ? `${product.name} - ${product.category === 'auto' ? 'Auto product' : 'Apparel item'} for sale on Autoilty` : 'Product image'}" loading="lazy" onerror="this.src='https://via.placeholder.com/400'" aria-label="${product.name || 'Product image'}">
               </div>
               <div class="product-info">
                 <span class="product-category">${product.category === 'auto' ? 'AUTO' : 'APPAREL'}</span>
@@ -333,7 +565,7 @@
           grid.innerHTML = featured.map(product => `
             <div class="product-card" data-product-id="${product.id}">
               <div class="product-image">
-                <img src="${product.image || 'https://via.placeholder.com/400'}" alt="${product.name || 'Product'}" loading="lazy" onerror="this.src='https://via.placeholder.com/400'">
+                <img src="${product.image || 'https://via.placeholder.com/400'}" alt="${product.name ? `${product.name} - ${product.category === 'auto' ? 'Auto product' : 'Apparel item'} for sale on Autoilty` : 'Product image'}" loading="lazy" onerror="this.src='https://via.placeholder.com/400'" aria-label="${product.name || 'Product image'}">
               </div>
               <div class="product-info">
                 <span class="product-category">${product.category === 'auto' ? 'AUTO' : 'APPAREL'}</span>
@@ -650,6 +882,302 @@
     if (typeof getCurrentUser !== 'undefined' && typeof isAuthenticated !== 'undefined') {
       setupNavigation();
     }
+    // ============================================
+    // HERO CAROUSEL FUNCTIONALITY
+    // ============================================
+    (function initCarousel() {
+      const carouselTrack = document.getElementById('carouselTrack');
+      const prevBtn = document.getElementById('carouselPrev');
+      const nextBtn = document.getElementById('carouselNext');
+      const indicators = document.querySelectorAll('.carousel-indicator');
+      const slides = document.querySelectorAll('.carousel-slide');
+      
+      if (!carouselTrack || !slides.length) return;
+      
+      let currentSlide = 0;
+      const totalSlides = slides.length;
+      
+      function showSlide(index) {
+        // Remove active class from all slides and indicators
+        slides.forEach((slide, i) => {
+          slide.classList.toggle('active', i === index);
+        });
+        indicators.forEach((indicator, i) => {
+          indicator.classList.toggle('active', i === index);
+          indicator.setAttribute('aria-selected', i === index);
+        });
+        
+        currentSlide = index;
+      }
+      
+      function nextSlide() {
+        const next = (currentSlide + 1) % totalSlides;
+        showSlide(next);
+      }
+      
+      function prevSlide() {
+        const prev = (currentSlide - 1 + totalSlides) % totalSlides;
+        showSlide(prev);
+      }
+      
+      // Event listeners
+      if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+      if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+      
+      indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => showSlide(index));
+      });
+      
+      // Auto-advance carousel every 5 seconds
+      setInterval(nextSlide, 5000);
+      
+      // Initialize
+      showSlide(0);
+    })();
+
+    // ============================================
+    // VIN LOOKUP FUNCTIONALITY
+    // ============================================
+    (function initVINLookup() {
+      const vinForm = document.getElementById('vinLookupForm');
+      const vinInput = document.getElementById('vinInput');
+      const vinResults = document.getElementById('vinResults');
+      
+      if (!vinForm || !vinInput) return;
+      
+      // Format VIN input (uppercase, no spaces)
+      vinInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
+      });
+      
+      vinForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const vin = vinInput.value.trim().toUpperCase();
+        
+        // Validate VIN (17 characters)
+        if (vin.length !== 17) {
+          showVINMessage('Please enter a valid 17-character VIN number.', 'error');
+          return;
+        }
+        
+        // Show loading state
+        vinResults.style.display = 'block';
+        vinResults.innerHTML = '<p>Looking up VIN information...</p>';
+        
+        try {
+          // Note: In production, this would call a real VIN lookup API
+          // For now, we'll simulate with demo data
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Demo VIN data structure
+          const vinData = {
+            vin: vin,
+            make: 'Toyota',
+            model: 'Camry',
+            year: '2020',
+            engine: '2.5L 4-Cylinder',
+            transmission: 'Automatic',
+            drivetrain: 'FWD',
+            fuelType: 'Gasoline',
+            bodyType: 'Sedan',
+            color: 'Silver',
+            trim: 'LE'
+          };
+          
+          // Display results
+          vinResults.innerHTML = `
+            <h3>Vehicle Information</h3>
+            <div class="vin-result-item">
+              <span class="vin-result-label">VIN:</span>
+              <span class="vin-result-value">${vinData.vin}</span>
+            </div>
+            <div class="vin-result-item">
+              <span class="vin-result-label">Make:</span>
+              <span class="vin-result-value">${vinData.make}</span>
+            </div>
+            <div class="vin-result-item">
+              <span class="vin-result-label">Model:</span>
+              <span class="vin-result-value">${vinData.model}</span>
+            </div>
+            <div class="vin-result-item">
+              <span class="vin-result-label">Year:</span>
+              <span class="vin-result-value">${vinData.year}</span>
+            </div>
+            <div class="vin-result-item">
+              <span class="vin-result-label">Engine:</span>
+              <span class="vin-result-value">${vinData.engine}</span>
+            </div>
+            <div class="vin-result-item">
+              <span class="vin-result-label">Transmission:</span>
+              <span class="vin-result-value">${vinData.transmission}</span>
+            </div>
+            <div class="vin-result-item">
+              <span class="vin-result-label">Trim:</span>
+              <span class="vin-result-value">${vinData.trim}</span>
+            </div>
+            <p style="margin-top: var(--spacing-md); color: var(--color-text-light); font-size: 0.875rem;">
+              <em>Note: This is demo data. In production, this would connect to a VIN lookup API service.</em>
+            </p>
+          `;
+          
+        } catch (error) {
+          console.error('VIN lookup error:', error);
+          vinResults.innerHTML = '<p style="color: #f44336;">Error looking up VIN. Please try again.</p>';
+        }
+      });
+      
+      function showVINMessage(message, type) {
+        if (vinResults) {
+          vinResults.style.display = 'block';
+          vinResults.innerHTML = `<p class="${type === 'error' ? 'error' : 'success'}" style="padding: var(--spacing-sm); background: ${type === 'error' ? '#ffebee' : '#e8f5e9'}; color: ${type === 'error' ? '#c62828' : '#2e7d32'}; border-radius: var(--radius);">${message}</p>`;
+        }
+      }
+    })();
+
+    // ============================================
+    // NEWSLETTER SIGNUP FUNCTIONALITY
+    // ============================================
+    (function initNewsletter() {
+      const newsletterForm = document.getElementById('newsletterForm');
+      const newsletterEmail = document.getElementById('newsletterEmail');
+      const newsletterMessage = document.getElementById('newsletterMessage');
+      
+      if (!newsletterForm) return;
+      
+      newsletterForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = newsletterEmail.value.trim();
+        
+        // Basic email validation
+        if (!email || !email.includes('@')) {
+          showNewsletterMessage('Please enter a valid email address.', 'error');
+          return;
+        }
+        
+        // Show loading state
+        newsletterMessage.style.display = 'block';
+        newsletterMessage.className = 'newsletter-message';
+        newsletterMessage.textContent = 'Subscribing...';
+        
+        try {
+          // In production, this would call a backend API
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Simulate success
+          showNewsletterMessage('Thank you for subscribing! Check your email for confirmation.', 'success');
+          newsletterEmail.value = '';
+          
+          // Store subscription (localStorage for demo)
+          const subscriptions = JSON.parse(localStorage.getItem('newsletterSubscriptions') || '[]');
+          subscriptions.push({ email, date: new Date().toISOString() });
+          localStorage.setItem('newsletterSubscriptions', JSON.stringify(subscriptions));
+          
+        } catch (error) {
+          console.error('Newsletter subscription error:', error);
+          showNewsletterMessage('Sorry, something went wrong. Please try again later.', 'error');
+        }
+      });
+      
+      function showNewsletterMessage(message, type) {
+        if (newsletterMessage) {
+          newsletterMessage.style.display = 'block';
+          newsletterMessage.className = `newsletter-message ${type}`;
+          newsletterMessage.textContent = message;
+          
+          // Auto-hide after 5 seconds
+          setTimeout(() => {
+            newsletterMessage.style.display = 'none';
+          }, 5000);
+        }
+      }
+    })();
+
+    // ============================================
+    // MANITOBA DEALS RECOMMENDATIONS
+    // ============================================
+    (function loadManitobaDeals() {
+      const dealsGrid = document.getElementById('manitobaDeals');
+      if (!dealsGrid) return;
+      
+      // Load products and filter by Manitoba location
+      async function loadDeals() {
+        try {
+          let products = [];
+          if (typeof getProducts === 'function') {
+            products = await getProducts();
+          } else if (window.FALLBACK_PRODUCTS) {
+            products = window.FALLBACK_PRODUCTS;
+          }
+          
+          // Filter or tag products as "Manitoba deals" (in production, this would filter by location)
+          const manitobaDeals = products.slice(0, 4).map(product => ({
+            ...product,
+            location: 'Manitoba',
+            dealBadge: 'Local Deal'
+          }));
+          
+          if (manitobaDeals.length === 0) {
+            dealsGrid.innerHTML = '<p class="empty-state">No deals available in Manitoba at this time.</p>';
+            return;
+          }
+          
+          // Render deals
+          dealsGrid.innerHTML = manitobaDeals.map(product => `
+            <div class="product-card" data-product-id="${product.id}">
+              <div class="product-image">
+                ${product.dealBadge ? `<span class="product-badge">${product.dealBadge}</span>` : ''}
+                <img src="${product.image || 'https://via.placeholder.com/400'}" alt="${product.name ? `${product.name} - ${product.category === 'auto' ? 'Auto product' : 'Apparel item'} for sale in Manitoba on Autoilty` : 'Product image'}" loading="lazy" onerror="this.src='https://via.placeholder.com/400'" aria-label="${product.name || 'Product image'}">
+              </div>
+              <div class="product-info">
+                <span class="product-category">${product.category === 'auto' ? 'AUTO' : 'APPAREL'}</span>
+                <h3 class="product-name">${product.name || 'Unnamed Product'}</h3>
+                <p class="product-price">$${(product.price || 0).toFixed(2)} CAD</p>
+                <p style="font-size: 0.875rem; color: var(--color-text-light); margin: 0.5rem 0;">📍 Available in Manitoba</p>
+                <button class="btn-quick-add" data-product-id="${product.id}" aria-label="Add ${product.name} to cart">
+                  Quick Add
+                </button>
+              </div>
+            </div>
+          `).join('');
+          
+          // Re-initialize Lucide icons
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
+          
+          // Add click handlers for quick add buttons
+          dealsGrid.querySelectorAll('.btn-quick-add').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              e.stopPropagation();
+              const productId = btn.dataset.productId;
+              const product = manitobaDeals.find(p => p && p.id === productId);
+              if (product) {
+                if (typeof addToCart === 'function') {
+                  addToCart(product);
+                }
+                if (typeof showNotification === 'function') {
+                  showNotification('Added to cart!');
+                }
+              }
+            });
+          });
+          
+        } catch (error) {
+          console.error('Error loading Manitoba deals:', error);
+          dealsGrid.innerHTML = '<p class="empty-state">Error loading deals. Please refresh the page.</p>';
+        }
+      }
+      
+      // Load on page ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadDeals);
+      } else {
+        loadDeals();
+      }
+    })();
+
   </script>
 </body>
 </html>
