@@ -167,6 +167,29 @@ function postingToProduct(posting) {
 
  */
 
+/**
+ * Generate star rating HTML
+ * @param {number} rating - Rating from 0 to 5
+ * @returns {string} HTML for star rating
+ */
+function generateStarRating(rating) {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+  
+  let html = '';
+  for (let i = 0; i < fullStars; i++) {
+    html += '<span style="color: #ffc107;">★</span>';
+  }
+  if (hasHalfStar) {
+    html += '<span style="color: #ffc107;">☆</span>';
+  }
+  for (let i = 0; i < emptyStars; i++) {
+    html += '<span style="color: #e0e0e0;">★</span>';
+  }
+  return html;
+}
+
 function renderPostingsAsProducts(postings, container) {
   // Store postings globally for Contact Seller button access
   if (typeof window !== 'undefined') {
@@ -225,25 +248,93 @@ function renderPostingsAsProducts(postings, container) {
 
         <div class="product-info">
 
-          <span class="product-category">${product.category.toUpperCase()}</span>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-xs);">
+            <span class="product-category">${product.category.toUpperCase()}</span>
+            ${posting.is_top_deal ? '<span class="top-deal-badge" style="background: #ff9800; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Top Deal</span>' : ''}
+          </div>
 
           <h3 class="product-name">${product.name}</h3>
 
-          ${product.location ? `<p style="font-size: 0.875rem; color: var(--color-text-light); margin: var(--spacing-xs) 0;"><i data-lucide="map-pin" style="width: 0.875rem; height: 0.875rem; display: inline-block;"></i> ${product.location}</p>` : ''}
+          ${product.location ? `<p style="font-size: 0.875rem; color: var(--color-text-light); margin: var(--spacing-xs) 0; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="map-pin" style="width: 0.875rem; height: 0.875rem; flex-shrink: 0;"></i> ${product.location}</p>` : ''}
 
-          <p class="product-price">$${product.price.toFixed(2)} CAD</p>
+          <!-- Ratings and Reviews -->
+          <div class="listing-rating" style="display: flex; align-items: center; gap: var(--spacing-xs); margin: var(--spacing-xs) 0;">
+            <div class="rating-stars" style="display: flex; align-items: center; gap: 2px;" aria-label="${posting.rating || 0} out of 5 stars">
+              ${generateStarRating(posting.rating || 0)}
+            </div>
+            <span style="font-size: 0.875rem; color: var(--color-text-light);">
+              ${posting.rating ? posting.rating.toFixed(1) : 'N/A'} (${posting.review_count || 0} ${posting.review_count === 1 ? 'review' : 'reviews'})
+            </span>
+          </div>
 
-          <p style="font-size: 0.875rem; color: var(--color-text-light); margin-bottom: var(--spacing-sm);">by ${product.username}</p>
+          <p class="product-price" style="font-size: 1.5rem; font-weight: 600; margin: var(--spacing-sm) 0;">$${product.price.toFixed(2)} CAD</p>
 
-          <button class="btn btn-primary btn-full contact-seller-btn" 
-                  data-posting-id="${product.id}" 
-                  data-posting-user-id="${posting.user_id}" 
-                  data-seller-username="${product.username || 'Seller'}"
-                  type="button"
-                  style="margin-top: var(--spacing-sm);">
-            <i data-lucide="message-circle" class="btn-icon"></i>
-            Contact Seller
-          </button>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-sm);">
+            <p style="font-size: 0.875rem; color: var(--color-text-light); margin: 0;">by ${product.username}</p>
+            ${posting.vin_verified ? '<span class="vin-verified-badge" style="background: #4caf50; color: white; padding: 0.125rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="check-circle" style="width: 0.75rem; height: 0.75rem;"></i> VIN Verified</span>' : ''}
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="listing-actions" style="display: flex; flex-direction: column; gap: var(--spacing-xs);">
+            <button class="btn btn-primary btn-full contact-seller-btn" 
+                    data-posting-id="${product.id}" 
+                    data-posting-user-id="${posting.user_id}" 
+                    data-seller-username="${product.username || 'Seller'}"
+                    type="button"
+                    aria-label="Contact seller about ${product.name}">
+              <i data-lucide="message-circle" class="btn-icon"></i>
+              Contact Seller
+            </button>
+            
+            <div class="listing-secondary-actions" style="display: flex; gap: var(--spacing-xs);">
+              <button class="btn btn-secondary btn-sm buy-now-btn" 
+                      data-posting-id="${product.id}" 
+                      data-price="${product.price}"
+                      type="button"
+                      aria-label="Buy now for $${product.price.toFixed(2)}"
+                      style="flex: 1;">
+                <i data-lucide="credit-card" class="btn-icon"></i>
+                Buy Now
+              </button>
+              
+              <div class="social-share-dropdown" style="position: relative;">
+                <button class="btn btn-secondary btn-sm social-share-btn" 
+                        type="button"
+                        aria-label="Share this listing"
+                        aria-expanded="false"
+                        data-posting-id="${product.id}"
+                        style="min-width: 48px;">
+                  <i data-lucide="share-2" class="btn-icon"></i>
+                </button>
+                <div class="social-share-menu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.25rem; background: white; border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow-md); z-index: 100; min-width: 180px; padding: var(--spacing-xs);">
+                  <a href="#" class="social-share-link" data-platform="facebook" data-posting-id="${product.id}" style="display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius); transition: background 0.2s; text-decoration: none; color: var(--color-text);">
+                    <i data-lucide="facebook" style="width: 1rem; height: 1rem;"></i>
+                    Share on Facebook
+                  </a>
+                  <a href="#" class="social-share-link" data-platform="twitter" data-posting-id="${product.id}" style="display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius); transition: background 0.2s; text-decoration: none; color: var(--color-text);">
+                    <i data-lucide="twitter" style="width: 1rem; height: 1rem;"></i>
+                    Share on Twitter
+                  </a>
+                  <a href="#" class="social-share-link" data-platform="whatsapp" data-posting-id="${product.id}" style="display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius); transition: background 0.2s; text-decoration: none; color: var(--color-text);">
+                    <i data-lucide="message-circle" style="width: 1rem; height: 1rem;"></i>
+                    Share on WhatsApp
+                  </a>
+                  <button class="social-share-link" data-platform="copy" data-posting-id="${product.id}" style="display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius); transition: background 0.2s; background: none; border: none; width: 100%; text-align: left; cursor: pointer; color: var(--color-text); font-family: inherit; font-size: inherit;">
+                    <i data-lucide="copy" style="width: 1rem; height: 1rem;"></i>
+                    Copy Link
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Similar Postings (shown on hover or below) -->
+          <div class="similar-postings" data-posting-id="${product.id}" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-border);">
+            <p style="font-size: 0.875rem; font-weight: 600; margin-bottom: var(--spacing-sm); color: var(--color-text-light);">Similar Listings</p>
+            <div class="similar-postings-list" id="similarPostings${product.id}">
+              <!-- Similar postings loaded dynamically -->
+            </div>
+          </div>
 
         </div>
 
@@ -387,5 +478,7 @@ if (typeof window !== 'undefined') {
   window.getPostingImageUrl = getPostingImageUrl;
 
   window.getImageBaseUrl = getImageBaseUrl;
+
+  window.generateStarRating = generateStarRating;
 
 }

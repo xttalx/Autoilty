@@ -38,10 +38,30 @@ window.API_URL = window.API_URL || (() => {
   return productionBackendUrl;
 })();
 
+// Google Maps API Key Configuration
+// 
+// To enable Google Maps for "Find Dealers" feature:
+// 1. Get your Google Maps API key from: https://console.cloud.google.com/google/maps-apis
+// 2. Enable "Maps Embed API" and "Maps JavaScript API" in Google Cloud Console
+// 3. Replace 'YOUR_GOOGLE_MAPS_API_KEY' below with your actual API key
+// 4. For production, consider using environment variables or a secure backend proxy
+//
+window.GOOGLE_MAPS_API_KEY = window.GOOGLE_MAPS_API_KEY || 'AIzaSyD3Q4MGmDsCIt8-h-jAHLU4aEWGNaZdWNk';
+
+// Alternative: Load Google Maps JavaScript API (for interactive maps with markers)
+// Uncomment the line below and replace YOUR_GOOGLE_MAPS_API_KEY with your actual key
+// This will enable full interactive maps instead of just embed iframes
+// You'll also need to add this script tag to your HTML: <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
+
 // Log configuration (only in development)
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
   console.log('🔧 API URL configured:', window.API_URL);
   console.log('🌍 Environment: Development');
+  if (window.GOOGLE_MAPS_API_KEY && window.GOOGLE_MAPS_API_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY') {
+    console.log('🗺️  Google Maps API key configured');
+  } else {
+    console.log('⚠️  Google Maps API key not configured - Find Dealers feature will show placeholder');
+  }
 } else {
   console.log('✅ Production API configured');
 }

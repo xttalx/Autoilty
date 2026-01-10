@@ -48,18 +48,25 @@
       }
     }
     
-    /* Very small screens - iPhone SE */
+    /* Very small screens - iPhone SE - Use relative padding (10%) */
     @media (max-width: 575px) {
       #vehicleSearchInput {
-        padding-left: 2.25rem !important;
-        padding-right: 0.75rem !important;
-        font-size: 0.9375rem !important;
+        padding-left: 10% !important; /* Relative padding instead of fixed px */
+        padding-right: 10% !important; /* Relative padding for clear button space */
+        font-size: clamp(0.9375rem, 3vw, 1rem) !important; /* Flexible font size */
+        width: 100% !important;
+        box-sizing: border-box !important;
       }
       .search-icon {
-        left: 0.75rem !important;
+        left: 3% !important; /* Relative positioning */
+        width: 1rem !important;
+        height: 1rem !important;
       }
       #vehicleSearchClear {
-        right: 0.5rem !important;
+        right: 3% !important; /* Relative positioning */
+        padding: 0.25rem !important;
+        min-width: 32px !important;
+        min-height: 32px !important;
       }
     }
     
@@ -70,17 +77,52 @@
       }
     }
     
-    /* Breadcrumb improvements for mobile */
+    /* Breadcrumb improvements for mobile - better wrapping with ellipsis */
     @media (max-width: 575px) {
       nav[aria-label="Breadcrumb"] {
-        padding: 0.5rem 0 !important;
+        padding: 0.625rem 0 !important;
       }
       nav[aria-label="Breadcrumb"] ol {
-        font-size: 0.8125rem !important;
-        gap: 0.25rem !important;
+        font-size: clamp(0.75rem, 3vw, 0.8125rem) !important;
+        gap: 0.375rem !important;
+        flex-wrap: wrap !important;
       }
       nav[aria-label="Breadcrumb"] li {
-        margin: 0 0.25rem !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+      nav[aria-label="Breadcrumb"] .breadcrumb-item:last-child {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+      }
+      nav[aria-label="Breadcrumb"] .breadcrumb-link,
+      nav[aria-label="Breadcrumb"] span {
+        display: inline-block !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+      nav[aria-label="Breadcrumb"] .breadcrumb-current span {
+        font-size: clamp(0.75rem, 3vw, 0.8125rem) !important;
+      }
+    }
+    
+    /* Increase vertical spacing between filters and grid for portrait mode */
+    @media (max-width: 768px) {
+      .filters-section {
+        padding: var(--spacing-lg) 0 !important;
+        margin-bottom: var(--spacing-xl) !important;
+      }
+      .main-content {
+        padding-top: var(--spacing-xl) !important;
+      }
+      .main-content .container {
+        padding-top: var(--spacing-xl) !important;
+        padding-bottom: var(--spacing-xl) !important;
       }
     }
   </style>
@@ -284,18 +326,21 @@
           Loading vehicles...
         </p>
         <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
-          <button class="btn btn-secondary" id="viewToggle" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
-            <i data-lucide="grid" id="gridIcon" style="width: 1rem; height: 1rem;"></i>
-            <i data-lucide="list" id="listIcon" style="width: 1rem; height: 1rem; display: none;"></i>
+          <button class="btn btn-secondary" id="comparisonBtn" onclick="if(typeof comparisonVehicles !== 'undefined' && comparisonVehicles.length > 0) { if(typeof openComparisonModal === 'function') openComparisonModal(); }" style="padding: 0.5rem 1rem; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.5rem; position: relative;" aria-label="View comparison">
+            <i data-lucide="git-compare" style="width: 1rem; height: 1rem;"></i>
+            Compare
+            <span id="comparisonBadge" style="display: none; position: absolute; top: -8px; right: -8px; background: var(--color-primary); color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; font-weight: 600;">0</span>
+          </button>
+          <button class="btn btn-secondary" id="viewToggle" style="padding: 0.5rem 1rem; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.5rem;" aria-label="Toggle view between grid and list">
+            <i data-lucide="layout-grid" id="gridIcon" style="width: 1rem; height: 1rem;"></i>
+            <span id="viewToggleText">Grid</span>
           </button>
         </div>
       </div>
 
-      <!-- Loading State -->
+      <!-- Loading State - Enhanced Skeleton Loader -->
       <div id="loadingState" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--spacing-lg);">
-        <div class="skeleton-card" style="height: 400px;"></div>
-        <div class="skeleton-card" style="height: 400px;"></div>
-        <div class="skeleton-card" style="height: 400px;"></div>
+        <!-- Skeleton cards will be generated dynamically for better UX -->
       </div>
 
       <!-- Empty State -->
@@ -340,6 +385,8 @@
 
   <script src="auth.js"></script>
   <script src="messages-api.js"></script>
+  <script src="data/indian-vehicles.js"></script>
+  <script src="js/inventory-features.js"></script>
   <script>
     // Initialize Lucide icons
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
@@ -355,6 +402,41 @@
     let viewMode = 'grid'; // 'grid' or 'list'
     let totalPages = 1;
 
+    // Generate skeleton loader cards
+    function generateSkeletonCards(count = 6) {
+      const cards = [];
+      for (let i = 0; i < count; i++) {
+        cards.push(`
+          <div class="skeleton-card" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); height: 400px;">
+            <div style="width: 100%; padding-top: 66.67%; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite;"></div>
+            <div style="padding: var(--spacing-md);">
+              <div style="height: 24px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin-bottom: 8px; width: 70%;"></div>
+              <div style="height: 16px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin-bottom: 12px; width: 50%;"></div>
+              <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <div style="height: 24px; width: 60px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px;"></div>
+                <div style="height: 24px; width: 60px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px;"></div>
+              </div>
+              <div style="height: 20px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; width: 40%;"></div>
+            </div>
+          </div>
+        `);
+      }
+      return cards.join('');
+    }
+
+    // Add shimmer animation if not exists
+    if (!document.querySelector('#skeletonAnimation')) {
+      const style = document.createElement('style');
+      style.id = 'skeletonAnimation';
+      style.textContent = `
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     // Load vehicles
     async function loadVehicles(page = 1) {
       const loadingState = document.getElementById('loadingState');
@@ -365,6 +447,8 @@
       const pagination = document.getElementById('pagination');
 
       try {
+        // Show enhanced skeleton loader
+        loadingState.innerHTML = generateSkeletonCards(6);
         loadingState.style.display = 'grid';
         emptyState.style.display = 'none';
         vehiclesGrid.style.display = 'none';
@@ -414,6 +498,17 @@
           return;
         }
 
+        // Store vehicles in cache for advanced features
+        if (typeof window !== 'undefined' && window.vehiclesCache) {
+          vehicles.forEach(v => {
+            if (!window.vehiclesCache.find(cached => cached.id === v.id)) {
+              window.vehiclesCache.push(v);
+            }
+          });
+        } else if (typeof window !== 'undefined') {
+          window.vehiclesCache = vehicles;
+        }
+
         // Render vehicles
         renderVehicles(vehicles);
 
@@ -428,6 +523,16 @@
           vehiclesGrid.style.display = 'grid';
         } else {
           vehiclesList.style.display = 'flex';
+        }
+
+        // Update SEO meta if viewing specific vehicle from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const vehicleId = urlParams.get('vehicle');
+        if (vehicleId && typeof updateSEOMeta === 'function') {
+          const vehicle = vehicles.find(v => v.id === vehicleId);
+          if (vehicle) {
+            updateSEOMeta(vehicle);
+          }
         }
 
         lucide.createIcons();
@@ -490,6 +595,8 @@
             <div style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; color: var(--color-text);">
               ${vehicle.year}
             </div>
+            ${vehicle.has_360_view ? `<button class="btn-360-view" onclick="event.stopPropagation(); open360View('${vehicle.id}');" style="position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px;" aria-label="View 360°"><i data-lucide="rotate-3d" style="width: 14px; height: 14px;"></i>360°</button>` : ''}
+            ${vehicle.price_history && vehicle.price_history.length > 0 ? `<button class="btn-price-history" onclick="event.stopPropagation(); showPriceHistory('${vehicle.id}');" style="position: absolute; bottom: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px;" aria-label="Price history"><i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>Chart</button>` : ''}
           </div>
           <div style="padding: var(--spacing-md);">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-xs);">
@@ -511,9 +618,23 @@
               </span>
               ${vehicle.body_type ? `<span style="background: #f0f0f0; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; color: var(--color-text);">${vehicle.body_type}</span>` : ''}
             </div>
-            <p style="margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--color-primary);">
+            <p style="margin: 0 0 var(--spacing-sm) 0; font-size: 1.125rem; font-weight: 600; color: var(--color-primary);">
               ${priceRange}
             </p>
+            <div style="display: flex; gap: var(--spacing-xs); flex-wrap: wrap; margin-bottom: var(--spacing-xs);">
+              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); compareVehicle('${vehicle.id}');" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Compare">
+                <i data-lucide="git-compare" style="width: 14px; height: 14px;"></i>Compare
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); showSimilarVehicles('${vehicle.id}');" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Similar">
+                <i data-lucide="search" style="width: 14px; height: 14px;"></i>Similar
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); findDealers('${vehicle.id}');" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Dealers">
+                <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>Dealers
+              </button>
+            </div>
+            <button class="btn-link" onclick="event.stopPropagation(); submitUpdate('${vehicle.id}');" style="width: 100%; padding: 0.25rem; font-size: 0.75rem; color: var(--color-text-light); text-decoration: underline; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Suggest update">
+              <i data-lucide="edit-3" style="width: 12px; height: 12px;"></i>Suggest Update
+            </button>
           </div>
         </div>
       `;
@@ -687,27 +808,47 @@
     function setupViewToggle() {
       const viewToggle = document.getElementById('viewToggle');
       const gridIcon = document.getElementById('gridIcon');
-      const listIcon = document.getElementById('listIcon');
+      const viewToggleText = document.getElementById('viewToggleText');
       const vehiclesGrid = document.getElementById('vehiclesGrid');
       const vehiclesList = document.getElementById('vehiclesList');
+
+      if (!viewToggle) return;
 
       viewToggle.addEventListener('click', () => {
         viewMode = viewMode === 'grid' ? 'list' : 'grid';
         
         if (viewMode === 'grid') {
-          gridIcon.style.display = 'inline';
-          listIcon.style.display = 'none';
+          // Switch to grid icon
+          if (gridIcon) {
+            gridIcon.setAttribute('data-lucide', 'layout-grid');
+          }
+          if (viewToggleText) {
+            viewToggleText.textContent = 'Grid';
+          }
           vehiclesGrid.style.display = 'grid';
           vehiclesList.style.display = 'none';
         } else {
-          gridIcon.style.display = 'none';
-          listIcon.style.display = 'inline';
+          // Switch to list icon
+          if (gridIcon) {
+            gridIcon.setAttribute('data-lucide', 'list');
+          }
+          if (viewToggleText) {
+            viewToggleText.textContent = 'List';
+          }
           vehiclesGrid.style.display = 'none';
           vehiclesList.style.display = 'flex';
         }
         
-        lucide.createIcons();
+        // Re-initialize Lucide icons to ensure proper rendering
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
       });
+      
+      // Ensure icons are initialized on load
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     // Pagination handlers

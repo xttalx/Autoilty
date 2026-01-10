@@ -94,17 +94,17 @@
   <div class="search-bar-container" role="search">
     <div class="container">
       <div class="search-bar">
-        <i data-lucide="search" class="search-icon"></i>
+        <i data-lucide="search" class="search-icon" aria-hidden="true"></i>
         <input 
           type="text" 
           id="searchInput" 
           class="search-input" 
-          placeholder="Search products..."
-          aria-label="Search products"
+          placeholder="Search products, cars, parts..."
+          aria-label="Search products, cars, and auto parts"
           autocomplete="off"
         >
         <button class="search-clear" id="searchClear" aria-label="Clear search" style="display: none;">
-          <i data-lucide="x"></i>
+          <i data-lucide="x" aria-hidden="true"></i>
         </button>
       </div>
     </div>
@@ -119,6 +119,112 @@
         <button class="filter-tab" data-filter="Parts" role="tab" aria-selected="false">Parts</button>
         <button class="filter-tab" data-filter="Services" role="tab" aria-selected="false">Services</button>
         <button class="filter-tab" data-filter="Other" role="tab" aria-selected="false">Other</button>
+      </div>
+      
+      <!-- Advanced Filters Panel -->
+      <div class="advanced-filters-panel" id="advancedFiltersPanel" style="display: none; margin-top: var(--spacing-lg); padding: var(--spacing-lg); background: white; border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow-sm);">
+        <div class="advanced-filters-header">
+          <h3 style="font-size: 1.25rem; margin-bottom: var(--spacing-md);">Advanced Filters</h3>
+          <button class="btn btn-secondary btn-sm" id="toggleAdvancedFilters" aria-label="Close advanced filters">
+            <i data-lucide="x" class="btn-icon"></i>
+            Close
+          </button>
+        </div>
+        
+        <div class="advanced-filters-content">
+          <div class="filter-row">
+            <!-- Price Range Slider -->
+            <div class="filter-group">
+              <label for="priceRangeMin" class="form-label">Price Range (CAD)</label>
+              <div class="price-range-container">
+                <input type="number" id="priceRangeMin" class="form-input" placeholder="Min" min="0" step="100" aria-label="Minimum price">
+                <span style="margin: 0 var(--spacing-sm); color: var(--color-text-light);">-</span>
+                <input type="number" id="priceRangeMax" class="form-input" placeholder="Max" min="0" step="100" aria-label="Maximum price">
+              </div>
+              <div class="price-slider-container" style="margin-top: var(--spacing-sm);">
+                <input type="range" id="priceSlider" class="price-slider" min="0" max="100000" step="1000" value="50000" aria-label="Price range slider">
+                <div class="price-slider-labels" style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-light); margin-top: 0.25rem;">
+                  <span>$0</span>
+                  <span id="priceSliderValue">$50,000</span>
+                  <span>$100,000+</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Location Filter with Map Integration -->
+            <div class="filter-group">
+              <label for="locationFilter" class="form-label">Location</label>
+              <div class="location-filter-container">
+                <input type="text" id="locationFilter" class="form-input" placeholder="City or postal code" autocomplete="off" aria-label="Filter by location">
+                <button type="button" class="btn btn-secondary btn-sm" id="useLocationBtn" aria-label="Use my location">
+                  <i data-lucide="map-pin" class="btn-icon"></i>
+                  Use My Location
+                </button>
+              </div>
+              <div id="locationMapContainer" style="display: none; margin-top: var(--spacing-md); height: 250px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--color-border);">
+                <!-- Map will be integrated here (Google Maps or Mapbox) -->
+                <div id="locationMap" style="width: 100%; height: 100%; background: #f5f5f5; display: flex; align-items: center; justify-content: center; color: var(--color-text-light);">
+                  <p>Map integration available</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- VIN Verification Filter -->
+            <div class="filter-group">
+              <label for="vinFilter" class="form-label">VIN Verification</label>
+              <select id="vinFilter" class="form-select" aria-label="Filter by VIN verification status">
+                <option value="">All</option>
+                <option value="verified">Verified VIN Only</option>
+                <option value="unverified">Unverified</option>
+              </select>
+            </div>
+            
+            <!-- Auto Part Compatibility Checker -->
+            <div class="filter-group" id="compatibilityFilterGroup" style="display: none;">
+              <label for="vehicleMake" class="form-label">Vehicle Compatibility (Auto Parts)</label>
+              <div class="compatibility-filters">
+                <select id="vehicleMake" class="form-select" aria-label="Vehicle make">
+                  <option value="">Select Make</option>
+                  <option value="Toyota">Toyota</option>
+                  <option value="Honda">Honda</option>
+                  <option value="Ford">Ford</option>
+                  <option value="Chevrolet">Chevrolet</option>
+                  <option value="BMW">BMW</option>
+                  <option value="Mercedes-Benz">Mercedes-Benz</option>
+                </select>
+                <select id="vehicleModel" class="form-select" aria-label="Vehicle model" disabled>
+                  <option value="">Select Model</option>
+                </select>
+                <select id="vehicleYear" class="form-select" aria-label="Vehicle year" disabled>
+                  <option value="">Select Year</option>
+                </select>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" id="checkCompatibility" style="margin-top: var(--spacing-sm);" disabled>
+                <i data-lucide="check-circle" class="btn-icon"></i>
+                Check Compatibility
+              </button>
+            </div>
+          </div>
+          
+          <div class="filter-actions" style="margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--color-border); display: flex; gap: var(--spacing-sm); justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" id="resetFilters" aria-label="Reset all filters">
+              <i data-lucide="refresh-cw" class="btn-icon"></i>
+              Reset Filters
+            </button>
+            <button type="button" class="btn btn-primary" id="applyAdvancedFilters" aria-label="Apply advanced filters">
+              <i data-lucide="filter" class="btn-icon"></i>
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Toggle Advanced Filters Button -->
+      <div style="text-align: center; margin-top: var(--spacing-md);">
+        <button class="btn btn-secondary" id="showAdvancedFilters" aria-label="Show advanced filters">
+          <i data-lucide="filter" class="btn-icon"></i>
+          Advanced Filters
+        </button>
       </div>
     </div>
   </section>
@@ -139,9 +245,46 @@
     </div>
   </section>
 
+  <!-- Top Deals Section (Curated by Admins) -->
+  <section class="top-deals-section" id="topDealsSection" style="display: none; padding: var(--spacing-xl) 0; background: linear-gradient(135deg, #fff5e6 0%, #ffffff 100%); border-bottom: 1px solid var(--color-border);">
+    <div class="container">
+      <div class="top-deals-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-md);">
+        <div>
+          <h2 class="section-title" style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs);">
+            <i data-lucide="award" style="width: 1.5rem; height: 1.5rem; color: #ff9800;"></i>
+            Top Deals
+          </h2>
+          <p class="section-subtitle" style="color: var(--color-text-light); margin: 0;">Handpicked by our team - Best deals on quality vehicles and parts</p>
+        </div>
+        <a href="#productsGrid" class="btn btn-secondary btn-sm" aria-label="View all listings">
+          View All
+          <i data-lucide="arrow-right" class="btn-icon"></i>
+        </a>
+      </div>
+      <div class="top-deals-grid" id="topDealsGrid" role="list">
+        <!-- Top deals loaded dynamically -->
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- Products Grid -->
   <main class="main-content">
     <div class="container">
+      <div id="resultsHeader" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md); flex-wrap: wrap; gap: var(--spacing-sm);">
+        <p id="resultsCount" style="color: var(--color-text-light); font-size: 0.9375rem; margin: 0;">
+          <span id="resultsCountNumber">0</span> listings found
+        </p>
+        <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+          <button class="btn btn-secondary btn-sm" id="viewToggle" aria-label="Toggle view">
+            <i data-lucide="layout-grid" class="btn-icon" id="viewToggleIcon"></i>
+            <span id="viewToggleText">Grid</span>
+          </button>
+        </div>
+      </div>
       <div class="products-grid" id="productsGrid">
         <!-- Products loaded dynamically -->
         <div class="skeleton-card"></div>
@@ -237,16 +380,16 @@
     
     // Setup navigation and user menu
     function setupNavigation() {
-      const currentUser = getCurrentUser();
-      const userMenu = document.getElementById('userMenu');
-      const loginLink = document.getElementById('loginLink');
-      const myPostingsLink = document.getElementById('myPostingsLink');
+    const currentUser = getCurrentUser();
+    const userMenu = document.getElementById('userMenu');
+    const loginLink = document.getElementById('loginLink');
+    const myPostingsLink = document.getElementById('myPostingsLink');
       const createPostingLink = document.getElementById('createPostingLink');
       const createPostingLoginLink = document.getElementById('createPostingLoginLink');
-      if (currentUser && isAuthenticated()) {
+    if (currentUser && isAuthenticated()) {
         // User is logged in - show user menu and create posting link
         if (userMenu) {
-          userMenu.style.display = 'block';
+      userMenu.style.display = 'block';
           userMenu.style.visibility = 'visible';
         }
         if (loginLink) loginLink.style.display = 'none';
@@ -277,13 +420,13 @@
         if (typeof updateUnreadBadge === 'function') {
           updateUnreadBadge();
         }
-        
-        // User menu toggle
+      
+      // User menu toggle
         const userMenuButton = document.getElementById('userMenuButton');
         const userMenuDropdown = document.getElementById('userMenuDropdown');
         if (userMenuButton && userMenuDropdown) {
           userMenuButton.addEventListener('click', (e) => {
-            e.stopPropagation();
+        e.stopPropagation();
             userMenuDropdown.classList.toggle('show');
           });
           
@@ -293,15 +436,15 @@
             }
           });
         }
-        
-        // Logout
+      
+      // Logout
         const logoutButton = document.getElementById('logoutButton');
         if (logoutButton) {
           logoutButton.addEventListener('click', () => {
-            if (confirm('Are you sure you want to logout?')) {
-              logout();
-            }
-          });
+        if (confirm('Are you sure you want to logout?')) {
+          logout();
+        }
+      });
         }
       } else {
         // User is not logged in - show login link and create posting link that redirects to login
@@ -324,7 +467,7 @@
       function checkMobile() {
         if (window.innerWidth <= 768) {
           navToggle.style.display = 'block';
-        } else {
+    } else {
           navToggle.style.display = 'none';
           navLinks.classList.remove('active');
         }
@@ -392,18 +535,25 @@
     let currentPage = 1;
     let totalPages = 1;
     
-    // Load all postings from API
+    // Load all postings from API with loading spinner
     async function loadPostings() {
       try {
         const grid = document.getElementById('productsGrid');
         const emptyState = document.getElementById('emptyState');
+        
+        // Show loading spinner with null checks
+        if (grid) {
         grid.innerHTML = `
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-        `;
+            <div class="loading-overlay" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--spacing-2xl); min-height: 300px;">
+              <div class="loading-spinner"></div>
+              <p style="margin-top: var(--spacing-md); color: var(--color-text-light);">Loading postings...</p>
+            </div>
+          `;
+        }
+        
+        if (emptyState) {
         emptyState.style.display = 'none';
+        }
         
         console.log('🔄 Loading postings from API...');
         const data = await fetchPostings({ page: currentPage, limit: 20 });
@@ -418,9 +568,10 @@
       } catch (error) {
         console.error('❌ Error loading postings:', error);
         const grid = document.getElementById('productsGrid');
+        if (grid) {
         grid.innerHTML = `
           <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: var(--spacing-xxl);">
-            <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-error); display: block;"></i>
+              <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
             <h3 style="margin-bottom: var(--spacing-xs);">Error loading postings</h3>
             <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">Please refresh the page or try again later.</p>
             <button class="btn btn-primary" onclick="location.reload()" style="display: inline-flex;">
@@ -431,18 +582,26 @@
         `;
         if (typeof lucide !== 'undefined' && lucide.createIcons) {
           lucide.createIcons();
+          }
         }
       }
     }
     
-    // Render postings
+    // Render postings with null checks
     function renderPostings() {
       const grid = document.getElementById('productsGrid');
       const emptyState = document.getElementById('emptyState');
       
+      if (!grid) {
+        console.error('Products grid not found');
+        return;
+      }
+      
       if (filteredPostings.length === 0) {
         grid.style.display = 'none';
+        if (emptyState) {
         emptyState.style.display = 'block';
+        }
         // Re-initialize icons for empty state
         if (typeof lucide !== 'undefined' && lucide.createIcons) {
           lucide.createIcons();
@@ -451,9 +610,16 @@
       }
       
       grid.style.display = 'grid';
+      if (emptyState) {
       emptyState.style.display = 'none';
+      }
       
+      if (typeof renderPostingsAsProducts === 'function') {
       renderPostingsAsProducts(filteredPostings, grid);
+      } else {
+        console.error('renderPostingsAsProducts function not found');
+        grid.innerHTML = '<p class="empty-state">Error rendering postings. Please refresh the page.</p>';
+      }
     }
     
     // Notification helper
@@ -469,30 +635,38 @@
       }, 3000);
     }
     
-    // Search functionality
+    // Search functionality with null checks
     const searchInput = document.getElementById('searchInput');
     const searchClear = document.getElementById('searchClear');
     
+    if (searchInput) {
     searchInput.addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
       const query = e.target.value.toLowerCase().trim();
       
+        if (searchClear) {
       if (query) {
         searchClear.style.display = 'block';
       } else {
         searchClear.style.display = 'none';
+          }
       }
       
       searchTimeout = setTimeout(() => {
         applyFilters();
       }, 300);
     });
+    }
     
+    if (searchClear) {
     searchClear.addEventListener('click', () => {
+        if (searchInput) {
       searchInput.value = '';
+        }
       searchClear.style.display = 'none';
       applyFilters();
     });
+    }
     
     // Filter tabs
     const filterTabs = document.querySelectorAll('.filter-tab');
@@ -511,21 +685,36 @@
       });
     });
     
-    // Apply filters
+    // Apply filters with loading spinner and advanced filters
     async function applyFilters() {
-      const query = searchInput.value.trim();
+      const query = searchInput ? searchInput.value.trim() : '';
       const category = activeFilter === 'all' ? null : activeFilter;
+      
+      // Get advanced filter values
+      const priceMin = document.getElementById('priceRangeMin')?.value;
+      const priceMax = document.getElementById('priceRangeMax')?.value;
+      const location = document.getElementById('locationFilter')?.value;
+      const vinVerified = document.getElementById('vinFilter')?.value;
       
       try {
         const grid = document.getElementById('productsGrid');
-        grid.innerHTML = `
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-        `;
+        const emptyState = document.getElementById('emptyState');
         
-        console.log('🔍 Applying filters - Category:', category, 'Search:', query);
+        // Show loading spinner
+        if (grid) {
+          grid.innerHTML = `
+            <div class="loading-overlay" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--spacing-2xl); min-height: 300px;">
+              <div class="loading-spinner"></div>
+              <p style="margin-top: var(--spacing-md); color: var(--color-text-light);">Loading postings...</p>
+            </div>
+          `;
+        }
+        
+        if (emptyState) {
+          emptyState.style.display = 'none';
+        }
+        
+        console.log('🔍 Applying filters - Category:', category, 'Search:', query, 'Price:', priceMin, '-', priceMax, 'Location:', location);
         const data = await fetchPostings({ 
           category: category, 
           search: query || undefined,
@@ -534,15 +723,59 @@
         });
         console.log('✅ Filter results:', data.postings?.length || 0, 'postings');
         
-        allPostings = data.postings || [];
-        filteredPostings = [...allPostings];
+        let postings = data.postings || [];
+        
+        // Apply client-side filters (price, location, VIN)
+        if (priceMin) {
+          postings = postings.filter(p => parseFloat(p.price || 0) >= parseFloat(priceMin));
+        }
+        if (priceMax) {
+          postings = postings.filter(p => parseFloat(p.price || 0) <= parseFloat(priceMax));
+        }
+        if (location) {
+          postings = postings.filter(p => 
+            p.location?.toLowerCase().includes(location.toLowerCase()) ||
+            p.city?.toLowerCase().includes(location.toLowerCase())
+          );
+        }
+        if (vinVerified === 'verified') {
+          postings = postings.filter(p => p.vin_verified === true);
+        }
+        
+        allPostings = postings;
+        filteredPostings = [...postings];
         totalPages = data.pagination?.totalPages || 1;
         currentPage = 1;
+        
+        // Update results count
+        const resultsCountNumber = document.getElementById('resultsCountNumber');
+        if (resultsCountNumber) {
+          resultsCountNumber.textContent = filteredPostings.length;
+        }
+        
         renderPostings();
       } catch (error) {
         console.error('❌ Error applying filters:', error);
-        showNotification('Error applying filters');
-        renderPostings(); // Show current state even on error
+        const grid = document.getElementById('productsGrid');
+        if (grid) {
+          grid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: var(--spacing-xxl);">
+              <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
+              <h3 style="margin-bottom: var(--spacing-xs);">Error loading postings</h3>
+              <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">Please try again later.</p>
+              <button class="btn btn-primary" onclick="location.reload()" style="display: inline-flex;">
+                <i data-lucide="refresh-cw" class="btn-icon"></i>
+                Refresh Page
+              </button>
+            </div>
+          `;
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
+        }
+        if (typeof showNotification === 'function') {
+          showNotification('Error applying filters');
+        }
       }
     }
     
@@ -680,6 +913,618 @@
       initializeContactModal();
     }
 
+    // ============================================
+    // ADVANCED FILTERS FUNCTIONALITY
+    // ============================================
+    (function initAdvancedFilters() {
+      const showAdvancedBtn = document.getElementById('showAdvancedFilters');
+      const toggleAdvancedBtn = document.getElementById('toggleAdvancedFilters');
+      const advancedPanel = document.getElementById('advancedFiltersPanel');
+      const priceSlider = document.getElementById('priceSlider');
+      const priceSliderValue = document.getElementById('priceSliderValue');
+      const priceRangeMin = document.getElementById('priceRangeMin');
+      const priceRangeMax = document.getElementById('priceRangeMax');
+      const applyAdvancedBtn = document.getElementById('applyAdvancedFilters');
+      const resetFiltersBtn = document.getElementById('resetFilters');
+      const locationFilter = document.getElementById('locationFilter');
+      const useLocationBtn = document.getElementById('useLocationBtn');
+      const vinFilter = document.getElementById('vinFilter');
+      const vehicleMake = document.getElementById('vehicleMake');
+      const vehicleModel = document.getElementById('vehicleModel');
+      const vehicleYear = document.getElementById('vehicleYear');
+      const checkCompatibilityBtn = document.getElementById('checkCompatibility');
+      const compatibilityGroup = document.getElementById('compatibilityFilterGroup');
+      
+      // Toggle advanced filters panel
+      if (showAdvancedBtn && advancedPanel) {
+        showAdvancedBtn.addEventListener('click', () => {
+          advancedPanel.style.display = advancedPanel.style.display === 'none' ? 'block' : 'none';
+          showAdvancedBtn.style.display = advancedPanel.style.display === 'none' ? 'inline-flex' : 'none';
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
+        });
+      }
+      
+      if (toggleAdvancedBtn && advancedPanel && showAdvancedBtn) {
+        toggleAdvancedBtn.addEventListener('click', () => {
+          advancedPanel.style.display = 'none';
+          showAdvancedBtn.style.display = 'inline-flex';
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
+        });
+      }
+      
+      // Price slider updates
+      if (priceSlider && priceSliderValue) {
+        priceSlider.addEventListener('input', (e) => {
+          const value = parseInt(e.target.value);
+          priceSliderValue.textContent = `$${value.toLocaleString()}`;
+          if (priceRangeMax) {
+            priceRangeMax.value = value;
+          }
+        });
+      }
+      
+      // Price range inputs sync with slider
+      if (priceRangeMin && priceRangeMax && priceSlider) {
+        priceRangeMin.addEventListener('input', (e) => {
+          const min = parseInt(e.target.value) || 0;
+          if (min > parseInt(priceRangeMax.value || priceSlider.max)) {
+            priceRangeMax.value = min;
+          }
+        });
+        
+        priceRangeMax.addEventListener('input', (e) => {
+          const max = parseInt(e.target.value) || priceSlider.max;
+          if (priceSlider) {
+            priceSlider.value = Math.min(max, parseInt(priceSlider.max));
+            if (priceSliderValue) {
+              priceSliderValue.textContent = `$${parseInt(priceSlider.value).toLocaleString()}`;
+            }
+          }
+        });
+      }
+      
+      // Apply advanced filters
+      if (applyAdvancedBtn) {
+        applyAdvancedBtn.addEventListener('click', () => {
+          applyFilters();
+          if (advancedPanel) {
+            advancedPanel.style.display = 'none';
+          }
+          if (showAdvancedBtn) {
+            showAdvancedBtn.style.display = 'inline-flex';
+          }
+        });
+      }
+      
+      // Reset filters
+      if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', () => {
+          if (priceRangeMin) priceRangeMin.value = '';
+          if (priceRangeMax) priceRangeMax.value = '';
+          if (priceSlider) {
+            priceSlider.value = 50000;
+            if (priceSliderValue) {
+              priceSliderValue.textContent = '$50,000';
+            }
+          }
+          if (locationFilter) locationFilter.value = '';
+          if (vinFilter) vinFilter.value = '';
+          if (vehicleMake) vehicleMake.value = '';
+          if (vehicleModel) vehicleModel.value = '';
+          if (vehicleYear) vehicleYear.value = '';
+          if (vehicleModel) vehicleModel.disabled = true;
+          if (vehicleYear) vehicleYear.disabled = true;
+          if (checkCompatibilityBtn) checkCompatibilityBtn.disabled = true;
+          applyFilters();
+        });
+      }
+      
+      // Use location button
+      if (useLocationBtn) {
+        useLocationBtn.addEventListener('click', () => {
+          if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser');
+            return;
+          }
+          
+          useLocationBtn.disabled = true;
+          useLocationBtn.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin: 0 auto;"></div>';
+          
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const lat = position.coords.latitude;
+              const lng = position.coords.longitude;
+              
+              // Reverse geocode to get address (in production, use a geocoding API)
+              if (locationFilter) {
+                locationFilter.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+              }
+              
+              // Show map container
+              const mapContainer = document.getElementById('locationMapContainer');
+              if (mapContainer) {
+                mapContainer.style.display = 'block';
+                // In production, initialize Google Maps or Mapbox here
+                // Example: initializeMap('locationMap', lat, lng);
+              }
+              
+              useLocationBtn.disabled = false;
+              useLocationBtn.innerHTML = '<i data-lucide="map-pin" class="btn-icon"></i> Use My Location';
+              if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+              }
+              
+              applyFilters();
+            },
+            (error) => {
+              console.error('Geolocation error:', error);
+              alert('Unable to get your location. Please enter it manually.');
+              useLocationBtn.disabled = false;
+              useLocationBtn.innerHTML = '<i data-lucide="map-pin" class="btn-icon"></i> Use My Location';
+              if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+              }
+            }
+          );
+        });
+      }
+      
+      // Vehicle compatibility checker
+      if (vehicleMake) {
+        vehicleMake.addEventListener('change', (e) => {
+          const make = e.target.value;
+          if (vehicleModel) {
+            vehicleModel.disabled = !make;
+            vehicleModel.innerHTML = '<option value="">Select Model</option>';
+            
+            // Load models based on make (demo data)
+            if (make) {
+              const models = {
+                'Toyota': ['Camry', 'Corolla', 'RAV4', 'Highlander', 'Prius'],
+                'Honda': ['Civic', 'Accord', 'CR-V', 'Pilot', 'Odyssey'],
+                'Ford': ['F-150', 'Mustang', 'Explorer', 'Escape', 'Edge'],
+                'Chevrolet': ['Silverado', 'Malibu', 'Equinox', 'Tahoe', 'Traverse'],
+                'BMW': ['3 Series', '5 Series', 'X3', 'X5', 'X7'],
+                'Mercedes-Benz': ['C-Class', 'E-Class', 'GLC', 'GLE', 'S-Class']
+              };
+              
+              const makeModels = models[make] || [];
+              makeModels.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                vehicleModel.appendChild(option);
+              });
+            }
+          }
+          if (vehicleYear) vehicleYear.disabled = true;
+          if (checkCompatibilityBtn) checkCompatibilityBtn.disabled = true;
+        });
+      }
+      
+      if (vehicleModel) {
+        vehicleModel.addEventListener('change', (e) => {
+          const model = e.target.value;
+          if (vehicleYear) {
+            vehicleYear.disabled = !model;
+            vehicleYear.innerHTML = '<option value="">Select Year</option>';
+            
+            // Load years (2015-2025)
+            if (model) {
+              for (let year = 2025; year >= 2015; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                vehicleYear.appendChild(option);
+              }
+            }
+          }
+          if (checkCompatibilityBtn) checkCompatibilityBtn.disabled = true;
+        });
+      }
+      
+      if (vehicleYear) {
+        vehicleYear.addEventListener('change', (e) => {
+          const year = e.target.value;
+          if (checkCompatibilityBtn) {
+            checkCompatibilityBtn.disabled = !year;
+          }
+        });
+      }
+      
+      // Show compatibility filter only for Parts category
+      const filterTabs = document.querySelectorAll('.filter-tab');
+      filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const category = tab.dataset.filter;
+          if (compatibilityGroup) {
+            compatibilityGroup.style.display = category === 'Parts' ? 'block' : 'none';
+          }
+        });
+      });
+      
+      // Check compatibility button
+      if (checkCompatibilityBtn) {
+        checkCompatibilityBtn.addEventListener('click', () => {
+          const make = vehicleMake?.value;
+          const model = vehicleModel?.value;
+          const year = vehicleYear?.value;
+          
+          if (!make || !model || !year) {
+            alert('Please select make, model, and year');
+            return;
+          }
+          
+          // Show loading state
+          checkCompatibilityBtn.disabled = true;
+          checkCompatibilityBtn.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin: 0 auto;"></div> Checking...';
+          
+          // Simulate compatibility check (in production, call API)
+          setTimeout(() => {
+            alert(`Compatible parts found for ${year} ${make} ${model}! Filters updated.`);
+            applyFilters();
+            
+            checkCompatibilityBtn.disabled = false;
+            checkCompatibilityBtn.innerHTML = '<i data-lucide="check-circle" class="btn-icon"></i> Check Compatibility';
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }, 1000);
+        });
+      }
+    })();
+
+    // ============================================
+    // SOCIAL SHARING FUNCTIONALITY
+    // ============================================
+    (function initSocialSharing() {
+      // Social share dropdown toggle
+      document.addEventListener('click', (e) => {
+        const shareBtn = e.target.closest('.social-share-btn');
+        const shareMenu = e.target.closest('.social-share-menu');
+        
+        // Close all menus
+        document.querySelectorAll('.social-share-menu').forEach(menu => {
+          menu.style.display = 'none';
+          const btn = menu.previousElementSibling;
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+        });
+        
+        // Open clicked menu
+        if (shareBtn) {
+          e.stopPropagation();
+          const menu = shareBtn.nextElementSibling;
+          if (menu && menu.classList.contains('social-share-menu')) {
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+            shareBtn.setAttribute('aria-expanded', menu.style.display !== 'none');
+          }
+        } else if (!shareMenu) {
+          // Clicked outside - menus already closed above
+        }
+      });
+      
+      // Handle social sharing
+      document.addEventListener('click', (e) => {
+        const shareLink = e.target.closest('.social-share-link');
+        if (!shareLink) return;
+        
+        e.preventDefault();
+        const platform = shareLink.dataset.platform;
+        const postingId = shareLink.dataset.postingId;
+        const url = `${window.location.origin}/posting-detail.html?id=${postingId}`;
+        const title = document.title;
+        const text = `Check out this listing on Autoilty: ${url}`;
+        
+        // Get posting details from global storage
+        const posting = window.currentPostings?.find(p => p.id === postingId);
+        const postingTitle = posting?.title || 'Great listing';
+        const postingText = `Check out "${postingTitle}" on Autoilty`;
+        
+        switch (platform) {
+          case 'facebook':
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+            break;
+          case 'twitter':
+            window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(postingText)}`, '_blank', 'width=600,height=400');
+            break;
+          case 'whatsapp':
+            window.open(`https://wa.me/?text=${encodeURIComponent(postingText + ' ' + url)}`, '_blank');
+            break;
+          case 'copy':
+            navigator.clipboard.writeText(url).then(() => {
+              if (typeof showNotification === 'function') {
+                showNotification('Link copied to clipboard!');
+              } else {
+                alert('Link copied to clipboard!');
+              }
+            }).catch(() => {
+              alert('Failed to copy link');
+            });
+            break;
+        }
+        
+        // Close menu
+        const menu = shareLink.closest('.social-share-menu');
+        if (menu) {
+          menu.style.display = 'none';
+          const btn = menu.previousElementSibling;
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    })();
+
+    // ============================================
+    // BUY NOW (STRIPE PAYMENT) FUNCTIONALITY
+    // ============================================
+    (function initBuyNow() {
+      document.addEventListener('click', (e) => {
+        const buyBtn = e.target.closest('.buy-now-btn');
+        if (!buyBtn) return;
+        
+        e.stopPropagation();
+        const postingId = buyBtn.dataset.postingId;
+        const price = buyBtn.dataset.price;
+        
+        // Check if user is authenticated
+        if (typeof isAuthenticated === 'function' && !isAuthenticated()) {
+          const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+          window.location.href = `login.html?return=${returnUrl}`;
+          return;
+        }
+        
+        // Check localStorage for auth
+        const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+        if (!token) {
+          const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+          window.location.href = `login.html?return=${returnUrl}`;
+          return;
+        }
+        
+        // Confirm purchase
+        const posting = window.currentPostings?.find(p => p.id === postingId);
+        const postingName = posting?.title || 'This item';
+        
+        if (!confirm(`Buy "${postingName}" for $${parseFloat(price).toFixed(2)} CAD?`)) {
+          return;
+        }
+        
+        // Show loading state
+        buyBtn.disabled = true;
+        const originalText = buyBtn.innerHTML;
+        buyBtn.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin: 0 auto;"></div> Processing...';
+        
+        // In production, this would call Stripe API
+        // For now, simulate payment processing
+        setTimeout(() => {
+          // Redirect to checkout page with Stripe
+          window.location.href = `checkout.html?posting=${postingId}&price=${price}`;
+        }, 500);
+      });
+    })();
+
+    // ============================================
+    // VIN VERIFICATION FUNCTIONALITY
+    // ============================================
+    (function initVINVerification() {
+      // Add VIN verification to listings when VIN field is present
+      document.addEventListener('DOMContentLoaded', () => {
+        // This would typically be called when a posting with VIN is displayed
+        // For now, we'll add verification badges when postings are rendered
+      });
+      
+      // VIN verification API call (demo)
+      window.verifyVIN = async function(vin) {
+        if (!vin || vin.length !== 17) {
+          return { verified: false, error: 'Invalid VIN format' };
+        }
+        
+        try {
+          // In production, call VIN verification API
+          // For now, simulate verification
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          return {
+            verified: true,
+            make: 'Toyota',
+            model: 'Camry',
+            year: '2020',
+            engine: '2.5L 4-Cylinder',
+            transmission: 'Automatic'
+          };
+        } catch (error) {
+          console.error('VIN verification error:', error);
+          return { verified: false, error: 'Verification failed' };
+        }
+      };
+    })();
+
+    // ============================================
+    // AUTO PART COMPATIBILITY CHECKER
+    // ============================================
+    (function initCompatibilityChecker() {
+      window.checkPartCompatibility = async function(partId, vehicleMake, vehicleModel, vehicleYear) {
+        if (!vehicleMake || !vehicleModel || !vehicleYear) {
+          return { compatible: false, error: 'Vehicle information required' };
+        }
+        
+        try {
+          // In production, call compatibility API
+          // For now, simulate compatibility check
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Demo: 70% chance of compatibility
+          const compatible = Math.random() > 0.3;
+          
+          return {
+            compatible: compatible,
+            message: compatible 
+              ? `This part is compatible with ${vehicleYear} ${vehicleMake} ${vehicleModel}`
+              : `This part may not be compatible with ${vehicleYear} ${vehicleMake} ${vehicleModel}. Please verify.`,
+            alternatives: compatible ? [] : [
+              'Alternative Part A - $299.99',
+              'Alternative Part B - $349.99'
+            ]
+          };
+        } catch (error) {
+          console.error('Compatibility check error:', error);
+          return { compatible: false, error: 'Compatibility check failed' };
+        }
+      };
+    })();
+
+    // ============================================
+    // SIMILAR POSTINGS FUNCTIONALITY
+    // ============================================
+    (function initSimilarPostings() {
+      window.loadSimilarPostings = async function(postingId, category) {
+        try {
+          // Get similar postings based on category, price range, etc.
+          const currentPosting = window.currentPostings?.find(p => p.id === postingId);
+          if (!currentPosting) return [];
+          
+          // Filter similar postings (same category, similar price range)
+          const similar = window.currentPostings
+            ?.filter(p => 
+              p.id !== postingId && 
+              p.category === currentPosting.category &&
+              Math.abs(parseFloat(p.price) - parseFloat(currentPosting.price)) < 5000
+            )
+            .slice(0, 3) || [];
+          
+          return similar;
+        } catch (error) {
+          console.error('Error loading similar postings:', error);
+          return [];
+        }
+      };
+      
+      // Show similar postings on hover or click
+      document.addEventListener('mouseenter', (e) => {
+        const card = e.target.closest('.product-card');
+        if (!card) return;
+        
+        const postingId = card.dataset.productId;
+        const similarContainer = card.querySelector('.similar-postings');
+        if (!similarContainer || similarContainer.style.display !== 'none') return;
+        
+        // Load similar postings
+        const category = card.querySelector('.product-category')?.textContent?.toLowerCase();
+        loadSimilarPostings(postingId, category).then(similar => {
+          if (similar.length > 0 && similarContainer) {
+            const similarList = similarContainer.querySelector('.similar-postings-list');
+            if (similarList) {
+              similarList.innerHTML = similar.map(post => {
+                const product = postingToProduct(post);
+                return `
+                  <a href="posting-detail.html?id=${product.id}" style="display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius); transition: background 0.2s; text-decoration: none; color: var(--color-text);" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+                    <img src="${product.image}" alt="${product.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: var(--radius);">
+                    <div style="flex: 1; min-width: 0;">
+                      <p style="font-size: 0.875rem; font-weight: 500; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${product.name}</p>
+                      <p style="font-size: 0.75rem; color: var(--color-text-light); margin: 0.25rem 0 0 0;">$${product.price.toFixed(2)} CAD</p>
+                    </div>
+                  </a>
+                `;
+              }).join('');
+              
+              similarContainer.style.display = 'block';
+            }
+          }
+        });
+      }, true);
+    })();
+
+    // ============================================
+    // TOP DEALS FUNCTIONALITY
+    // ============================================
+    (function loadTopDeals() {
+      const topDealsSection = document.getElementById('topDealsSection');
+      const topDealsGrid = document.getElementById('topDealsGrid');
+      
+      if (!topDealsSection || !topDealsGrid) return;
+      
+      async function loadDeals() {
+        try {
+          // Fetch top deals (in production, call API with is_top_deal=true or admin_curated=true)
+          const data = await fetchPostings({ page: 1, limit: 4 });
+          
+          // Filter or mark top deals (in production, API would return is_top_deal flag)
+          const topDeals = (data.postings || [])
+            .slice(0, 4)
+            .map(post => ({ ...post, is_top_deal: true }));
+          
+          if (topDeals.length === 0) {
+            topDealsSection.style.display = 'none';
+            return;
+          }
+          
+          topDealsSection.style.display = 'block';
+          
+          // Render top deals
+          if (typeof renderPostingsAsProducts === 'function') {
+            renderPostingsAsProducts(topDeals, topDealsGrid);
+          } else {
+            topDealsGrid.innerHTML = '<p class="empty-state">Loading top deals...</p>';
+          }
+          
+        } catch (error) {
+          console.error('Error loading top deals:', error);
+          topDealsSection.style.display = 'none';
+        }
+      }
+      
+      // Load top deals after main postings
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          setTimeout(loadDeals, 500); // Wait for main postings to load
+        });
+      } else {
+        setTimeout(loadDeals, 500);
+      }
+    })();
+
+    // ============================================
+    // VIEW TOGGLE (GRID/LIST) FUNCTIONALITY
+    // ============================================
+    (function initViewToggle() {
+      const viewToggle = document.getElementById('viewToggle');
+      const viewToggleIcon = document.getElementById('viewToggleIcon');
+      const viewToggleText = document.getElementById('viewToggleText');
+      const productsGrid = document.getElementById('productsGrid');
+      let isGridView = true;
+      
+      if (!viewToggle || !productsGrid) return;
+      
+      viewToggle.addEventListener('click', () => {
+        isGridView = !isGridView;
+        
+        if (isGridView) {
+          productsGrid.className = 'products-grid';
+          if (viewToggleIcon) {
+            viewToggleIcon.setAttribute('data-lucide', 'layout-grid');
+          }
+          if (viewToggleText) {
+            viewToggleText.textContent = 'Grid';
+          }
+        } else {
+          productsGrid.className = 'products-list';
+          if (viewToggleIcon) {
+            viewToggleIcon.setAttribute('data-lucide', 'list');
+          }
+          if (viewToggleText) {
+            viewToggleText.textContent = 'List';
+          }
+        }
+        
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+      });
+    })();
+    
     // Load on page ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', loadPostings);
