@@ -4,8 +4,12 @@
  * AI Recommendations, User-Submitted Updates, Dynamic SEO
  */
 
-// Store vehicles for quick access
-let vehiclesCache = [];
+// Store vehicles for quick access - use window.vehiclesCache from inventory.html
+// This will be populated when vehicles are loaded
+if (typeof window !== 'undefined' && !window.vehiclesCache) {
+  window.vehiclesCache = [];
+}
+let vehiclesCache = window.vehiclesCache || [];
 
 // ============================================
 // SPEC COMPARISON FUNCTIONALITY
@@ -258,43 +262,187 @@ function close360View() {
 // FIND DEALERS (GOOGLE MAPS INTEGRATION)
 // ============================================
 function findDealers(vehicleId) {
-  const vehicle = vehiclesCache.find(v => v.id === vehicleId);
-  if (!vehicle) return;
+  // Prevent any default behavior and navigation
+  try {
+    if (typeof event !== 'undefined' && event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  } catch (e) {
+    // Event might not be available in all contexts
+  }
+  
+  console.log('🔍 findDealers called with vehicleId:', vehicleId);
+  
+  if (!vehicleId) {
+    console.error('❌ Vehicle ID is required');
+    alert('Error: Vehicle ID not found. Please try again.');
+    return false;
+  }
+  
+  // Try to find vehicle from DOM first (most reliable)
+  const card = document.querySelector(`[data-vehicle-id="${vehicleId}"]`);
+  let vehicle = null;
+  
+  if (card && card.dataset.vehicleData) {
+    try {
+      const vehicleDataStr = card.dataset.vehicleData.replace(/&apos;/g, "'").replace(/&quot;/g, '"');
+      vehicle = JSON.parse(vehicleDataStr);
+      console.log('✅ Found vehicle from DOM data:', vehicle.make, vehicle.model);
+    } catch (e) {
+      console.error('Error parsing vehicle data from DOM:', e);
+    }
+  }
+  
+  // Fallback: Try to find in window.vehiclesCache (from inventory page)
+  if (!vehicle && typeof window !== 'undefined' && window.vehiclesCache) {
+    vehicle = window.vehiclesCache.find(v => v && v.id === vehicleId);
+    if (vehicle) {
+      console.log('✅ Found vehicle from window.vehiclesCache:', vehicle.make, vehicle.model);
+    }
+  }
+  
+  // Fallback: Try local vehiclesCache variable
+  if (!vehicle && typeof vehiclesCache !== 'undefined' && Array.isArray(vehiclesCache) && vehiclesCache.length > 0) {
+    vehicle = vehiclesCache.find(v => v && v.id === vehicleId);
+    if (vehicle) {
+      console.log('✅ Found vehicle from local cache:', vehicle.make, vehicle.model);
+    }
+  }
+  
+  // Fallback: Check window.currentPostings (from marketplace)
+  if (!vehicle && typeof window !== 'undefined' && window.currentPostings) {
+    vehicle = window.currentPostings.find(v => v && v.id === vehicleId);
+    if (vehicle) {
+      console.log('✅ Found vehicle from currentPostings:', vehicle.make || vehicle.title);
+    }
+  }
+  
+  // If still not found, create a basic vehicle object from the ID
+  if (!vehicle) {
+    console.warn('Vehicle not found, using fallback data for vehicleId:', vehicleId);
+    // Extract make and model from vehicle ID if possible (format: make-model-variant-id)
+    const parts = vehicleId.split('-');
+    vehicle = {
+      id: vehicleId,
+      make: parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1).replace(/([A-Z])/g, ' $1').trim() : 'Vehicle',
+      model: parts[1] ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1).replace(/([A-Z])/g, ' $1').trim() : 'Model',
+      variant: parts[2] || '',
+      dealer_locations: ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Pune', 'Kolkata']
+    };
+  }
 
   let modal = document.getElementById('dealersModal');
   if (!modal) {
     modal = createDealersModal();
-    document.body.appendChild(modal);
+    if (modal) {
+      document.body.appendChild(modal);
+      console.log('✅ Dealers modal created and added to DOM');
+    } else {
+      console.error('❌ Failed to create dealers modal');
+      alert('Unable to open dealers modal. Please try again.');
+      return false;
+    }
   }
 
-  const locations = vehicle.dealer_locations || ['Mumbai', 'Delhi', 'Bangalore'];
+  const locations = vehicle.dealer_locations || vehicle.dealerLocations || ['Mumbai', 'Delhi', 'Bangalore'];
   const mapContainer = document.getElementById('dealersMap');
   const dealersList = document.getElementById('dealersList');
 
   if (dealersList) {
-    dealersList.innerHTML = locations.map((location, index) => `
-      <div class="dealer-item" style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 1rem; cursor: pointer;" onclick="showDealerOnMap(${index}, '${location}');">
-        <h4 style="margin: 0 0 0.5rem 0; font-size: 1.125rem;">${vehicle.make} ${vehicle.model} - ${location}</h4>
-        <p style="margin: 0; color: var(--color-text-light); font-size: 0.875rem;">
-          <i data-lucide="map-pin" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i>
-          ${location}, India
-        </p>
-        <button class="btn btn-primary btn-sm" style="margin-top: 0.5rem;" onclick="event.stopPropagation(); openGoogleMaps('${location}');">
-          View on Google Maps
-        </button>
-      </div>
-    `).join('');
+    dealersList.innerHTML = locations.map((location, index) => {
+      const safeLocation = escapeHtml(location);
+      const vehicleMake = escapeHtml(vehicle.make || 'Vehicle');
+      const vehicleModel = escapeHtml(vehicle.model || '');
+      return `
+        <div class="dealer-item" style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 1rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='white'" onclick="if(typeof showDealerOnMap === 'function') { event.stopPropagation(); event.preventDefault(); showDealerOnMap(${index}, '${safeLocation}'); return false; }">
+          <h4 style="margin: 0 0 0.5rem 0; font-size: 1.125rem;">${vehicleMake} ${vehicleModel} - ${safeLocation}</h4>
+          <p style="margin: 0; color: var(--color-text-light); font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i>
+            ${safeLocation}, India
+          </p>
+          <button class="btn btn-primary btn-sm" style="margin-top: 0.5rem;" onclick="event.stopPropagation(); event.preventDefault(); if(typeof openGoogleMaps === 'function') { openGoogleMaps('${safeLocation}'); } return false;">
+            View on Google Maps
+          </button>
+        </div>
+      `;
+    }).join('');
   }
 
-  // Initialize Google Maps
-  initializeGoogleMap(locations);
-
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+  // Show modal first
+  // Show modal - use requestAnimationFrame to ensure DOM is ready
+  try {
+    requestAnimationFrame(() => {
+      if (!modal || !modal.parentNode) {
+        console.error('❌ Modal not in DOM, appending...');
+        document.body.appendChild(modal);
+      }
+      
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      
+      // Prevent any clicks on modal from causing navigation
+      modal.style.pointerEvents = 'auto';
+      
+      console.log('✅ Modal displayed');
+      
+      // Initialize Google Maps after modal is shown
+      setTimeout(() => {
+        try {
+          initializeGoogleMap(locations);
+        } catch (mapError) {
+          console.error('❌ Error initializing map:', mapError);
+          const mapContainer = document.getElementById('dealersMap');
+          if (mapContainer) {
+            mapContainer.innerHTML = `
+              <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; text-align: center;">
+                <i data-lucide="alert-circle" style="width: 48px; height: 48px; color: var(--color-text-light); margin-bottom: 1rem;"></i>
+                <p style="color: var(--color-text-light);">Map could not be loaded</p>
+                <button class="btn btn-primary btn-sm" onclick="if(typeof openGoogleMaps === 'function') { openGoogleMaps('${locations[0] || 'India'}'); } return false;" style="margin-top: 1rem;">
+                  Open in Google Maps
+                </button>
+              </div>
+            `;
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
+        }
+      }, 200);
+      
+      // Re-initialize icons after content is added
+      setTimeout(() => {
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+        
+        // Re-attach close button handler
+        const closeBtn = modal.querySelector('#dealersModalClose');
+        if (closeBtn) {
+          // Remove old listeners
+          const newCloseBtn = closeBtn.cloneNode(true);
+          closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+          
+          newCloseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            closeDealersModal();
+            return false;
+          }, true);
+        }
+      }, 300);
+    });
+  } catch (error) {
+    console.error('❌ Error showing dealers modal:', error);
+    alert('Error opening Find Dealers. Please try again.');
+    return false;
+  }
   
-  if (typeof lucide !== 'undefined' && lucide.createIcons) {
-    lucide.createIcons();
-  }
+  console.log('✅ Dealers modal opened for vehicle:', vehicle.make, vehicle.model);
+  
+  // Explicitly prevent navigation - return false
+  return false;
 }
 
 function createDealersModal() {
@@ -303,9 +451,28 @@ function createDealersModal() {
   modal.className = 'modal-overlay';
   modal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center; padding: 2rem; overflow-y: auto;';
   
-  modal.innerHTML = `
-    <div class="modal-content" style="background: white; border-radius: 12px; max-width: 1000px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 2rem; position: relative;">
-      <button onclick="closeDealersModal();" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-text-light);" aria-label="Close">
+  // Prevent any navigation when clicking on modal
+  modal.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only close if clicking the overlay itself, not the content
+    if (e.target === modal) {
+      closeDealersModal();
+    }
+    return false;
+  }, true); // Use capture phase
+  
+  const modalContent = document.createElement('div');
+  modalContent.className = 'modal-content';
+  modalContent.style.cssText = 'background: white; border-radius: 12px; max-width: 1000px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 2rem; position: relative;';
+  
+  // Prevent clicks on modal content from closing the modal
+  modalContent.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+  
+  modalContent.innerHTML = `
+      <button id="dealersModalClose" type="button" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-text-light); z-index: 10001; padding: 0.5rem; display: flex; align-items: center; justify-content: center;" aria-label="Close modal">
         <i data-lucide="x"></i>
       </button>
       <h2 style="margin-bottom: 1.5rem; font-size: 1.75rem;">Find Dealers</h2>
@@ -317,33 +484,83 @@ function createDealersModal() {
         <div>
           <h3 style="margin-bottom: 1rem; font-size: 1.125rem;">Map</h3>
           <div id="dealersMap" style="height: 500px; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #e0e0e0;">
-            <p style="color: var(--color-text-light);">Google Maps integration. Add your Google Maps API key to enable.</p>
+            <p style="color: var(--color-text-light);">Loading map...</p>
           </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
   
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
+  modal.appendChild(modalContent);
+  
+  // Add click handler for close button immediately
+  const closeBtn = modalContent.querySelector('#dealersModalClose');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       closeDealersModal();
+      return false;
+    }, true); // Use capture phase
+  }
+  
+  // Prevent form submission or navigation
+  modal.addEventListener('submit', (e) => {
+    e.preventDefault();
+    return false;
+  }, true);
+  
+  // Close on ESC key
+  const escHandler = (e) => {
+    if (e.key === 'Escape') {
+      const dealersModal = document.getElementById('dealersModal');
+      if (dealersModal && dealersModal.style.display === 'flex') {
+        e.preventDefault();
+        closeDealersModal();
+        return false;
+      }
     }
-  });
+  };
+  document.addEventListener('keydown', escHandler);
+  
+  // Store handler for cleanup if needed
+  modal._escHandler = escHandler;
   
   return modal;
 }
 
 function initializeGoogleMap(locations) {
-  // Get API key from config.js file (public/config.js)
-  // Set window.GOOGLE_MAPS_API_KEY in public/config.js
-  const GOOGLE_MAPS_API_KEY = window.GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY';
+  // Get API key from config.js file (public/config.js) or environment
+  const GOOGLE_MAPS_API_KEY = window.GOOGLE_MAPS_API_KEY || '';
+  
+  console.log('🗺️  Initializing Google Map with API key:', GOOGLE_MAPS_API_KEY ? 'Present' : 'Missing');
+  console.log('📍 Locations:', locations);
   
   const mapContainer = document.getElementById('dealersMap');
-  if (!mapContainer) return;
+  if (!mapContainer) {
+    console.error('Map container not found');
+    return;
+  }
   
   // Option 1: Using Google Maps Embed API (simpler, no JavaScript SDK needed)
-  if (GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY !== 'YOUR_API_KEY_HERE') {
+  // Check if API key is valid (starts with AIza and is long enough)
+  const isValidApiKey = GOOGLE_MAPS_API_KEY && 
+      GOOGLE_MAPS_API_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY' && 
+      GOOGLE_MAPS_API_KEY !== 'YOUR_API_KEY_HERE' &&
+      GOOGLE_MAPS_API_KEY.length > 30 &&
+      GOOGLE_MAPS_API_KEY.startsWith('AIza');
+  
+  // Option 2: Check if Google Maps JavaScript API is available
+  const hasGoogleMapsJS = typeof google !== 'undefined' && google.maps;
+  
+  if (isValidApiKey) {
+    // Use Embed API (simpler, works without JavaScript SDK)
     const firstLocation = locations[0] || 'India';
+    const query = encodeURIComponent(firstLocation + ', India');
+    const embedUrl = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${query}`;
+    
+    console.log('✅ Loading Google Maps embed for:', firstLocation);
+    
     mapContainer.innerHTML = `
       <iframe 
         width="100%" 
@@ -351,14 +568,14 @@ function initializeGoogleMap(locations) {
         style="border:0; border-radius: 8px;" 
         loading="lazy" 
         allowfullscreen
-        src="https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(firstLocation + ', India')}"
-        referrerpolicy="no-referrer-when-downgrade">
+        src="${embedUrl}"
+        referrerpolicy="no-referrer-when-downgrade"
+        title="Dealer locations map">
       </iframe>
     `;
-  } 
-  // Option 2: Using Google Maps JavaScript API (more features, interactive maps)
-  else if (typeof google !== 'undefined' && google.maps) {
-    // Initialize interactive map with markers for each location
+  } else if (hasGoogleMapsJS) {
+    // Use JavaScript API (more features, interactive maps with markers)
+    console.log('✅ Using Google Maps JavaScript API');
     const map = new google.maps.Map(mapContainer, {
       center: { lat: 20.5937, lng: 78.9629 }, // Center of India
       zoom: 5,
@@ -392,17 +609,19 @@ function initializeGoogleMap(locations) {
         }
       });
     });
-  } 
-  // Fallback: Show placeholder if no API key
-  else {
+  } else {
+    // Fallback: Show placeholder with links to Google Maps
+    console.warn('⚠️  Google Maps API key not configured or invalid. Showing fallback.');
     mapContainer.innerHTML = `
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; text-align: center;">
         <i data-lucide="map-pin" style="width: 48px; height: 48px; color: var(--color-text-light); margin-bottom: 1rem;"></i>
-        <p style="color: var(--color-text-light); margin-bottom: 0.5rem;">Google Maps integration</p>
-        <p style="font-size: 0.875rem; color: var(--color-text-light);">Add your Google Maps API key in <code>public/config.js</code> or set <code>window.GOOGLE_MAPS_API_KEY</code></p>
-        <button class="btn btn-secondary btn-sm" onclick="openGoogleMaps('${locations[0] || 'India'}');" style="margin-top: 1rem;">
-          Open in Google Maps
-        </button>
+        <p style="color: var(--color-text-light); margin-bottom: 0.5rem; font-weight: 500;">Google Maps</p>
+        <p style="font-size: 0.875rem; color: var(--color-text-light); margin-bottom: 1rem;">Click below to view locations on Google Maps</p>
+        ${locations.map((loc, idx) => `
+          <button class="btn btn-primary btn-sm" onclick="if(typeof openGoogleMaps === 'function') { openGoogleMaps('${escapeHtml(loc)}'); } return false;" style="width: 100%; margin-bottom: 0.5rem;">
+            View ${escapeHtml(loc)} on Maps
+          </button>
+        `).join('')}
       </div>
     `;
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
@@ -422,11 +641,19 @@ function openGoogleMaps(location) {
 }
 
 function closeDealersModal() {
+  // Prevent any navigation
+  if (typeof event !== 'undefined' && event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
   const modal = document.getElementById('dealersModal');
   if (modal) {
     modal.style.display = 'none';
     document.body.style.overflow = '';
+    console.log('✅ Dealers modal closed');
   }
+  return false;
 }
 
 // ============================================

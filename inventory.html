@@ -388,6 +388,13 @@
   <script src="data/indian-vehicles.js"></script>
   <script src="js/inventory-features.js"></script>
   <script>
+    // Ensure inventory-features.js has loaded before proceeding
+    if (typeof findDealers === 'undefined') {
+      console.warn('⚠️  inventory-features.js may not have loaded yet. Functions may not be available.');
+    } else {
+      console.log('✅ inventory-features.js loaded successfully');
+    }
+    
     // Initialize Lucide icons
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
       lucide.createIcons();
@@ -499,14 +506,16 @@
         }
 
         // Store vehicles in cache for advanced features
-        if (typeof window !== 'undefined' && window.vehiclesCache) {
+        if (typeof window !== 'undefined') {
+          if (!window.vehiclesCache) {
+            window.vehiclesCache = [];
+          }
           vehicles.forEach(v => {
-            if (!window.vehiclesCache.find(cached => cached.id === v.id)) {
+            if (v && v.id && !window.vehiclesCache.find(cached => cached && cached.id === v.id)) {
               window.vehiclesCache.push(v);
             }
           });
-        } else if (typeof window !== 'undefined') {
-          window.vehiclesCache = vehicles;
+          console.log('Vehicles cached:', window.vehiclesCache.length, 'total vehicles');
         }
 
         // Render vehicles
@@ -566,13 +575,127 @@
       // List view
       list.innerHTML = vehicles.map(vehicle => createVehicleListItem(vehicle)).join('');
 
-      // Add click handlers
+      // Add click handlers - but prevent navigation when clicking buttons
       document.querySelectorAll('.vehicle-card').forEach(card => {
-        card.addEventListener('click', () => {
+        card.addEventListener('click', (e) => {
+          // Don't navigate if clicking a button, link, or any interactive element
+          if (e.target.closest('button') || 
+              e.target.closest('a') || 
+              e.target.closest('.btn') ||
+              e.target.closest('.btn-link') ||
+              e.target.closest('.btn-360-view') ||
+              e.target.closest('.btn-price-history')) {
+            return; // Let the button handle its own click
+          }
           // Could navigate to vehicle detail page
           console.log('Vehicle clicked:', card.dataset.vehicleId);
         });
       });
+      
+      // Set up event listeners for action buttons (using event delegation for better reliability)
+      setupVehicleActionButtons();
+      
+      // Re-initialize Lucide icons for new buttons
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+    
+    // Set up event listeners for vehicle action buttons
+    // Use event delegation on document for dynamic content
+    function setupVehicleActionButtons() {
+      // Remove existing handler to prevent duplicates
+      if (window._vehicleActionButtonHandler) {
+        document.removeEventListener('click', window._vehicleActionButtonHandler, true);
+      }
+      
+      // Set up a single event listener on document for all action buttons
+      // This works for dynamically created buttons
+      window._vehicleActionButtonHandler = function(e) {
+        // Find Dealers buttons
+        const findDealersBtn = e.target.closest('.find-dealers-btn');
+        if (findDealersBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          
+          const vehicleId = findDealersBtn.dataset.vehicleId;
+          console.log('🔍 Find Dealers button clicked for vehicle:', vehicleId);
+          
+          if (!vehicleId) {
+            console.error('❌ Vehicle ID not found on button');
+            alert('Error: Vehicle ID not found. Please refresh the page and try again.');
+            return false;
+          }
+          
+          // Check if function is available (might load async)
+          if (typeof findDealers === 'function') {
+            try {
+              const result = findDealers(vehicleId);
+              return result === false ? false : undefined;
+            } catch (error) {
+              console.error('❌ Error in findDealers:', error);
+              alert('Error opening Find Dealers. Please try again.');
+              return false;
+            }
+          } else {
+            console.error('❌ findDealers function not available. Script may still be loading.');
+            // Try again after a short delay
+            setTimeout(() => {
+              if (typeof findDealers === 'function') {
+                findDealers(vehicleId);
+              } else {
+                alert('Find Dealers feature is still loading. Please wait a moment and try again.');
+              }
+            }, 500);
+          }
+          
+          return false;
+        }
+        
+        // Compare Vehicle buttons
+        const compareBtn = e.target.closest('.compare-vehicle-btn');
+        if (compareBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          const vehicleId = compareBtn.dataset.vehicleId;
+          if (vehicleId && typeof compareVehicle === 'function') {
+            compareVehicle(vehicleId);
+          }
+          return false;
+        }
+        
+        // Similar Vehicles buttons
+        const similarBtn = e.target.closest('.similar-vehicles-btn');
+        if (similarBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          const vehicleId = similarBtn.dataset.vehicleId;
+          if (vehicleId && typeof showSimilarVehicles === 'function') {
+            showSimilarVehicles(vehicleId);
+          }
+          return false;
+        }
+        
+        // Submit Update buttons
+        const updateBtn = e.target.closest('.submit-update-btn');
+        if (updateBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          const vehicleId = updateBtn.dataset.vehicleId;
+          if (vehicleId && typeof submitUpdate === 'function') {
+            submitUpdate(vehicleId);
+          }
+          return false;
+        }
+      };
+      
+      document.addEventListener('click', window._vehicleActionButtonHandler, true); // Use capture phase
+      
+      console.log('✅ Vehicle action buttons event delegation set up');
     }
 
     // Create vehicle card (grid view)
@@ -584,7 +707,7 @@
       const imageUrl = vehicle.image_url || `https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&h=600&fit=crop`;
       
       return `
-        <div class="vehicle-card" data-vehicle-id="${vehicle.id}" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
+        <div class="vehicle-card" data-vehicle-id="${vehicle.id}" data-vehicle-data='${JSON.stringify(vehicle).replace(/'/g, "&apos;").replace(/"/g, "&quot;")}' style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
           <div style="position: relative; width: 100%; padding-top: 66.67%; background: #f5f5f5; overflow: hidden;">
             <img 
               src="${imageUrl}" 
@@ -622,17 +745,17 @@
               ${priceRange}
             </p>
             <div style="display: flex; gap: var(--spacing-xs); flex-wrap: wrap; margin-bottom: var(--spacing-xs);">
-              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); compareVehicle('${vehicle.id}');" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Compare">
+              <button type="button" class="btn btn-secondary btn-sm compare-vehicle-btn" data-vehicle-id="${vehicle.id}" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Compare">
                 <i data-lucide="git-compare" style="width: 14px; height: 14px;"></i>Compare
               </button>
-              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); showSimilarVehicles('${vehicle.id}');" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Similar">
+              <button type="button" class="btn btn-secondary btn-sm similar-vehicles-btn" data-vehicle-id="${vehicle.id}" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Similar">
                 <i data-lucide="search" style="width: 14px; height: 14px;"></i>Similar
               </button>
-              <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); findDealers('${vehicle.id}');" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Dealers">
+              <button type="button" class="btn btn-primary btn-sm find-dealers-btn" data-vehicle-id="${vehicle.id}" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Find Dealers">
                 <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>Dealers
               </button>
             </div>
-            <button class="btn-link" onclick="event.stopPropagation(); submitUpdate('${vehicle.id}');" style="width: 100%; padding: 0.25rem; font-size: 0.75rem; color: var(--color-text-light); text-decoration: underline; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Suggest update">
+            <button type="button" class="btn-link submit-update-btn" data-vehicle-id="${vehicle.id}" style="width: 100%; padding: 0.25rem; font-size: 0.75rem; color: var(--color-text-light); text-decoration: underline; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;" aria-label="Suggest update">
               <i data-lucide="edit-3" style="width: 12px; height: 12px;"></i>Suggest Update
             </button>
           </div>
