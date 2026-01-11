@@ -90,64 +90,174 @@
 
     <div id="profileContent" style="display: none;">
       <!-- Profile Header -->
-      <div class="profile-header" style="background: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+      <div class="profile-header">
+        <div class="profile-header-content">
           <!-- Profile Picture -->
-          <div style="position: relative;">
-            <div id="profilePictureContainer" style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background: var(--color-bg-secondary); border: 4px solid var(--color-border); display: flex; align-items: center; justify-content: center;">
-              <img id="profilePicture" src="" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-              <i data-lucide="user" id="profilePicturePlaceholder" style="width: 60px; height: 60px; color: var(--color-text-secondary);"></i>
+          <div class="profile-avatar-wrapper">
+            <div id="profilePictureContainer" class="profile-avatar">
+              <img id="profilePicture" src="" alt="Profile Picture" style="display: none;">
+              <i data-lucide="user" id="profilePicturePlaceholder"></i>
             </div>
-            <label for="profilePictureInput" style="position: absolute; bottom: 0; right: 0; background: var(--color-primary); color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: transform 0.2s;">
-              <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
+            <label for="profilePictureInput" class="avatar-upload-btn" title="Upload avatar">
+              <i data-lucide="camera"></i>
               <input type="file" id="profilePictureInput" accept="image/*" style="display: none;">
             </label>
           </div>
 
           <!-- User Info -->
-          <div style="flex: 1; min-width: 200px;">
-            <h1 id="profileUsername" style="font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--color-text-primary);"></h1>
-            <p id="profileEmail" style="color: var(--color-text-secondary); margin-bottom: 1rem;"></p>
-            <div id="profileBioDisplay" style="color: var(--color-text-primary); line-height: 1.6;">
-              <p id="profileBioText" style="margin: 0; font-style: italic; color: var(--color-text-secondary);">No bio yet. Click edit to add one.</p>
+          <div class="profile-info">
+            <div class="profile-name-row">
+              <h1 id="profileUsername" class="profile-username"></h1>
+              <!-- Seller Rating -->
+              <div class="seller-rating" id="sellerRating" style="display: none;">
+                <div class="rating-stars">
+                  <i data-lucide="star" class="star-icon filled"></i>
+                  <i data-lucide="star" class="star-icon filled"></i>
+                  <i data-lucide="star" class="star-icon filled"></i>
+                  <i data-lucide="star" class="star-icon filled"></i>
+                  <i data-lucide="star" class="star-icon"></i>
+                </div>
+                <span class="rating-text">4.0</span>
+                <span class="rating-count">(12 reviews)</span>
+              </div>
+            </div>
+            <p id="profileEmail" class="profile-email"></p>
+            <div id="profileBioDisplay" class="profile-bio-display">
+              <p id="profileBioText" class="profile-bio-text">No bio yet. Click edit to add one.</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Profile Edit Form -->
-      <div class="profile-edit" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-          <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--color-text-primary);">Edit Profile</h2>
-          <button id="editBioBtn" class="btn btn-secondary" style="display: flex; align-items: center; gap: 0.5rem;">
-            <i data-lucide="edit-2" style="width: 1rem; height: 1rem;"></i>
-            Edit Bio
-          </button>
+      <!-- Profile Layout -->
+      <div class="profile-layout">
+        <!-- Left Column: Edit Form -->
+        <div class="profile-form-section">
+          <!-- Profile Edit Form -->
+          <div class="profile-edit">
+            <div class="profile-edit-header">
+              <h2>Edit Profile</h2>
+              <button id="editBioBtn" class="btn btn-secondary">
+                <i data-lucide="edit-2"></i>
+                Edit Bio
+              </button>
+            </div>
+
+            <form id="profileForm" class="profile-form">
+              <div class="form-group">
+                <label for="bioInput" class="form-label">Bio</label>
+                <textarea 
+                  id="bioInput" 
+                  class="form-input form-textarea" 
+                  rows="4" 
+                  placeholder="Tell us about yourself..."
+                  maxlength="500"
+                ></textarea>
+                <p class="form-hint" id="bioCharCount">0 / 500 characters</p>
+              </div>
+
+              <!-- Location Preferences -->
+              <div class="form-group">
+                <label for="locationPreference" class="form-label">Location Preference</label>
+                <select id="locationPreference" class="form-input form-select">
+                  <option value="">Select preferred location</option>
+                  <option value="manitoba">Manitoba</option>
+                  <option value="ontario">Ontario</option>
+                  <option value="quebec">Quebec</option>
+                  <option value="alberta">Alberta</option>
+                  <option value="british-columbia">British Columbia</option>
+                  <option value="saskatchewan">Saskatchewan</option>
+                  <option value="nova-scotia">Nova Scotia</option>
+                  <option value="new-brunswick">New Brunswick</option>
+                  <option value="newfoundland">Newfoundland</option>
+                  <option value="prince-edward-island">Prince Edward Island</option>
+                  <option value="yukon">Yukon</option>
+                  <option value="northwest-territories">Northwest Territories</option>
+                  <option value="nunavut">Nunavut</option>
+                </select>
+              </div>
+
+              <!-- Favorite Brands -->
+              <div class="form-group">
+                <label for="favoriteBrands" class="form-label">Favorite Brands</label>
+                <div class="brands-selector" id="brandsSelector">
+                  <!-- Brands will be populated by JS -->
+                </div>
+                <p class="form-hint">Select your favorite vehicle brands</p>
+              </div>
+
+              <!-- Auto Alerts Preferences -->
+              <div class="form-group">
+                <label class="form-label">Auto Alerts Preferences</label>
+                <div class="preferences-list">
+                  <label class="preference-item">
+                    <input type="checkbox" id="priceDropAlerts" name="alerts" value="price_drop">
+                    <span>Price drop notifications</span>
+                  </label>
+                  <label class="preference-item">
+                    <input type="checkbox" id="newListingsAlerts" name="alerts" value="new_listings">
+                    <span>New listings matching your preferences</span>
+                  </label>
+                  <label class="preference-item">
+                    <input type="checkbox" id="savedVehiclesAlerts" name="alerts" value="saved_vehicles">
+                    <span>Updates on saved vehicles</span>
+                  </label>
+                  <label class="preference-item">
+                    <input type="checkbox" id="emailAlerts" name="alerts" value="email">
+                    <span>Email notifications</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="saveProfileBtn">
+                  <i data-lucide="save"></i>
+                  Save Changes
+                </button>
+                <button type="button" id="cancelEditBtn" class="btn btn-secondary">
+                  Cancel
+                </button>
+              </div>
+            </form>
+
+            <!-- Success Message -->
+            <div id="successMessage" class="success-message" style="display: none;">
+              <i data-lucide="check-circle"></i>
+              <span>Profile updated successfully!</span>
+            </div>
+          </div>
         </div>
 
-        <form id="profileForm" style="display: none;">
-          <div class="form-group">
-            <label for="bioInput" class="form-label">Bio</label>
-            <textarea 
-              id="bioInput" 
-              class="form-input" 
-              rows="4" 
-              placeholder="Tell us about yourself..."
-              maxlength="500"
-            ></textarea>
-            <p class="form-hint" id="bioCharCount">0 / 500 characters</p>
+        <!-- Right Column: Activity & Saved Vehicles -->
+        <div class="profile-sidebar">
+          <!-- Activity Log -->
+          <div class="activity-section">
+            <h3 class="section-title">
+              <i data-lucide="activity"></i>
+              Recent Activity
+            </h3>
+            <div id="activityLog" class="activity-log">
+              <div class="activity-loading">
+                <i data-lucide="loader-2" style="width: 24px; height: 24px; animation: spin 1s linear infinite;"></i>
+                <span>Loading activity...</span>
+              </div>
+            </div>
           </div>
 
-          <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-            <button type="submit" class="btn btn-primary">
-              <i data-lucide="save" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-              Save Changes
-            </button>
-            <button type="button" id="cancelEditBtn" class="btn btn-secondary">
-              Cancel
-            </button>
+          <!-- Saved Vehicles -->
+          <div class="saved-vehicles-section">
+            <h3 class="section-title">
+              <i data-lucide="bookmark"></i>
+              Saved Vehicles
+            </h3>
+            <div id="savedVehicles" class="saved-vehicles-list">
+              <div class="activity-loading">
+                <i data-lucide="loader-2" style="width: 24px; height: 24px; animation: spin 1s linear infinite;"></i>
+                <span>Loading saved vehicles...</span>
+              </div>
+            </div>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   </main>
@@ -285,7 +395,7 @@
       const errorMessage = document.getElementById('errorMessage');
 
       try {
-        const token = getToken();
+        const token = getAuthToken();
         if (!token) {
           throw new Error('Not authenticated');
         }
@@ -316,6 +426,31 @@
         errorState.style.display = 'block';
         errorMessage.textContent = error.message || 'Failed to load profile';
       }
+    }
+
+    // Popular vehicle brands
+    const POPULAR_BRANDS = [
+      'Maruti Suzuki', 'Hyundai', 'Tata', 'Mahindra', 'Toyota', 'Honda', 
+      'Ford', 'Volkswagen', 'Nissan', 'BMW', 'Mercedes-Benz', 'Audi',
+      'Kia', 'MG', 'Skoda', 'Renault', 'Chevrolet', 'Jeep', 'Land Rover',
+      'Volvo', 'Lexus', 'Porsche', 'Jaguar', 'Mini', 'Isuzu'
+    ];
+
+    // Initialize favorite brands selector
+    function initializeBrandsSelector() {
+      const brandsSelector = document.getElementById('brandsSelector');
+      if (!brandsSelector) return;
+
+      brandsSelector.innerHTML = '';
+      POPULAR_BRANDS.forEach(brand => {
+        const brandChip = document.createElement('label');
+        brandChip.className = 'brand-chip';
+        brandChip.innerHTML = `
+          <input type="checkbox" name="favoriteBrands" value="${brand}">
+          <span>${brand}</span>
+        `;
+        brandsSelector.appendChild(brandChip);
+      });
     }
 
     // Display profile data
@@ -350,6 +485,154 @@
       // Set bio in form
       document.getElementById('bioInput').value = bioText;
       updateBioCharCount();
+
+      // Set location preference
+      const locationPreference = document.getElementById('locationPreference');
+      if (locationPreference && profile.location_preference) {
+        locationPreference.value = profile.location_preference;
+      }
+
+      // Set favorite brands
+      const brandsSelector = document.getElementById('brandsSelector');
+      if (brandsSelector && profile.favorite_brands && Array.isArray(profile.favorite_brands)) {
+        profile.favorite_brands.forEach(brand => {
+          const checkbox = brandsSelector.querySelector(`input[value="${brand}"]`);
+          if (checkbox) checkbox.checked = true;
+        });
+      }
+
+      // Set alert preferences
+      if (profile.alert_preferences && Array.isArray(profile.alert_preferences)) {
+        profile.alert_preferences.forEach(pref => {
+          const checkbox = document.getElementById(`${pref}Alerts`);
+          if (checkbox) checkbox.checked = true;
+        });
+      }
+
+      // Display seller rating
+      const sellerRating = document.getElementById('sellerRating');
+      if (profile.seller_rating !== undefined && profile.seller_rating !== null) {
+        if (sellerRating) {
+          sellerRating.style.display = 'flex';
+          const ratingText = sellerRating.querySelector('.rating-text');
+          const ratingCount = sellerRating.querySelector('.rating-count');
+          if (ratingText) ratingText.textContent = profile.seller_rating.toFixed(1);
+          if (ratingCount) ratingCount.textContent = `(${profile.review_count || 0} reviews)`;
+          
+          // Update stars
+          const stars = sellerRating.querySelectorAll('.star-icon');
+          const rating = Math.round(profile.seller_rating);
+          stars.forEach((star, index) => {
+            if (index < rating) {
+              star.classList.add('filled');
+            } else {
+              star.classList.remove('filled');
+            }
+          });
+        }
+      }
+    }
+
+    // Load activity log
+    async function loadActivityLog() {
+      const activityLog = document.getElementById('activityLog');
+      if (!activityLog) return;
+
+      try {
+        const token = getAuthToken();
+        const apiUrl = window.API_URL || 'https://autoilty-production.up.railway.app/api';
+        const response = await fetch(`${apiUrl}/users/activity`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load activity');
+        }
+
+        const activities = await response.json();
+        
+        if (activities.length === 0) {
+          activityLog.innerHTML = '<p class="empty-state">No recent activity</p>';
+          return;
+        }
+
+        activityLog.innerHTML = activities.map(activity => {
+          const icon = activity.type === 'posting_created' ? 'file-plus' : 
+                       activity.type === 'posting_viewed' ? 'eye' : 
+                       activity.type === 'vehicle_saved' ? 'bookmark' : 'activity';
+          const text = activity.type === 'posting_created' ? 'Created a posting' :
+                       activity.type === 'posting_viewed' ? 'Viewed a posting' :
+                       activity.type === 'vehicle_saved' ? 'Saved a vehicle' :
+                       activity.description || 'Activity';
+          
+          return `
+            <div class="activity-item">
+              <i data-lucide="${icon}"></i>
+              <div class="activity-content">
+                <p class="activity-text">${text}</p>
+                <p class="activity-time">${new Date(activity.created_at).toLocaleDateString()}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Error loading activity:', error);
+        activityLog.innerHTML = '<p class="empty-state">Failed to load activity</p>';
+      }
+    }
+
+    // Load saved vehicles
+    async function loadSavedVehicles() {
+      const savedVehicles = document.getElementById('savedVehicles');
+      if (!savedVehicles) return;
+
+      try {
+        const token = getAuthToken();
+        const apiUrl = window.API_URL || 'https://autoilty-production.up.railway.app/api';
+        const response = await fetch(`${apiUrl}/users/saved-vehicles`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load saved vehicles');
+        }
+
+        const vehicles = await response.json();
+        
+        if (vehicles.length === 0) {
+          savedVehicles.innerHTML = '<p class="empty-state">No saved vehicles yet</p>';
+          return;
+        }
+
+        savedVehicles.innerHTML = vehicles.slice(0, 5).map(vehicle => {
+          return `
+            <div class="saved-vehicle-item">
+              <a href="inventory.html?id=${vehicle.id}" class="saved-vehicle-link">
+                <div class="saved-vehicle-image">
+                  <img src="${vehicle.image_url || 'https://via.placeholder.com/80x60'}" alt="${vehicle.make} ${vehicle.model}">
+                </div>
+                <div class="saved-vehicle-info">
+                  <p class="saved-vehicle-name">${vehicle.make} ${vehicle.model}</p>
+                  <p class="saved-vehicle-price">$${vehicle.price?.toLocaleString() || 'N/A'}</p>
+                </div>
+              </a>
+            </div>
+          `;
+        }).join('');
+
+        if (vehicles.length > 5) {
+          savedVehicles.innerHTML += `<a href="inventory.html?saved=true" class="view-all-link">View all saved vehicles</a>`;
+        }
+      } catch (error) {
+        console.error('Error loading saved vehicles:', error);
+        savedVehicles.innerHTML = '<p class="empty-state">Failed to load saved vehicles</p>';
+      }
     }
 
     // Update bio character count
@@ -361,132 +644,178 @@
     }
 
     // Edit bio button
-    document.getElementById('editBioBtn').addEventListener('click', () => {
-      const form = document.getElementById('profileForm');
-      const editBtn = document.getElementById('editBioBtn');
-      form.style.display = 'block';
-      editBtn.style.display = 'none';
-      document.getElementById('bioInput').focus();
-    });
+    const editBioBtn = document.getElementById('editBioBtn');
+    if (editBioBtn) {
+      editBioBtn.addEventListener('click', () => {
+        const form = document.getElementById('profileForm');
+        if (form) {
+          form.style.display = 'block';
+          editBioBtn.style.display = 'none';
+          const bioInput = document.getElementById('bioInput');
+          if (bioInput) bioInput.focus();
+        }
+      });
+    }
 
     // Cancel edit
-    document.getElementById('cancelEditBtn').addEventListener('click', () => {
-      const form = document.getElementById('profileForm');
-      const editBtn = document.getElementById('editBioBtn');
-      form.style.display = 'none';
-      editBtn.style.display = 'flex';
-      // Reset bio to current value
-      loadProfile();
-    });
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    if (cancelEditBtn) {
+      cancelEditBtn.addEventListener('click', () => {
+        const form = document.getElementById('profileForm');
+        if (form) {
+          form.style.display = 'none';
+          if (editBioBtn) editBioBtn.style.display = 'flex';
+          // Reset form to current values
+          loadProfile();
+        }
+      });
+    }
 
     // Bio character count
-    document.getElementById('bioInput').addEventListener('input', updateBioCharCount);
+    const bioInput = document.getElementById('bioInput');
+    if (bioInput) {
+      bioInput.addEventListener('input', updateBioCharCount);
+    }
+
+    // Show success message
+    function showSuccessMessage() {
+      const successMessage = document.getElementById('successMessage');
+      if (successMessage) {
+        successMessage.style.display = 'flex';
+        setTimeout(() => {
+          successMessage.style.display = 'none';
+        }, 3000);
+      }
+    }
 
     // Save profile form
-    document.getElementById('profileForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const bio = document.getElementById('bioInput').value.trim();
-      const submitBtn = e.target.querySelector('button[type="submit"]');
-      const originalText = submitBtn.innerHTML;
-      
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i data-lucide="loader-2" style="width: 1rem; height: 1rem; margin-right: 0.5rem; animation: spin 1s linear infinite;"></i> Saving...';
-      lucide.createIcons();
-
-      try {
-        const token = getToken();
-        const apiUrl = window.API_URL || 'https://autoilty-production.up.railway.app/api';
-        const response = await fetch(`${apiUrl}/users/profile`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ bio })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to update profile');
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+      profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const bio = document.getElementById('bioInput')?.value.trim() || '';
+        const locationPreference = document.getElementById('locationPreference')?.value || '';
+        const favoriteBrands = Array.from(document.querySelectorAll('input[name="favoriteBrands"]:checked')).map(cb => cb.value);
+        const alertPreferences = Array.from(document.querySelectorAll('input[name="alerts"]:checked')).map(cb => cb.value);
+        
+        const submitBtn = document.getElementById('saveProfileBtn');
+        const originalHTML = submitBtn?.innerHTML || '';
+        
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i data-lucide="loader-2" style="width: 1rem; height: 1rem; margin-right: 0.5rem; animation: spin 1s linear infinite;"></i> Saving...';
+          lucide.createIcons();
         }
 
-        // Reload profile
-        await loadProfile();
-        
-        // Hide form
-        document.getElementById('profileForm').style.display = 'none';
-        document.getElementById('editBioBtn').style.display = 'flex';
-        
-        // Show success message
-        alert('Profile updated successfully!');
-      } catch (error) {
-        console.error('Error updating profile:', error);
-        alert('Failed to update profile: ' + error.message);
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
-        lucide.createIcons();
-      }
-    });
+        try {
+          const token = getAuthToken();
+          const apiUrl = window.API_URL || 'https://autoilty-production.up.railway.app/api';
+          const response = await fetch(`${apiUrl}/users/profile`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              bio,
+              location_preference: locationPreference,
+              favorite_brands: favoriteBrands,
+              alert_preferences: alertPreferences
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to update profile');
+          }
+
+          // Reload profile
+          await loadProfile();
+          
+          // Hide form
+          profileForm.style.display = 'none';
+          if (editBioBtn) editBioBtn.style.display = 'flex';
+          
+          // Show success message
+          showSuccessMessage();
+        } catch (error) {
+          console.error('Error updating profile:', error);
+          alert('Failed to update profile: ' + error.message);
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHTML;
+            lucide.createIcons();
+          }
+        }
+      });
+    }
 
     // Profile picture upload
-    document.getElementById('profilePictureInput').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+    const profilePictureInput = document.getElementById('profilePictureInput');
+    if (profilePictureInput) {
+      profilePictureInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Image size must be less than 5MB');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('profilePicture', file);
-
-      try {
-        const token = getToken();
-        const apiUrl = window.API_URL || 'https://autoilty-production.up.railway.app/api';
-        const response = await fetch(`${apiUrl}/users/profile/picture`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to upload profile picture');
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          alert('Please select an image file');
+          return;
         }
 
-        const data = await response.json();
-        
-        // Update profile picture display
-        const profilePicture = document.getElementById('profilePicture');
-        const profilePicturePlaceholder = document.getElementById('profilePicturePlaceholder');
-        if (data.profile_picture_url) {
-          profilePicture.src = data.profile_picture_url + '?t=' + Date.now(); // Cache bust
-          profilePicture.style.display = 'block';
-          profilePicturePlaceholder.style.display = 'none';
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Image size must be less than 5MB');
+          return;
         }
 
-        alert('Profile picture updated successfully!');
-      } catch (error) {
-        console.error('Error uploading profile picture:', error);
-        alert('Failed to upload profile picture: ' + error.message);
-      } finally {
-        // Reset input
-        e.target.value = '';
-      }
+        const formData = new FormData();
+        formData.append('profilePicture', file);
+
+        try {
+          const token = getAuthToken();
+          const apiUrl = window.API_URL || 'https://autoilty-production.up.railway.app/api';
+          const response = await fetch(`${apiUrl}/users/profile/picture`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to upload profile picture');
+          }
+
+          const data = await response.json();
+          
+          // Update profile picture display
+          const profilePicture = document.getElementById('profilePicture');
+          const profilePicturePlaceholder = document.getElementById('profilePicturePlaceholder');
+          if (data.profile_picture_url) {
+            profilePicture.src = data.profile_picture_url + '?t=' + Date.now(); // Cache bust
+            profilePicture.style.display = 'block';
+            profilePicturePlaceholder.style.display = 'none';
+          }
+
+          showSuccessMessage();
+        } catch (error) {
+          console.error('Error uploading profile picture:', error);
+          alert('Failed to upload profile picture: ' + error.message);
+        } finally {
+          // Reset input
+          e.target.value = '';
+        }
+      });
+    }
+
+    // Initialize on page load
+    initializeBrandsSelector();
+    loadProfile().then(() => {
+      loadActivityLog();
+      loadSavedVehicles();
     });
-
-    // Load profile on page load
-    loadProfile();
   </script>
 </body>
 </html>
