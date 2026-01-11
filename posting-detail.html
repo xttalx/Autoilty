@@ -79,14 +79,29 @@
       </div>
 
       <!-- Error State -->
-      <div id="errorState" style="display: none; text-align: center; padding: var(--spacing-2xl);">
-        <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-error); display: block;"></i>
-        <h2 style="margin-bottom: var(--spacing-sm);">Posting Not Found</h2>
-        <p style="color: var(--color-text-light); margin-bottom: var(--spacing-lg);">The posting you're looking for doesn't exist or has been removed.</p>
-        <a href="marketplace.html" class="btn btn-primary">
-          <i data-lucide="arrow-left" class="btn-icon"></i>
-          Back to Marketplace
-        </a>
+      <div id="errorState" style="display: none; padding: var(--spacing-2xl);">
+        <div style="text-align: center; margin-bottom: var(--spacing-xl);">
+          <i data-lucide="alert-circle" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: #c53030; display: block;"></i>
+          <h2 style="margin-bottom: var(--spacing-sm);">Posting Not Found</h2>
+          <p style="color: var(--color-text-light); margin-bottom: var(--spacing-lg);">The posting you're looking for doesn't exist or has been removed.</p>
+          <a href="marketplace.html" class="btn btn-primary">
+            <i data-lucide="arrow-left" class="btn-icon"></i>
+            Back to Marketplace
+          </a>
+        </div>
+        
+        <!-- Related Postings Carousel for Not Found State -->
+        <div style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-xl);">
+          <h2 style="font-size: 1.5rem; margin-bottom: var(--spacing-lg); text-align: center;">You Might Be Interested In</h2>
+          <div id="notFoundRelatedPostings" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--spacing-lg);">
+            <!-- Related postings carousel will be loaded here -->
+          </div>
+          <div id="notFoundRelatedLoading" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-light); display: none;">
+            <div class="skeleton-card" style="height: 300px; margin-bottom: var(--spacing-md);"></div>
+            <div class="skeleton-card" style="height: 300px; margin-bottom: var(--spacing-md);"></div>
+            <div class="skeleton-card" style="height: 300px;"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Posting Content -->
@@ -112,15 +127,20 @@
           </a>
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl); margin-bottom: var(--spacing-xl);">
+        <div class="posting-detail-layout" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl); margin-bottom: var(--spacing-xl);">
           
           <!-- Image Section -->
-          <div>
-            <div id="imageGallery" style="border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; background-color: #f5f5f5;">
+          <div class="posting-image-section">
+            <div id="imageGallery" style="border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; background-color: #f5f5f5; position: relative;">
               <img id="postingImage" src="" alt="" style="width: 100%; height: auto; display: block; min-height: 400px; object-fit: cover;">
+              <!-- 360° Viewer Button -->
+              <button id="view360Btn" class="view-360-btn" style="display: none; position: absolute; top: 1rem; right: 1rem; background: rgba(0, 0, 0, 0.7); color: white; border: none; border-radius: var(--radius); padding: 0.75rem 1rem; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; backdrop-filter: blur(4px); z-index: 10;">
+                <i data-lucide="rotate-3d" style="width: 1.25rem; height: 1.25rem;"></i>
+                View 360°
+              </button>
             </div>
             <!-- Thumbnail gallery for multiple images -->
-            <div id="imageThumbnails" style="display: none; margin-top: var(--spacing-md); display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-sm);"></div>
+            <div id="imageThumbnails" style="display: none; margin-top: var(--spacing-md); grid-template-columns: repeat(3, 1fr); gap: var(--spacing-sm);"></div>
           </div>
 
           <!-- Details Section -->
@@ -129,7 +149,27 @@
               <span id="postingCategory" class="product-category" style="display: inline-block; margin-bottom: var(--spacing-sm);"></span>
             </div>
             <h1 id="postingTitle" style="font-size: 2rem; margin-bottom: var(--spacing-md);"></h1>
-            <div id="postingPrice" style="font-size: 2.5rem; font-weight: 600; margin-bottom: var(--spacing-lg);"></div>
+            <div id="postingPrice" style="font-size: 2.5rem; font-weight: 600; margin-bottom: var(--spacing-md);"></div>
+            
+            <!-- Share Buttons -->
+            <div class="posting-share-buttons" style="display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-lg); flex-wrap: wrap;">
+              <button class="btn btn-secondary share-btn" data-platform="facebook" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                <i data-lucide="facebook" style="width: 1rem; height: 1rem;"></i>
+                Share
+              </button>
+              <button class="btn btn-secondary share-btn" data-platform="twitter" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                <i data-lucide="twitter" style="width: 1rem; height: 1rem;"></i>
+                Tweet
+              </button>
+              <button class="btn btn-secondary share-btn" data-platform="linkedin" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                <i data-lucide="linkedin" style="width: 1rem; height: 1rem;"></i>
+                Share
+              </button>
+              <button class="btn btn-secondary share-btn" data-platform="copy" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                <i data-lucide="link" style="width: 1rem; height: 1rem;"></i>
+                Copy Link
+              </button>
+            </div>
             
             <div style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
               <div style="display: flex; align-items: center; margin-bottom: var(--spacing-md); color: var(--color-text-light);">
@@ -160,8 +200,81 @@
 
         <!-- Description Section -->
         <div style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-xl); margin-bottom: var(--spacing-xl);">
-          <h2 style="font-size: 1.5rem; margin-bottom: var(--spacing-md);">Description</h2>
-          <div id="postingDescription" style="color: var(--color-text); line-height: 1.8; white-space: pre-wrap;"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+            <h2 style="font-size: 1.5rem; margin: 0;">Description</h2>
+            <button id="toggleDescription" class="btn btn-secondary" style="display: none; padding: 0.5rem 1rem; font-size: 0.875rem;">
+              <span id="toggleDescriptionText">Show Less</span>
+              <i data-lucide="chevron-up" id="toggleDescriptionIcon" style="width: 1rem; height: 1rem; margin-left: 0.5rem;"></i>
+            </button>
+          </div>
+          <div id="postingDescription" class="posting-description-full" style="color: var(--color-text); line-height: 1.8; white-space: pre-wrap;"></div>
+        </div>
+
+        <!-- VIN History Section -->
+        <div id="vinHistorySection" style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-xl); margin-bottom: var(--spacing-xl); display: none;">
+          <h2 style="font-size: 1.5rem; margin-bottom: var(--spacing-md);">Vehicle History Report</h2>
+          <div id="vinHistoryContent" style="padding: var(--spacing-lg); background: #f8f9fa; border-radius: var(--radius); border: 1px solid var(--color-border);">
+            <!-- VIN history will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Spec Comparisons Section -->
+        <div id="specComparisonSection" style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-xl); margin-bottom: var(--spacing-xl); display: none;">
+          <h2 style="font-size: 1.5rem; margin-bottom: var(--spacing-md);">Specification Comparison</h2>
+          <div id="specComparisonContent" style="overflow-x: auto;">
+            <!-- Spec comparison table will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Seller Ratings & Q&A Section -->
+        <div style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-xl); margin-bottom: var(--spacing-xl);">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl);">
+            <!-- Seller Ratings -->
+            <div id="sellerRatingsSection">
+              <h2 style="font-size: 1.5rem; margin-bottom: var(--spacing-md);">Seller Rating</h2>
+              <div id="sellerRatingContent" style="padding: var(--spacing-lg); background: #f8f9fa; border-radius: var(--radius); border: 1px solid var(--color-border);">
+                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                  <div style="font-size: 3rem; font-weight: 600;" id="sellerRatingValue">4.5</div>
+                  <div>
+                    <div style="display: flex; gap: 0.25rem; margin-bottom: 0.5rem;" id="sellerRatingStars">
+                      <!-- Stars will be rendered here -->
+                    </div>
+                    <div style="color: var(--color-text-light); font-size: 0.875rem;" id="sellerRatingCount">Based on 12 reviews</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Q&A Section -->
+            <div id="qaSection">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+                <h2 style="font-size: 1.5rem; margin: 0;">Q&A</h2>
+                <button id="askQuestionBtn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                  <i data-lucide="plus" style="width: 1rem; height: 1rem;"></i>
+                  Ask Question
+                </button>
+              </div>
+              <div id="qaContent" style="padding: var(--spacing-lg); background: #f8f9fa; border-radius: var(--radius); border: 1px solid var(--color-border); min-height: 200px;">
+                <p style="color: var(--color-text-light); text-align: center; padding: var(--spacing-lg);">No questions yet. Be the first to ask!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Similar Listings Section -->
+        <div id="similarListingsSection" style="border-top: 1px solid var(--color-border); padding-top: var(--spacing-xl); margin-bottom: var(--spacing-xl);">
+          <h2 style="font-size: 1.5rem; margin-bottom: var(--spacing-lg);">Similar Listings</h2>
+          <div id="similarListings" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--spacing-lg);">
+            <!-- Similar listings will be loaded here -->
+          </div>
+          <div id="similarListingsLoading" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-light); display: none;">
+            <div class="skeleton-card" style="height: 300px; margin-bottom: var(--spacing-md);"></div>
+            <div class="skeleton-card" style="height: 300px; margin-bottom: var(--spacing-md);"></div>
+            <div class="skeleton-card" style="height: 300px;"></div>
+          </div>
+          <div id="similarListingsEmpty" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-light); display: none;">
+            <p>No similar listings found.</p>
+          </div>
         </div>
 
         <!-- Related Postings Section -->
@@ -171,26 +284,12 @@
             <!-- Related postings will be loaded here -->
           </div>
           <div id="relatedPostingsLoading" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-light); display: none;">
+            <div class="skeleton-card" style="height: 300px; margin-bottom: var(--spacing-md);"></div>
+            <div class="skeleton-card" style="height: 300px; margin-bottom: var(--spacing-md);"></div>
             <div class="skeleton-card" style="height: 300px;"></div>
-            <div class="skeleton-card" style="height: 300px;"></div>
-            <div class="skeleton-card" style="height: 300px;"></div>
-          </div>
-          <div id="relatedPostingsEmpty" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-light); display: none;">
-            <p>No related postings found. <a href="marketplace.html?category=${encodeURIComponent(posting.category || '')}" style="color: var(--color-primary); text-decoration: underline;">Browse all ${posting.category || 'automotive'} listings</a></p>
-          </div>
-            <div class="loading-spinner"></div>
-            <p>Loading related postings...</p>
           </div>
           <div id="relatedPostingsEmpty" style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-light); display: none;">
             <p>No related postings found. <a href="marketplace.html" style="color: var(--color-primary); text-decoration: underline;">Browse all listings</a></p>
-          </div>
-        </div>
-            <div class="skeleton-card" style="height: 300px; margin-bottom: var(--spacing-md);"></div>
-            <div class="skeleton-card" style="height: 300px; margin-bottom: var(--spacing-md);"></div>
-            <div class="skeleton-card" style="height: 300px;"></div>
-          </div>
-          <div id="relatedPostingsEmpty" style="display: none; text-align: center; padding: var(--spacing-xl); color: var(--color-text-light);">
-            <p>No related postings found.</p>
           </div>
         </div>
       </div>
@@ -639,6 +738,23 @@
 
         // Re-initialize icons after content is loaded
         lucide.createIcons();
+        
+        // Setup new features after posting is loaded
+        setTimeout(() => {
+          setupCollapsibleDescription();
+          setupShareButtons();
+          setup360Viewer();
+          setupSellerRatings(posting);
+          setupQASection();
+          
+          // Load VIN history if VIN is available
+          if (posting.vin) {
+            loadVINHistory(posting.vin);
+          }
+          
+          // Load similar listings
+          loadSimilarListings(posting);
+        }, 100);
 
       } catch (error) {
         console.error('❌ Error loading posting:', error);
@@ -897,6 +1013,373 @@
     
     // Initialize modal
     initializeContactModal();
+
+    // ============================================
+    // NEW FEATURES - ENHANCED FUNCTIONALITY
+    // ============================================
+    
+    // Collapsible Description
+    function setupCollapsibleDescription() {
+      const toggleBtn = document.getElementById('toggleDescription');
+      const descriptionEl = document.getElementById('postingDescription');
+      const toggleText = document.getElementById('toggleDescriptionText');
+      const toggleIcon = document.getElementById('toggleDescriptionIcon');
+      
+      if (!toggleBtn || !descriptionEl) return;
+      
+      // Check if description is long enough to need collapsing
+      const descriptionHeight = descriptionEl.scrollHeight;
+      if (descriptionHeight <= 200) {
+        toggleBtn.style.display = 'none';
+        return;
+      }
+      
+      // Show toggle button on mobile
+      if (window.innerWidth <= 768) {
+        toggleBtn.style.display = 'inline-flex';
+        descriptionEl.classList.remove('expanded');
+        
+        toggleBtn.addEventListener('click', () => {
+          const isExpanded = descriptionEl.classList.contains('expanded');
+          
+          if (isExpanded) {
+            descriptionEl.classList.remove('expanded');
+            if (toggleText) toggleText.textContent = 'Show More';
+            if (toggleIcon) {
+              toggleIcon.setAttribute('data-lucide', 'chevron-down');
+              lucide.createIcons();
+            }
+          } else {
+            descriptionEl.classList.add('expanded');
+            if (toggleText) toggleText.textContent = 'Show Less';
+            if (toggleIcon) {
+              toggleIcon.setAttribute('data-lucide', 'chevron-up');
+              lucide.createIcons();
+            }
+          }
+        });
+      }
+      
+      // Handle window resize
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+          toggleBtn.style.display = 'none';
+          descriptionEl.classList.add('expanded');
+        } else if (descriptionHeight > 200) {
+          toggleBtn.style.display = 'inline-flex';
+        }
+      });
+    }
+    
+    // Share Buttons
+    function setupShareButtons() {
+      const shareButtons = document.querySelectorAll('.share-btn');
+      if (!shareButtons.length) return;
+      
+      shareButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const platform = btn.getAttribute('data-platform');
+          const url = window.location.href;
+          const title = document.getElementById('postingTitle')?.textContent || 'Check out this listing';
+          const text = `${title} - ${url}`;
+          
+          switch(platform) {
+            case 'facebook':
+              window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+              break;
+            case 'twitter':
+              window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank', 'width=600,height=400');
+              break;
+            case 'linkedin':
+              window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+              break;
+            case 'copy':
+              navigator.clipboard.writeText(url).then(() => {
+                btn.innerHTML = '<i data-lucide="check" style="width: 1rem; height: 1rem;"></i> Copied!';
+                lucide.createIcons();
+                setTimeout(() => {
+                  btn.innerHTML = '<i data-lucide="link" style="width: 1rem; height: 1rem;"></i> Copy Link';
+                  lucide.createIcons();
+                }, 2000);
+              }).catch(() => {
+                alert('Failed to copy link. Please copy manually: ' + url);
+              });
+              break;
+          }
+        });
+      });
+      
+      lucide.createIcons();
+    }
+    
+    // 360° Viewer
+    function setup360Viewer() {
+      const view360Btn = document.getElementById('view360Btn');
+      if (!view360Btn) return;
+      
+      // Create 360° viewer modal
+      const modalHTML = `
+        <div class="viewer-360-modal-overlay" id="viewer360ModalOverlay">
+          <div class="viewer-360-modal">
+            <button class="viewer-360-close" id="viewer360Close" aria-label="Close 360° viewer">
+              <i data-lucide="x" style="width: 1.5rem; height: 1.5rem;"></i>
+            </button>
+            <div class="viewer-360-content" id="viewer360Content">
+              <p style="color: white;">360° view coming soon. For now, view the main image.</p>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+      
+      const overlay = document.getElementById('viewer360ModalOverlay');
+      const closeBtn = document.getElementById('viewer360Close');
+      const content = document.getElementById('viewer360Content');
+      
+      view360Btn.addEventListener('click', () => {
+        const mainImage = document.getElementById('postingImage');
+        if (mainImage && mainImage.src) {
+          content.innerHTML = `<img src="${mainImage.src}" alt="360° view" />`;
+        }
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        lucide.createIcons();
+      });
+      
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          overlay.classList.remove('open');
+          document.body.style.overflow = '';
+        });
+      }
+      
+      if (overlay) {
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) {
+            overlay.classList.remove('open');
+            document.body.style.overflow = '';
+          }
+        });
+      }
+      
+      // Show 360° button if we have images
+      const postingImage = document.getElementById('postingImage');
+      if (postingImage && postingImage.src && !postingImage.src.includes('data:image')) {
+        view360Btn.style.display = 'flex';
+      }
+    }
+    
+    // VIN History (NHTSA API)
+    async function loadVINHistory(vin) {
+      const vinSection = document.getElementById('vinHistorySection');
+      const vinContent = document.getElementById('vinHistoryContent');
+      
+      if (!vinSection || !vinContent || !vin) return;
+      
+      try {
+        // NHTSA VIN Decoder API (free, no key required)
+        const response = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${vin}?format=json`);
+        const data = await response.json();
+        
+        if (data.Results && data.Results.length > 0) {
+          const relevantData = data.Results
+            .filter(item => item.Value && item.Value !== 'Not Applicable' && item.Value !== '')
+            .slice(0, 10);
+          
+          if (relevantData.length > 0) {
+            vinContent.innerHTML = `
+              <h3 style="margin-bottom: var(--spacing-md);">Vehicle Information</h3>
+              <div style="display: grid; gap: var(--spacing-sm);">
+                ${relevantData.map(item => `
+                  <div style="display: flex; justify-content: space-between; padding: var(--spacing-xs); border-bottom: 1px solid var(--color-border);">
+                    <strong>${item.Variable || 'N/A'}:</strong>
+                    <span>${item.Value || 'N/A'}</span>
+                  </div>
+                `).join('')}
+              </div>
+            `;
+            vinSection.style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading VIN history:', error);
+      }
+    }
+    
+    // Similar Listings
+    async function loadSimilarListings(currentPosting) {
+      const similarSection = document.getElementById('similarListingsSection');
+      const similarContainer = document.getElementById('similarListings');
+      const similarLoading = document.getElementById('similarListingsLoading');
+      const similarEmpty = document.getElementById('similarListingsEmpty');
+      
+      if (!similarSection || !similarContainer) return;
+      
+      try {
+        if (similarLoading) similarLoading.style.display = 'block';
+        similarContainer.style.display = 'none';
+        if (similarEmpty) similarEmpty.style.display = 'none';
+        
+        // Fetch similar postings by category and price range
+        const priceRange = parseFloat(currentPosting.price || 0);
+        const minPrice = Math.max(0, priceRange * 0.7);
+        const maxPrice = priceRange * 1.3;
+        
+        const response = await fetch(`${window.API_BASE_URL || 'https://autoilty-production.up.railway.app/api'}/postings?category=${encodeURIComponent(currentPosting.category || '')}&limit=3`);
+        const data = await response.json();
+        
+        const similar = (data.postings || [])
+          .filter(p => p.id !== currentPosting.id && 
+                       parseFloat(p.price || 0) >= minPrice && 
+                       parseFloat(p.price || 0) <= maxPrice)
+          .slice(0, 3);
+        
+        if (similar.length === 0) {
+          if (similarLoading) similarLoading.style.display = 'none';
+          if (similarEmpty) similarEmpty.style.display = 'block';
+          return;
+        }
+        
+        similarContainer.innerHTML = similar.map(posting => {
+          const imageUrl = posting.image_url 
+            ? (posting.image_url.startsWith('http') ? posting.image_url : `https://autoilty-production.up.railway.app${posting.image_url.startsWith('/') ? '' : '/'}${posting.image_url}`)
+            : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+          
+          return `
+            <a href="posting-detail.html?id=${posting.id}" style="text-decoration: none; color: inherit;">
+              <div class="product-card" style="background: white; border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; transition: var(--transition); cursor: pointer; box-shadow: var(--shadow-sm); height: 100%; display: flex; flex-direction: column;">
+                <div class="product-image" style="width: 100%; height: 200px; overflow: hidden; background: var(--color-border);">
+                  <img src="${imageUrl}" alt="${posting.title || 'Posting'}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';">
+                </div>
+                <div class="product-info" style="padding: var(--spacing-md); flex: 1; display: flex; flex-direction: column;">
+                  <span class="product-category" style="display: inline-block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--color-text-light); margin-bottom: var(--spacing-xs);">${posting.category || 'Other'}</span>
+                  <h3 class="product-name" style="font-size: 1.125rem; font-weight: 600; margin-bottom: var(--spacing-sm); color: var(--color-text); line-height: 1.4; flex: 1;">${(posting.title || 'Untitled').substring(0, 60)}${(posting.title || '').length > 60 ? '...' : ''}</h3>
+                  <p class="product-price" style="font-size: 1.5rem; font-weight: 600; color: var(--color-text); margin-top: auto;">$${parseFloat(posting.price || 0).toFixed(2)} CAD</p>
+                </div>
+              </div>
+            </a>
+          `;
+        }).join('');
+        
+        if (similarLoading) similarLoading.style.display = 'none';
+        similarContainer.style.display = 'grid';
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Error loading similar listings:', error);
+        if (similarLoading) similarLoading.style.display = 'none';
+        if (similarEmpty) similarEmpty.style.display = 'block';
+      }
+    }
+    
+    // Seller Ratings
+    function setupSellerRatings(posting) {
+      const ratingValue = document.getElementById('sellerRatingValue');
+      const ratingStars = document.getElementById('sellerRatingStars');
+      const ratingCount = document.getElementById('sellerRatingCount');
+      
+      if (!ratingValue || !ratingStars) return;
+      
+      // Mock rating (replace with actual API call)
+      const rating = posting.seller_rating || 4.5;
+      const reviewCount = posting.review_count || 12;
+      
+      ratingValue.textContent = rating.toFixed(1);
+      ratingCount.textContent = `Based on ${reviewCount} reviews`;
+      
+      // Render stars
+      ratingStars.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('i');
+        star.setAttribute('data-lucide', 'star');
+        star.classList.add('star-icon');
+        if (i > Math.round(rating)) {
+          star.classList.add('empty');
+        }
+        ratingStars.appendChild(star);
+      }
+      
+      lucide.createIcons();
+    }
+    
+    // Q&A Section
+    function setupQASection() {
+      const askBtn = document.getElementById('askQuestionBtn');
+      const qaContent = document.getElementById('qaContent');
+      
+      if (!askBtn || !qaContent) return;
+      
+      askBtn.addEventListener('click', () => {
+        if (!isAuthenticated()) {
+          window.location.href = `login.html?return=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+          return;
+        }
+        
+        const question = prompt('Ask a question about this listing:');
+        if (question && question.trim()) {
+          // Mock Q&A (replace with actual API call)
+          qaContent.innerHTML = `
+            <div class="qa-item">
+              <div class="qa-question">Q: ${question.trim()}</div>
+              <div class="qa-answer">A: The seller will respond soon.</div>
+              <div class="qa-meta">Asked by You • Just now</div>
+            </div>
+          ` + qaContent.innerHTML;
+        }
+      });
+    }
+    
+    // Related Postings for Not Found State
+    async function loadNotFoundRelatedPostings() {
+      const container = document.getElementById('notFoundRelatedPostings');
+      const loading = document.getElementById('notFoundRelatedLoading');
+      
+      if (!container || !loading) return;
+      
+      try {
+        loading.style.display = 'block';
+        container.style.display = 'none';
+        
+        const response = await fetch(`${window.API_BASE_URL || 'https://autoilty-production.up.railway.app/api'}/postings?limit=6`);
+        const data = await response.json();
+        
+        const postings = (data.postings || []).slice(0, 6);
+        
+        if (postings.length === 0) {
+          loading.style.display = 'none';
+          return;
+        }
+        
+        container.innerHTML = postings.map(posting => {
+          const imageUrl = posting.image_url 
+            ? (posting.image_url.startsWith('http') ? posting.image_url : `https://autoilty-production.up.railway.app${posting.image_url.startsWith('/') ? '' : '/'}${posting.image_url}`)
+            : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+          
+          return `
+            <a href="posting-detail.html?id=${posting.id}" style="text-decoration: none; color: inherit;">
+              <div class="product-card" style="background: white; border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; transition: var(--transition); cursor: pointer; box-shadow: var(--shadow-sm); height: 100%; display: flex; flex-direction: column;">
+                <div class="product-image" style="width: 100%; height: 200px; overflow: hidden; background: var(--color-border);">
+                  <img src="${imageUrl}" alt="${posting.title || 'Posting'}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';">
+                </div>
+                <div class="product-info" style="padding: var(--spacing-md); flex: 1; display: flex; flex-direction: column;">
+                  <span class="product-category" style="display: inline-block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--color-text-light); margin-bottom: var(--spacing-xs);">${posting.category || 'Other'}</span>
+                  <h3 class="product-name" style="font-size: 1.125rem; font-weight: 600; margin-bottom: var(--spacing-sm); color: var(--color-text); line-height: 1.4; flex: 1;">${(posting.title || 'Untitled').substring(0, 60)}${(posting.title || '').length > 60 ? '...' : ''}</h3>
+                  <p class="product-price" style="font-size: 1.5rem; font-weight: 600; color: var(--color-text); margin-top: auto;">$${parseFloat(posting.price || 0).toFixed(2)} CAD</p>
+                </div>
+              </div>
+            </a>
+          `;
+        }).join('');
+        
+        loading.style.display = 'none';
+        container.style.display = 'grid';
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Error loading not found related postings:', error);
+        loading.style.display = 'none';
+      }
+    }
+    
 
     // Load posting on page ready
     if (document.readyState === 'loading') {
