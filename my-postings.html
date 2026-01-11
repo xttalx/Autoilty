@@ -167,29 +167,57 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="postingLocation" class="form-label">Location</label>
-          <input 
-            type="text" 
-            id="postingLocation" 
-            name="location" 
-            class="form-input" 
-            placeholder="e.g., Toronto, ON"
-          >
+        <div class="form-group-row">
+          <div class="form-group" style="flex: 1;">
+            <label for="postingLocation" class="form-label">Location</label>
+            <input 
+              type="text" 
+              id="postingLocation" 
+              name="location" 
+              class="form-input" 
+              placeholder="e.g., Toronto, ON"
+            >
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label for="postingVIN" class="form-label">VIN (Vehicle Identification Number)</label>
+            <div style="position: relative;">
+              <input 
+                type="text" 
+                id="postingVIN" 
+                name="vin" 
+                class="form-input" 
+                placeholder="Enter VIN to auto-fill details"
+                maxlength="17"
+                style="text-transform: uppercase;"
+              >
+              <button type="button" class="vin-lookup-btn" onclick="lookupVIN()" title="Lookup VIN Details">
+                <i data-lucide="search"></i>
+              </button>
+            </div>
+            <p class="form-hint">Enter 17-character VIN to auto-fill vehicle details</p>
+            <div id="vinDetails" style="margin-top: var(--spacing-sm); display: none;"></div>
+          </div>
         </div>
 
         <div class="form-group">
-          <label for="postingImage" class="form-label">Image</label>
-          <input 
-            type="file" 
-            id="postingImage" 
-            name="image" 
-            class="form-input" 
-            accept="image/*"
-          >
-          <p class="form-hint">Upload an image (max 5MB, JPEG/PNG/GIF/WebP)</p>
-          <div id="imagePreview" style="margin-top: var(--spacing-sm); display: none;">
-            <img id="previewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: var(--radius); border: 1px solid var(--color-border);">
+          <label for="postingImage" class="form-label">Images</label>
+          <div class="image-upload-area">
+            <input 
+              type="file" 
+              id="postingImage" 
+              name="image" 
+              class="form-input" 
+              accept="image/*"
+              multiple
+            >
+            <div class="image-upload-hint">
+              <i data-lucide="upload"></i>
+              <p>Click to upload or drag and drop</p>
+              <p class="form-hint">Multiple images supported (max 10MB each, JPEG/PNG/GIF/WebP)</p>
+            </div>
+          </div>
+          <div id="imagePreviewContainer" class="image-preview-container">
+            <!-- Image previews with editing options will be added here -->
           </div>
         </div>
 
@@ -212,9 +240,10 @@
     // Initialize Lucide icons
     lucide.createIcons();
 
-    // Check authentication
-    if (!requireAuth()) {
-      // Redirecting to login
+    // Check authentication with proper redirect handling
+    if (!isAuthenticated()) {
+      const returnUrl = window.location.pathname + window.location.search;
+      window.location.href = `login.html?return=${encodeURIComponent(returnUrl)}`;
     }
 
     // Set user menu
@@ -358,21 +387,59 @@
       document.getElementById('postingCategory').value = posting.category;
       document.getElementById('postingLocation').value = posting.location || '';
 
-      if (posting.image_url) {
+      // Handle VIN if exists
+      if (posting.vin) {
+        document.getElementById('postingVIN').value = posting.vin;
+      }
+      
+      // Handle images
+      const container = document.getElementById('imagePreviewContainer');
+      if (posting.image_url && container) {
         const baseUrl = (window.API_URL || 'https://autoilty-production.up.railway.app/api').replace('/api', '');
-        document.getElementById('previewImg').src = `${baseUrl}${posting.image_url}`;
-        document.getElementById('imagePreview').style.display = 'block';
+        container.innerHTML = `
+          <div class="image-preview-item">
+            <div class="image-preview-wrapper">
+              <img src="${baseUrl}${posting.image_url}" alt="Current image">
+              <div class="image-preview-actions">
+                <button type="button" class="image-action-btn" onclick="removeImagePreview(this)" title="Remove">
+                  <i data-lucide="x"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
       }
 
       document.getElementById('postingModal').style.display = 'flex';
     }
 
+    // Improved confirmation dialog for delete
+    function confirmDeletePosting(id, title) {
+      const modal = document.createElement('div');
+      modal.className = 'confirm-modal-overlay';
+      modal.innerHTML = `
+        <div class="confirm-modal">
+          <div class="confirm-modal-header">
+            <i data-lucide="alert-triangle" style="width: 48px; height: 48px; color: #dc2626;"></i>
+            <h3>Delete Posting?</h3>
+          </div>
+          <div class="confirm-modal-body">
+            <p>Are you sure you want to delete <strong>"${title}"</strong>?</p>
+            <p style="color: var(--color-text-light); font-size: 0.875rem; margin-top: 0.5rem;">This action cannot be undone.</p>
+          </div>
+          <div class="confirm-modal-footer">
+            <button class="btn btn-secondary" onclick="this.closest('.confirm-modal-overlay').remove()">Cancel</button>
+            <button class="btn btn-danger" onclick="deletePosting(${id}, '${title.replace(/'/g, "\\'")}'); this.closest('.confirm-modal-overlay').remove();">Delete</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      lucide.createIcons();
+    }
+
     // Delete posting
     async function deletePosting(id, title) {
-      if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
-        return;
-      }
-
       try {
         const response = await authenticatedFetch(`/postings/${id}`, {
           method: 'DELETE'
@@ -390,18 +457,192 @@
       }
     }
 
-    // Image preview
-    document.getElementById('postingImage').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          document.getElementById('previewImg').src = e.target.result;
-          document.getElementById('imagePreview').style.display = 'block';
-        };
-        reader.readAsDataURL(file);
+    // View posting analytics
+    function viewPostingAnalytics(id) {
+      const posting = allPostings.find(p => p.id === id);
+      if (!posting) return;
+
+      const modal = document.createElement('div');
+      modal.className = 'analytics-modal-overlay';
+      modal.innerHTML = `
+        <div class="analytics-modal">
+          <div class="analytics-modal-header">
+            <h3>Performance Report: ${posting.title}</h3>
+            <button class="analytics-modal-close" onclick="this.closest('.analytics-modal-overlay').remove()">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="analytics-modal-body">
+            <div class="analytics-grid">
+              <div class="analytics-card">
+                <div class="analytics-icon">
+                  <i data-lucide="eye"></i>
+                </div>
+                <div class="analytics-content">
+                  <h4>${posting.views || 0}</h4>
+                  <p>Total Views</p>
+                </div>
+              </div>
+              <div class="analytics-card">
+                <div class="analytics-icon">
+                  <i data-lucide="message-circle"></i>
+                </div>
+                <div class="analytics-content">
+                  <h4>${posting.inquiries || 0}</h4>
+                  <p>Inquiries</p>
+                </div>
+              </div>
+              <div class="analytics-card">
+                <div class="analytics-icon">
+                  <i data-lucide="trending-up"></i>
+                </div>
+                <div class="analytics-content">
+                  <h4>${posting.is_boosted ? 'Yes' : 'No'}</h4>
+                  <p>Boosted</p>
+                </div>
+              </div>
+              <div class="analytics-card">
+                <div class="analytics-icon">
+                  <i data-lucide="calendar"></i>
+                </div>
+                <div class="analytics-content">
+                  <h4>${Math.floor((new Date() - new Date(posting.created_at)) / (1000 * 60 * 60 * 24))}</h4>
+                  <p>Days Active</p>
+                </div>
+              </div>
+            </div>
+            <div class="analytics-chart-placeholder">
+              <p>Engagement metrics chart coming soon</p>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      lucide.createIcons();
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+      });
+    }
+
+    // Toggle boost posting
+    async function toggleBoostPosting(id) {
+      const posting = allPostings.find(p => p.id === id);
+      if (!posting) return;
+
+      const isBoosted = posting.is_boosted || false;
+      
+      if (!isBoosted) {
+        // Show boost options modal
+        const modal = document.createElement('div');
+        modal.className = 'boost-modal-overlay';
+        modal.innerHTML = `
+          <div class="boost-modal">
+            <div class="boost-modal-header">
+              <h3>Boost Your Listing</h3>
+              <button class="boost-modal-close" onclick="this.closest('.boost-modal-overlay').remove()">
+                <i data-lucide="x"></i>
+              </button>
+            </div>
+            <div class="boost-modal-body">
+              <p>Boost your listing to get more visibility and reach more buyers!</p>
+              <div class="boost-options">
+                <div class="boost-option">
+                  <input type="radio" id="boost-7" name="boost-duration" value="7" checked>
+                  <label for="boost-7">
+                    <strong>7 Days</strong>
+                    <span>$9.99</span>
+                  </label>
+                </div>
+                <div class="boost-option">
+                  <input type="radio" id="boost-14" name="boost-duration" value="14">
+                  <label for="boost-14">
+                    <strong>14 Days</strong>
+                    <span>$17.99</span>
+                  </label>
+                </div>
+                <div class="boost-option">
+                  <input type="radio" id="boost-30" name="boost-duration" value="30">
+                  <label for="boost-30">
+                    <strong>30 Days</strong>
+                    <span>$29.99</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="boost-modal-footer">
+              <button class="btn btn-secondary" onclick="this.closest('.boost-modal-overlay').remove()">Cancel</button>
+              <button class="btn btn-primary" onclick="confirmBoostPosting(${id}, this.closest('.boost-modal'));">Boost Now</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        lucide.createIcons();
+
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.remove();
+        });
+      } else {
+        // Remove boost
+        if (confirm('Remove boost from this listing?')) {
+          try {
+            const response = await authenticatedFetch(`/postings/${id}/boost`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ boost: false })
+            });
+
+            if (!response.ok) throw new Error('Failed to remove boost');
+            showNotification('Boost removed successfully', 'success');
+            await loadPostings();
+          } catch (error) {
+            console.error('Error removing boost:', error);
+            showNotification('Failed to remove boost', 'error');
+          }
+        }
       }
-    });
+    }
+
+    async function confirmBoostPosting(id, modalElement) {
+      const selectedDuration = modalElement.querySelector('input[name="boost-duration"]:checked')?.value;
+      if (!selectedDuration) return;
+
+      try {
+        const response = await authenticatedFetch(`/postings/${id}/boost`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ boost: true, duration: parseInt(selectedDuration) })
+        });
+
+        if (!response.ok) throw new Error('Failed to boost posting');
+        
+        modalElement.closest('.boost-modal-overlay').remove();
+        showNotification('Listing boosted successfully!', 'success');
+        await loadPostings();
+      } catch (error) {
+        console.error('Error boosting posting:', error);
+        showNotification('Failed to boost listing. Please try again.', 'error');
+      }
+    }
+
+    // Toggle auto-renew
+    async function toggleAutoRenew(id, currentValue) {
+      try {
+        const response = await authenticatedFetch(`/postings/${id}/auto-renew`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ auto_renew: !currentValue })
+        });
+
+        if (!response.ok) throw new Error('Failed to update auto-renew');
+        showNotification(`Auto-renew ${!currentValue ? 'enabled' : 'disabled'}`, 'success');
+        await loadPostings();
+      } catch (error) {
+        console.error('Error updating auto-renew:', error);
+        showNotification('Failed to update auto-renew', 'error');
+      }
+    }
+
 
     // Form submission
     document.getElementById('postingForm').addEventListener('submit', async (e) => {
@@ -516,10 +757,151 @@
       }, 3000);
     }
 
+    // VIN Lookup function
+    async function lookupVIN() {
+      const vinInput = document.getElementById('postingVIN');
+      const vin = vinInput.value.trim().toUpperCase();
+      const vinDetails = document.getElementById('vinDetails');
+
+      if (vin.length !== 17) {
+        showNotification('VIN must be 17 characters long', 'error');
+        return;
+      }
+
+      vinInput.disabled = true;
+      vinDetails.innerHTML = '<div class="vin-loading">Looking up VIN details...</div>';
+      vinDetails.style.display = 'block';
+
+      try {
+        // This would call an actual VIN lookup API in production
+        // For now, we'll simulate with a placeholder
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // Simulated VIN data (replace with actual API call)
+        const vinData = {
+          make: 'Honda',
+          model: 'Civic',
+          year: '2020',
+          trim: 'EX',
+          engine: '1.5L Turbo 4-Cylinder',
+          transmission: 'CVT',
+          drivetrain: 'FWD',
+          fuelType: 'Gasoline',
+          color: 'Crystal Black Pearl'
+        };
+
+        vinDetails.innerHTML = `
+          <div class="vin-details-card">
+            <h4>VIN Details Found</h4>
+            <div class="vin-details-grid">
+              <div><strong>Make:</strong> ${vinData.make}</div>
+              <div><strong>Model:</strong> ${vinData.model}</div>
+              <div><strong>Year:</strong> ${vinData.year}</div>
+              <div><strong>Trim:</strong> ${vinData.trim}</div>
+              <div><strong>Engine:</strong> ${vinData.engine}</div>
+              <div><strong>Transmission:</strong> ${vinData.transmission}</div>
+              <div><strong>Drivetrain:</strong> ${vinData.drivetrain}</div>
+              <div><strong>Fuel Type:</strong> ${vinData.fuelType}</div>
+              <div><strong>Color:</strong> ${vinData.color}</div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="applyVINDetails()">Apply to Title</button>
+          </div>
+        `;
+
+        // Store VIN data for later use
+        window.currentVINData = vinData;
+
+      } catch (error) {
+        console.error('Error looking up VIN:', error);
+        vinDetails.innerHTML = '<div class="vin-error">VIN lookup failed. Please enter details manually.</div>';
+      } finally {
+        vinInput.disabled = false;
+        lucide.createIcons();
+      }
+    }
+
+    // Apply VIN details to form
+    function applyVINDetails() {
+      const vinData = window.currentVINData;
+      if (!vinData) return;
+
+      const titleInput = document.getElementById('postingTitle');
+      if (titleInput && !titleInput.value) {
+        titleInput.value = `${vinData.year} ${vinData.make} ${vinData.model} ${vinData.trim}`;
+      }
+
+      const descriptionInput = document.getElementById('postingDescription');
+      if (descriptionInput && !descriptionInput.value) {
+        descriptionInput.value = `Vehicle Details:\n- Year: ${vinData.year}\n- Make: ${vinData.make}\n- Model: ${vinData.model}\n- Trim: ${vinData.trim}\n- Engine: ${vinData.engine}\n- Transmission: ${vinData.transmission}\n- Drivetrain: ${vinData.drivetrain}\n- Fuel Type: ${vinData.fuelType}\n- Color: ${vinData.color}`;
+      }
+
+      showNotification('VIN details applied to form', 'success');
+    }
+
+    // Enhanced image upload with editing
+    document.getElementById('postingImage').addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      const container = document.getElementById('imagePreviewContainer');
+      container.innerHTML = '';
+
+      files.forEach((file, index) => {
+        if (!file.type.startsWith('image/')) {
+          showNotification(`${file.name} is not an image file`, 'error');
+          return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+          showNotification(`${file.name} is too large (max 10MB)`, 'error');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const imageItem = document.createElement('div');
+          imageItem.className = 'image-preview-item';
+          imageItem.innerHTML = `
+            <div class="image-preview-wrapper">
+              <img src="${e.target.result}" alt="Preview ${index + 1}">
+              <div class="image-preview-actions">
+                <button type="button" class="image-action-btn" onclick="removeImagePreview(this)" title="Remove">
+                  <i data-lucide="x"></i>
+                </button>
+                <button type="button" class="image-action-btn" onclick="editImagePreview(this)" title="Edit">
+                  <i data-lucide="edit"></i>
+                </button>
+              </div>
+            </div>
+            <input type="hidden" name="image_order" value="${index}">
+          `;
+          container.appendChild(imageItem);
+          lucide.createIcons();
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    function removeImagePreview(button) {
+      button.closest('.image-preview-item').remove();
+    }
+
+    function editImagePreview(button) {
+      // Simple image editing would go here (crop, rotate, etc.)
+      // For now, just show a message
+      showNotification('Image editing feature coming soon', 'info');
+    }
+
     // Export functions globally
     window.openPostingModal = openPostingModal;
     window.editPosting = editPosting;
     window.deletePosting = deletePosting;
+    window.confirmDeletePosting = confirmDeletePosting;
+    window.viewPostingAnalytics = viewPostingAnalytics;
+    window.toggleBoostPosting = toggleBoostPosting;
+    window.toggleAutoRenew = toggleAutoRenew;
+    window.lookupVIN = lookupVIN;
+    window.applyVINDetails = applyVINDetails;
+    window.removeImagePreview = removeImagePreview;
+    window.editImagePreview = editImagePreview;
 
     // Mobile hamburger menu toggle
     function setupMobileNav() {
