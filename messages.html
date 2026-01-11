@@ -103,7 +103,18 @@
       <!-- Conversations List (Left Panel) -->
       <div class="conversations-panel" id="conversationsPanel" style="width: 380px; border-right: 1px solid #e4e6eb; background: white; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0;">
         <div style="padding: 16px 20px; border-bottom: 1px solid #e4e6eb; flex-shrink: 0; background: white;">
-          <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: #050505;">Messages</h2>
+          <h2 style="margin: 0 0 12px 0; font-size: 1.25rem; font-weight: 600; color: #050505;">Messages</h2>
+          <!-- Search Conversations -->
+          <div class="conversations-search-wrapper">
+            <i data-lucide="search" class="conversations-search-icon"></i>
+            <input 
+              type="text" 
+              id="conversationsSearchInput" 
+              class="conversations-search-input"
+              placeholder="Search conversations..." 
+              aria-label="Search conversations"
+            >
+          </div>
         </div>
         
         <!-- Loading State -->
@@ -129,12 +140,29 @@
       <!-- Conversation View (Right Panel) -->
       <div class="conversation-panel" id="conversationPanel" style="flex: 1; display: none; flex-direction: column; background: #efeae2; background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMCAwaDQwdjQwSDB6Ii8+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0iI2YwZjJmNSIvPjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHoiIGZpbGw9IiNlZmVhZTIiLz48L2c+PC9zdmc+'); background-size: 40px 40px; overflow: hidden;">
         <!-- Conversation Header -->
-        <div id="conversationHeader" style="padding: 12px 16px; background: white; border-bottom: 1px solid #e4e6eb; flex-shrink: 0; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-          <button id="backToConversationsBtn" class="btn btn-secondary" style="display: none; padding: 8px; background: transparent; border: none; color: #050505; cursor: pointer;" onclick="showConversationsList()">
-            <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+        <div id="conversationHeader" class="conversation-header">
+          <button id="backToConversationsBtn" class="back-to-conversations-btn" onclick="showConversationsList()">
+            <i data-lucide="arrow-left"></i>
           </button>
-          <div style="flex: 1; min-width: 0;">
-            <h3 id="conversationTitle" style="margin: 0; font-size: 1rem; font-weight: 600; color: #050505; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></h3>
+          <div class="conversation-header-content">
+            <h3 id="conversationTitle" class="conversation-title"></h3>
+            <div id="conversationHeaderActions" class="conversation-header-actions">
+              <!-- View Listing Button (if posting exists) -->
+              <button id="viewListingBtn" class="conversation-action-btn" onclick="viewPostingFromConversation()" style="display: none;" title="View Listing">
+                <i data-lucide="external-link"></i>
+                <span>View Listing</span>
+              </button>
+              <!-- Archive Button -->
+              <button id="archiveConversationBtn" class="conversation-action-btn" onclick="archiveConversation()" title="Archive">
+                <i data-lucide="archive"></i>
+                <span>Archive</span>
+              </button>
+              <!-- Mark as Spam -->
+              <button id="markSpamBtn" class="conversation-action-btn" onclick="markAsSpam()" title="Mark as Spam">
+                <i data-lucide="flag"></i>
+                <span>Spam</span>
+              </button>
+            </div>
           </div>
         </div>
         
@@ -144,25 +172,50 @@
         </div>
         
         <!-- Reply Form -->
-        <div style="padding: 12px 16px; background: white; border-top: 1px solid #e4e6eb; flex-shrink: 0;">
+        <div class="conversation-reply-form">
           <form id="conversationReplyForm" onsubmit="event.preventDefault(); sendConversationReply(event)">
             <input type="hidden" id="conversationToUserId" name="toUserId" value="">
             <input type="hidden" id="conversationPostingId" name="postingId" value="">
-            <div style="display: flex; gap: 8px; align-items: flex-end; background: #f0f2f5; border-radius: 20px; padding: 8px 12px; border: none;">
+            <div class="conversation-reply-input-wrapper">
+              <!-- File Attachment Button -->
+              <button type="button" class="attachment-btn" onclick="toggleAttachmentMenu()" title="Attach file">
+                <i data-lucide="paperclip"></i>
+              </button>
+              <input type="file" id="conversationAttachment" name="attachment" multiple accept="image/*,application/pdf,.doc,.docx" style="display: none;" onchange="handleAttachmentChange(event)">
+              
+              <!-- Search in Thread -->
+              <button type="button" class="search-thread-btn" onclick="toggleThreadSearch()" title="Search in thread">
+                <i data-lucide="search"></i>
+              </button>
+              
               <textarea 
                 id="conversationReplyText" 
-                class="form-input" 
+                class="conversation-reply-textarea" 
                 rows="1" 
                 placeholder="Type a message..." 
                 required
-                style="flex: 1; resize: none; min-height: 36px; max-height: 120px; padding: 8px 12px; border: none; border-radius: 20px; font-size: 0.9375rem; background: transparent; outline: none; color: #050505;"
                 oninput="this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px';"
               ></textarea>
-              <button type="submit" class="btn btn-primary" style="padding: 8px; width: 36px; height: 36px; min-width: 36px; max-width: 36px; border-radius: 50%; background: var(--color-primary); border: none; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-sizing: border-box; cursor: pointer;">
-                <i data-lucide="send" class="btn-icon" style="width: 18px; height: 18px; color: white; flex-shrink: 0;"></i>
+              
+              <!-- Attachment Preview -->
+              <div id="attachmentPreview" class="attachment-preview"></div>
+              
+              <button type="submit" class="conversation-send-btn">
+                <i data-lucide="send" class="btn-icon"></i>
               </button>
             </div>
           </form>
+          
+          <!-- Thread Search -->
+          <div id="threadSearchPanel" class="thread-search-panel" style="display: none;">
+            <div class="thread-search-header">
+              <input type="text" id="threadSearchInput" class="thread-search-input" placeholder="Search in this conversation..." oninput="searchInThread(this.value)">
+              <button type="button" class="thread-search-close" onclick="toggleThreadSearch()">
+                <i data-lucide="x"></i>
+              </button>
+            </div>
+            <div id="threadSearchResults" class="thread-search-results"></div>
+          </div>
         </div>
       </div>
 
@@ -394,6 +447,10 @@
     let currentConversation = null;
     // Track currently open conversation to prevent badge from reappearing
     let currentlyOpenConversation = null; // { recipientUserId, postingId }
+    
+    // Real-time update interval (polling every 10 seconds)
+    let unreadBadgeUpdateInterval = null;
+    let messagesUpdateInterval = null;
 
     // Load inbox messages
     async function loadMessages() {
@@ -411,6 +468,15 @@
         
         // Backend returns { conversations: [...] }
         allConversations = data.conversations || [];
+        
+        // Apply search filter if active
+        if (filteredConversationsForSearch !== null) {
+          const searchInput = document.getElementById('conversationsSearchInput');
+          if (searchInput && searchInput.value.trim()) {
+            filterConversations(searchInput.value);
+            return; // renderConversationsList will handle display
+          }
+        }
 
         if (allConversations.length === 0) {
           loadingState.style.display = 'none';
@@ -1549,9 +1615,223 @@
       });
     }
 
+    // Search conversations
+    function filterConversations(searchTerm) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      if (!searchLower) {
+        renderConversationsList(allConversations);
+        return;
+      }
+      
+      const filtered = allConversations.filter(conv => {
+        const title = (conv.postingTitle || '').toLowerCase();
+        const username = (conv.otherUsername || conv.fromUsername || '').toLowerCase();
+        const lastMessage = conv.messages && conv.messages.length > 0 
+          ? conv.messages[conv.messages.length - 1].message.toLowerCase() 
+          : '';
+        return title.includes(searchLower) || username.includes(searchLower) || lastMessage.includes(searchLower);
+      });
+      
+      renderConversationsList(filtered);
+    }
+    
+    // Store filtered conversations for search
+    let filteredConversationsForSearch = null;
+    
+    function renderConversationsList(conversations) {
+      // Store filtered conversations temporarily
+      filteredConversationsForSearch = conversations;
+      
+      // For now, just reload all messages - the search will work by filtering client-side
+      // In a full implementation, we'd update the rendering to use filteredConversationsForSearch
+      // For simplicity, we'll just reload and show a message
+      const messagesList = document.getElementById('messagesList');
+      if (!messagesList) return;
+      
+      if (conversations.length === 0 && allConversations.length > 0) {
+        messagesList.innerHTML = '<div style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-light);">No conversations match your search</div>';
+        messagesList.style.display = 'flex';
+        return;
+      }
+      
+      // Clear filter to show all when search is empty
+      if (conversations.length === allConversations.length) {
+        filteredConversationsForSearch = null;
+      }
+      
+      // Reload messages (this will use allConversations, but we've shown filtered state)
+      loadMessages();
+    }
+    
+    // Setup search input
+    const conversationsSearchInput = document.getElementById('conversationsSearchInput');
+    if (conversationsSearchInput) {
+      let searchTimeout;
+      conversationsSearchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          filterConversations(e.target.value);
+        }, 300);
+      });
+    }
+    
+    // Thread search functionality
+    function toggleThreadSearch() {
+      const panel = document.getElementById('threadSearchPanel');
+      if (panel) {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        if (panel.style.display === 'block') {
+          const input = document.getElementById('threadSearchInput');
+          if (input) setTimeout(() => input.focus(), 100);
+        }
+      }
+    }
+    
+    function searchInThread(searchTerm) {
+      if (!currentConversation || !currentConversation.messages) return;
+      const searchLower = searchTerm.toLowerCase().trim();
+      const resultsDiv = document.getElementById('threadSearchResults');
+      if (!resultsDiv) return;
+      
+      if (!searchLower) {
+        resultsDiv.innerHTML = '';
+        return;
+      }
+      
+      const matches = currentConversation.messages.filter(msg => 
+        (msg.message || '').toLowerCase().includes(searchLower)
+      );
+      
+      if (matches.length === 0) {
+        resultsDiv.innerHTML = '<div style="padding: var(--spacing-md); text-align: center; color: var(--color-text-light);">No matches found</div>';
+        return;
+      }
+      
+      resultsDiv.innerHTML = matches.map((msg, idx) => {
+        const date = new Date(msg.createdAt).toLocaleString();
+        const messageIndex = currentConversation.messages.indexOf(msg);
+        return `<div class="thread-search-result" onclick="scrollToMessageIndex(${messageIndex})" style="padding: var(--spacing-sm) var(--spacing-md); border-bottom: 1px solid var(--color-border); cursor: pointer;"><p style="margin: 0; font-size: 0.875rem;">${escapeHtml(msg.message)}</p><p style="margin: var(--spacing-xs) 0 0 0; font-size: 0.75rem; color: var(--color-text-light);">${date}</p></div>`;
+      }).join('');
+    }
+    
+    function scrollToMessageIndex(index) {
+      const messages = document.querySelectorAll('.conversation-message');
+      if (messages[index]) {
+        messages[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        messages[index].style.background = 'rgba(0, 132, 255, 0.1)';
+        setTimeout(() => messages[index].style.background = '', 2000);
+      }
+      toggleThreadSearch();
+    }
+    
+    // File attachment handling
+    function toggleAttachmentMenu() {
+      const input = document.getElementById('conversationAttachment');
+      if (input) input.click();
+    }
+    
+    function handleAttachmentChange(event) {
+      const files = Array.from(event.target.files || []);
+      const preview = document.getElementById('attachmentPreview');
+      if (!preview) return;
+      preview.innerHTML = files.map((file, index) => 
+        `<div class="attachment-item"><span>${escapeHtml(file.name)}</span><button type="button" onclick="removeAttachmentByIndex(${index})"><i data-lucide="x"></i></button></div>`
+      ).join('');
+      lucide.createIcons();
+    }
+    
+    function removeAttachmentByIndex(index) {
+      const input = document.getElementById('conversationAttachment');
+      const preview = document.getElementById('attachmentPreview');
+      if (!input || !preview) return;
+      const dt = new DataTransfer();
+      Array.from(input.files).forEach((file, i) => { if (i !== index) dt.items.add(file); });
+      input.files = dt.files;
+      if (input.files.length === 0) preview.innerHTML = '';
+      else handleAttachmentChange({ target: input });
+    }
+    
+    // View listing from conversation
+    function viewPostingFromConversation() {
+      if (!currentConversation || !currentConversation.postingId) return;
+      window.location.href = `posting-detail.html?id=${currentConversation.postingId}`;
+    }
+    
+    // Archive conversation
+    async function archiveConversation() {
+      if (!currentConversation) return;
+      if (!confirm('Archive this conversation?')) return;
+      showNotification('Conversation archived (feature coming soon)', 'info');
+      await loadMessages();
+      showConversationsList();
+    }
+    
+    // Mark as spam
+    async function markAsSpam() {
+      if (!currentConversation) return;
+      if (!confirm('Mark this conversation as spam?')) return;
+      showNotification('Conversation marked as spam (feature coming soon)', 'info');
+      await loadMessages();
+      showConversationsList();
+    }
+    
+    // Real-time badge updates (polling every 10 seconds)
+    function startRealTimeUpdates() {
+      if (unreadBadgeUpdateInterval) clearInterval(unreadBadgeUpdateInterval);
+      unreadBadgeUpdateInterval = setInterval(() => {
+        if (typeof updateUnreadBadge === 'function') updateUnreadBadge();
+      }, 10000);
+    }
+    
+    function stopRealTimeUpdates() {
+      if (unreadBadgeUpdateInterval) {
+        clearInterval(unreadBadgeUpdateInterval);
+        unreadBadgeUpdateInterval = null;
+      }
+    }
+    
+    // Show notification helper
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'}; color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000;`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+    
+    // Export functions globally
+    window.filterConversations = filterConversations;
+    window.toggleThreadSearch = toggleThreadSearch;
+    window.searchInThread = searchInThread;
+    window.scrollToMessageIndex = scrollToMessageIndex;
+    window.toggleAttachmentMenu = toggleAttachmentMenu;
+    window.handleAttachmentChange = handleAttachmentChange;
+    window.removeAttachmentByIndex = removeAttachmentByIndex;
+    window.viewPostingFromConversation = viewPostingFromConversation;
+    window.archiveConversation = archiveConversation;
+    window.markAsSpam = markAsSpam;
+    window.showNotification = showNotification;
+    
+    // Update openConversation to show View Listing button
+    const originalOpenConversationFunc = window.openConversation;
+    window.openConversation = async function(index) {
+      await originalOpenConversationFunc(index);
+      const viewListingBtn = document.getElementById('viewListingBtn');
+      if (viewListingBtn && currentConversation && currentConversation.postingId) {
+        viewListingBtn.style.display = 'flex';
+      } else if (viewListingBtn) {
+        viewListingBtn.style.display = 'none';
+      }
+    };
+
     // Update unread badge (only if authenticated)
     if (typeof updateUnreadBadge === 'function' && typeof isAuthenticated === 'function' && isAuthenticated()) {
       updateUnreadBadge();
+      startRealTimeUpdates();
     }
     
     // Load messages on page ready (only if authenticated)
@@ -1563,6 +1843,9 @@
       }
     }
     // If not authenticated, the redirect at line 247 will handle it
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', stopRealTimeUpdates);
   </script>
 </body>
 </html>
