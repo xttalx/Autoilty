@@ -275,31 +275,30 @@ function renderPostingsAsProducts(postings, container) {
           </div>
 
           <!-- Action Links -->
-          <div class="listing-actions" style="display: flex; flex-direction: column; gap: var(--spacing-xs);">
+          <div class="listing-actions" style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--color-border);">
             <a href="posting-detail.html?id=${product.id}" 
-               class="btn btn-primary btn-full contact-seller-link" 
+               class="product-link" 
                aria-label="Contact seller about ${product.name}">
-              <i data-lucide="message-circle" class="btn-icon"></i>
+              <i data-lucide="message-circle" style="width: 0.875rem; height: 0.875rem; margin-right: 0.375rem; vertical-align: middle;"></i>
               Contact Seller
             </a>
             
-            <div class="listing-secondary-actions" style="display: flex; gap: var(--spacing-xs);">
+            <div class="listing-secondary-actions" style="display: flex; align-items: center; gap: 0.75rem;">
               <a href="posting-detail.html?id=${product.id}#buy-now" 
-                 class="btn btn-secondary btn-sm buy-now-link" 
-                 aria-label="Buy now for $${product.price.toFixed(2)}"
-                 style="flex: 1; text-decoration: none;">
-                <i data-lucide="credit-card" class="btn-icon"></i>
+                 class="product-link" 
+                 aria-label="Buy now for $${product.price.toFixed(2)}">
+                <i data-lucide="credit-card" style="width: 0.875rem; height: 0.875rem; margin-right: 0.375rem; vertical-align: middle;"></i>
                 Buy Now
               </a>
               
               <div class="social-share-dropdown" style="position: relative;">
-                <button class="btn btn-secondary btn-sm social-share-btn" 
+                <button class="social-share-btn product-link-icon" 
                         type="button"
                         aria-label="Share this listing"
                         aria-expanded="false"
                         data-posting-id="${product.id}"
-                        style="min-width: 48px;">
-                  <i data-lucide="share-2" class="btn-icon"></i>
+                        style="min-width: 44px; min-height: 44px; padding: 0.5rem;">
+                  <i data-lucide="share-2" style="width: 1rem; height: 1rem;"></i>
                 </button>
                 <div class="social-share-menu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.25rem; background: white; border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow-md); z-index: 100; min-width: 180px; padding: var(--spacing-xs);">
                   <a href="#" class="social-share-link" data-platform="facebook" data-posting-id="${product.id}" style="display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius); transition: background 0.2s; text-decoration: none; color: var(--color-text);">
@@ -355,8 +354,8 @@ function renderPostingsAsProducts(postings, container) {
     card.addEventListener('click', (e) => {
 
       // Don't navigate if clicking the Contact Seller link, form, or any interactive element
-      if (e.target.closest('.contact-seller-link') || 
-          e.target.closest('.buy-now-link') ||
+      if (e.target.closest('.product-link') || 
+          e.target.closest('.product-link-icon') ||
           e.target.closest('.social-share-btn') ||
           e.target.closest('.contact-form-container') || 
           e.target.closest('.contact-form-inline') ||
