@@ -274,28 +274,23 @@ function renderPostingsAsProducts(postings, container) {
             ${posting.vin_verified ? '<span class="vin-verified-badge" style="background: #4caf50; color: white; padding: 0.125rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="check-circle" style="width: 0.75rem; height: 0.75rem;"></i> VIN Verified</span>' : ''}
           </div>
 
-          <!-- Action Buttons -->
+          <!-- Action Links -->
           <div class="listing-actions" style="display: flex; flex-direction: column; gap: var(--spacing-xs);">
-            <button class="btn btn-primary btn-full contact-seller-btn" 
-                    data-posting-id="${product.id}" 
-                    data-posting-user-id="${posting.user_id}" 
-                    data-seller-username="${product.username || 'Seller'}"
-                    type="button"
-                    aria-label="Contact seller about ${product.name}">
+            <a href="posting-detail.html?id=${product.id}" 
+               class="btn btn-primary btn-full contact-seller-link" 
+               aria-label="Contact seller about ${product.name}">
               <i data-lucide="message-circle" class="btn-icon"></i>
               Contact Seller
-            </button>
+            </a>
             
             <div class="listing-secondary-actions" style="display: flex; gap: var(--spacing-xs);">
-              <button class="btn btn-secondary btn-sm buy-now-btn" 
-                      data-posting-id="${product.id}" 
-                      data-price="${product.price}"
-                      type="button"
-                      aria-label="Buy now for $${product.price.toFixed(2)}"
-                      style="flex: 1;">
+              <a href="posting-detail.html?id=${product.id}#buy-now" 
+                 class="btn btn-secondary btn-sm buy-now-link" 
+                 aria-label="Buy now for $${product.price.toFixed(2)}"
+                 style="flex: 1; text-decoration: none;">
                 <i data-lucide="credit-card" class="btn-icon"></i>
                 Buy Now
-              </button>
+              </a>
               
               <div class="social-share-dropdown" style="position: relative;">
                 <button class="btn btn-secondary btn-sm social-share-btn" 
@@ -359,8 +354,10 @@ function renderPostingsAsProducts(postings, container) {
     card.style.cursor = 'pointer';
     card.addEventListener('click', (e) => {
 
-      // Don't navigate if clicking the Contact Seller button, form, or any interactive element
-      if (e.target.closest('.contact-seller-btn') || 
+      // Don't navigate if clicking the Contact Seller link, form, or any interactive element
+      if (e.target.closest('.contact-seller-link') || 
+          e.target.closest('.buy-now-link') ||
+          e.target.closest('.social-share-btn') ||
           e.target.closest('.contact-form-container') || 
           e.target.closest('.contact-form-inline') ||
           e.target.closest('textarea') ||
@@ -383,47 +380,7 @@ function renderPostingsAsProducts(postings, container) {
 
   });
 
-  // Add Contact Seller button handlers - open modal
-  container.querySelectorAll('.contact-seller-btn').forEach(btn => {
-    // Remove existing listeners by cloning
-    const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
-    
-    // Add click handler to new button
-    newBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      
-      const postingId = newBtn.dataset.postingId;
-      const toUserId = newBtn.dataset.postingUserId;
-      const sellerName = newBtn.dataset.sellerUsername || newBtn.getAttribute('data-seller-username');
-      
-      console.log('Contact Seller button clicked:', { postingId, toUserId, sellerName });
-      
-      if (!postingId || !toUserId) {
-        console.error('Contact Seller: postingId and toUserId are required', { postingId, toUserId });
-        return;
-      }
-      
-      // Open modal using global function
-      if (typeof window.openContactSellerModal === 'function') {
-        window.openContactSellerModal({
-          postingId: postingId ? parseInt(postingId) : null,
-          toUserId: parseInt(toUserId),
-          sellerName: sellerName || 'Seller'
-        });
-      } else if (typeof openContactSellerModal === 'function') {
-        openContactSellerModal({
-          postingId: postingId ? parseInt(postingId) : null,
-          toUserId: parseInt(toUserId),
-          sellerName: sellerName || 'Seller'
-        });
-      } else {
-        console.error('openContactSellerModal function not found. Available functions:', Object.keys(window).filter(k => k.includes('Contact')));
-        alert('Contact Seller feature is not available. Please refresh the page.');
-      }
-    });
-  });
+  // Links now navigate directly, no need for click handlers
 
 }
 
