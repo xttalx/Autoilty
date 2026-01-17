@@ -255,6 +255,15 @@ function renderPostingsAsProducts(postings, container) {
 
           <h3 class="product-name">${product.name}</h3>
 
+          <!-- Product Specs (Indeed.ca style) -->
+          <p class="product-specs">
+            ${posting.year ? `<span>${posting.year}</span>` : ''}
+            ${posting.make ? `<span>${posting.make}</span>` : ''}
+            ${posting.model ? `<span>${posting.model}</span>` : ''}
+            ${posting.mileage ? `<span>${posting.mileage.toLocaleString()} km</span>` : ''}
+            ${posting.condition ? `<span>${posting.condition}</span>` : ''}
+          </p>
+
           ${product.location ? `<p style="font-size: 0.875rem; color: var(--color-text-light); margin: var(--spacing-xs) 0; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="map-pin" style="width: 0.875rem; height: 0.875rem; flex-shrink: 0;"></i> ${product.location}</p>` : ''}
 
           <!-- Ratings and Reviews -->
@@ -267,60 +276,20 @@ function renderPostingsAsProducts(postings, container) {
             </span>
           </div>
 
-          <p class="product-price" style="font-size: 1.5rem; font-weight: 600; margin: var(--spacing-sm) 0;">$${product.price.toFixed(2)} CAD</p>
+          <p class="product-price">$${product.price.toFixed(2)} CAD</p>
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-sm);">
             <p style="font-size: 0.875rem; color: var(--color-text-light); margin: 0;">by ${product.username}</p>
             ${posting.vin_verified ? '<span class="vin-verified-badge" style="background: #4caf50; color: white; padding: 0.125rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="check-circle" style="width: 0.75rem; height: 0.75rem;"></i> VIN Verified</span>' : ''}
           </div>
 
-          <!-- Action Links -->
-          <div class="listing-actions" style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--color-border);">
-            <a href="posting-detail.html?id=${product.id}" 
-               class="product-link" 
-               aria-label="Contact seller about ${product.name}">
-              <i data-lucide="message-circle" style="width: 0.875rem; height: 0.875rem; margin-right: 0.375rem; vertical-align: middle;"></i>
-              Contact Seller
-            </a>
-            
-            <div class="listing-secondary-actions" style="display: flex; align-items: center; gap: 0.75rem;">
-              <a href="posting-detail.html?id=${product.id}#buy-now" 
-                 class="product-link" 
-                 aria-label="Buy now for $${product.price.toFixed(2)}">
-                <i data-lucide="credit-card" style="width: 0.875rem; height: 0.875rem; margin-right: 0.375rem; vertical-align: middle;"></i>
-                Buy Now
-              </a>
-              
-              <div class="social-share-dropdown" style="position: relative;">
-                <button class="social-share-btn product-link-icon" 
-                        type="button"
-                        aria-label="Share this listing"
-                        aria-expanded="false"
-                        data-posting-id="${product.id}"
-                        style="min-width: 44px; min-height: 44px; padding: 0.5rem;">
-                  <i data-lucide="share-2" style="width: 1rem; height: 1rem;"></i>
-                </button>
-                <div class="social-share-menu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.25rem; background: white; border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow-md); z-index: 100; min-width: 180px; padding: var(--spacing-xs);">
-                  <a href="#" class="social-share-link" data-platform="facebook" data-posting-id="${product.id}" style="display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius); transition: background 0.2s; text-decoration: none; color: var(--color-text);">
-                    <i data-lucide="facebook" style="width: 1rem; height: 1rem;"></i>
-                    Share on Facebook
-                  </a>
-                  <a href="#" class="social-share-link" data-platform="twitter" data-posting-id="${product.id}" style="display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius); transition: background 0.2s; text-decoration: none; color: var(--color-text);">
-                    <i data-lucide="twitter" style="width: 1rem; height: 1rem;"></i>
-                    Share on Twitter
-                  </a>
-                  <a href="#" class="social-share-link" data-platform="whatsapp" data-posting-id="${product.id}" style="display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius); transition: background 0.2s; text-decoration: none; color: var(--color-text);">
-                    <i data-lucide="message-circle" style="width: 1rem; height: 1rem;"></i>
-                    Share on WhatsApp
-                  </a>
-                  <button class="social-share-link" data-platform="copy" data-posting-id="${product.id}" style="display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius); transition: background 0.2s; background: none; border: none; width: 100%; text-align: left; cursor: pointer; color: var(--color-text); font-family: inherit; font-size: inherit;">
-                    <i data-lucide="copy" style="width: 1rem; height: 1rem;"></i>
-                    Copy Link
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- View Details Button (Indeed.ca style) -->
+          <a href="posting-detail.html?id=${product.id}" 
+             class="product-link" 
+             aria-label="View details for ${product.name}">
+            View Details
+            <i data-lucide="arrow-right" style="width: 1rem; height: 1rem; margin-left: 0.375rem;"></i>
+          </a>
 
           <!-- Similar Postings (shown on hover or below) -->
           <div class="similar-postings" data-posting-id="${product.id}" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-border);">

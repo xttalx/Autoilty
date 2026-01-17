@@ -14,7 +14,7 @@
   <title>Marketplace - Buy Used Cars Canada & Auto Parts | Autoilty</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="public/config.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -114,6 +114,12 @@
   <!-- Filter Tabs -->
   <section class="filters-section">
     <div class="container">
+      <!-- Mobile Filter Toggle Button -->
+      <button class="filter-toggle-btn" id="filterToggleBtn" aria-label="Open filters">
+        <i data-lucide="filter" style="width: 1.25rem; height: 1.25rem;"></i>
+        <span>Filters</span>
+      </button>
+      
       <div class="filter-tabs" role="tablist">
         <button class="filter-tab active" data-filter="all" role="tab" aria-selected="true">All</button>
         <button class="filter-tab" data-filter="Cars" role="tab" aria-selected="false">Cars</button>
@@ -229,6 +235,50 @@
       </div>
     </div>
   </section>
+
+  <!-- Filter Drawer for Mobile -->
+  <div class="filter-drawer-overlay" id="filterDrawerOverlay"></div>
+  <div class="filter-drawer" id="filterDrawer">
+    <div class="filter-drawer-header">
+      <h3>Filters</h3>
+      <button class="filter-drawer-close" id="filterDrawerClose" aria-label="Close filters">
+        <i data-lucide="x" style="width: 1.25rem; height: 1.25rem;"></i>
+      </button>
+    </div>
+    <div class="filter-drawer-body">
+      <!-- Category Filters -->
+      <div class="filter-group" style="margin-bottom: var(--spacing-lg);">
+        <label class="form-label" style="margin-bottom: var(--spacing-sm); font-weight: var(--font-weight-semibold);">Category</label>
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-xs);">
+          <button class="filter-tab active" data-filter="all" style="text-align: left; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-bg);">All</button>
+          <button class="filter-tab" data-filter="Cars" style="text-align: left; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-bg);">Cars</button>
+          <button class="filter-tab" data-filter="Parts" style="text-align: left; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-bg);">Parts</button>
+          <button class="filter-tab" data-filter="Services" style="text-align: left; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-bg);">Services</button>
+          <button class="filter-tab" data-filter="Other" style="text-align: left; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-bg);">Other</button>
+        </div>
+      </div>
+      
+      <!-- Price Range -->
+      <div class="filter-group" style="margin-bottom: var(--spacing-lg);">
+        <label for="drawerPriceMin" class="form-label">Price Range (CAD)</label>
+        <div class="price-range-container" style="display: flex; gap: var(--spacing-sm); align-items: center;">
+          <input type="number" id="drawerPriceMin" class="form-input" placeholder="Min" min="0" step="100" style="flex: 1;">
+          <span style="color: var(--color-text-light);">-</span>
+          <input type="number" id="drawerPriceMax" class="form-input" placeholder="Max" min="0" step="100" style="flex: 1;">
+        </div>
+      </div>
+      
+      <!-- Location -->
+      <div class="filter-group" style="margin-bottom: var(--spacing-lg);">
+        <label for="drawerLocation" class="form-label">Location</label>
+        <input type="text" id="drawerLocation" class="form-input" placeholder="City or postal code" autocomplete="off">
+      </div>
+    </div>
+    <div class="filter-drawer-footer">
+      <button class="btn btn-secondary" id="drawerResetFilters">Reset</button>
+      <button class="btn btn-primary" id="drawerApplyFilters">Apply</button>
+    </div>
+  </div>
 
   <!-- Create Posting CTA -->
   <section class="cta-section" style="padding: var(--spacing-xl) 0; border-bottom: 1px solid var(--color-border); background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
@@ -535,6 +585,8 @@
     let searchTimeout;
     let currentPage = 1;
     let totalPages = 1;
+    let isLoadingMore = false;
+    let hasMorePages = true;
     
     // Load all postings from API with loading spinner
     async function loadPostings() {
@@ -563,9 +615,11 @@
         allPostings = data.postings || [];
         filteredPostings = [...allPostings];
         totalPages = data.pagination?.totalPages || 1;
+        hasMorePages = currentPage < totalPages;
         
         console.log(`📦 Loaded ${allPostings.length} postings (total: ${data.pagination?.total || 0})`);
         renderPostings();
+        setupInfiniteScroll();
       } catch (error) {
         console.error('❌ Error loading postings:', error);
         const grid = document.getElementById('productsGrid');
@@ -620,6 +674,125 @@
       } else {
         console.error('renderPostingsAsProducts function not found');
         grid.innerHTML = '<p class="empty-state">Error rendering postings. Please refresh the page.</p>';
+      }
+      
+      // Remove existing loading indicator
+      const existingLoader = document.getElementById('infiniteScrollLoader');
+      if (existingLoader) {
+        existingLoader.remove();
+      }
+      
+      // Add loading indicator if there are more pages
+      if (hasMorePages && !isLoadingMore) {
+        const loader = document.createElement('div');
+        loader.id = 'infiniteScrollLoader';
+        loader.className = 'infinite-scroll-loader';
+        loader.style.cssText = 'grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--spacing-xl);';
+        loader.innerHTML = `
+          <div class="loading-spinner"></div>
+          <p style="margin-top: var(--spacing-sm); color: var(--color-text-light); font-size: var(--font-size-sm);">Loading more...</p>
+        `;
+        grid.appendChild(loader);
+      }
+    }
+    
+    // ============================================
+    // INFINITE SCROLL FUNCTIONALITY
+    // ============================================
+    function setupInfiniteScroll() {
+      // Remove existing scroll listener
+      window.removeEventListener('scroll', handleInfiniteScroll);
+      
+      // Add new scroll listener
+      window.addEventListener('scroll', handleInfiniteScroll, { passive: true });
+    }
+    
+    async function handleInfiniteScroll() {
+      // Don't load if already loading or no more pages
+      if (isLoadingMore || !hasMorePages) return;
+      
+      // Check if user is near bottom (within 300px)
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      if (scrollTop + windowHeight >= documentHeight - 300) {
+        await loadMorePostings();
+      }
+    }
+    
+    async function loadMorePostings() {
+      if (isLoadingMore || !hasMorePages) return;
+      
+      isLoadingMore = true;
+      const nextPage = currentPage + 1;
+      
+      try {
+        const query = searchInput ? searchInput.value.trim() : '';
+        const category = activeFilter === 'all' ? null : activeFilter;
+        
+        // Get advanced filter values
+        const priceMin = document.getElementById('priceRangeMin')?.value;
+        const priceMax = document.getElementById('priceRangeMax')?.value;
+        const location = document.getElementById('locationFilter')?.value;
+        const vinVerified = document.getElementById('vinFilter')?.value;
+        
+        console.log(`🔄 Loading page ${nextPage}...`);
+        const data = await fetchPostings({ 
+          category: category, 
+          search: query || undefined,
+          page: nextPage,
+          limit: 20
+        });
+        
+        let newPostings = data.postings || [];
+        
+        // Apply client-side filters (price, location, VIN)
+        if (priceMin) {
+          newPostings = newPostings.filter(p => parseFloat(p.price || 0) >= parseFloat(priceMin));
+        }
+        if (priceMax) {
+          newPostings = newPostings.filter(p => parseFloat(p.price || 0) <= parseFloat(priceMax));
+        }
+        if (location) {
+          newPostings = newPostings.filter(p => 
+            p.location?.toLowerCase().includes(location.toLowerCase()) ||
+            p.city?.toLowerCase().includes(location.toLowerCase())
+          );
+        }
+        if (vinVerified === 'verified') {
+          newPostings = newPostings.filter(p => p.vin_verified === true);
+        }
+        
+        if (newPostings.length > 0) {
+          // Append new postings
+          allPostings = [...allPostings, ...newPostings];
+          filteredPostings = [...filteredPostings, ...newPostings];
+          currentPage = nextPage;
+          totalPages = data.pagination?.totalPages || 1;
+          hasMorePages = currentPage < totalPages;
+          
+          // Render new postings
+          const grid = document.getElementById('productsGrid');
+          if (grid && typeof renderPostingsAsProducts === 'function') {
+            renderPostingsAsProducts(filteredPostings, grid);
+          }
+          
+          // Update results count
+          const resultsCountNumber = document.getElementById('resultsCountNumber');
+          if (resultsCountNumber) {
+            resultsCountNumber.textContent = filteredPostings.length;
+          }
+          
+          console.log(`✅ Loaded ${newPostings.length} more postings (total: ${filteredPostings.length})`);
+        } else {
+          hasMorePages = false;
+        }
+      } catch (error) {
+        console.error('❌ Error loading more postings:', error);
+        hasMorePages = false;
+      } finally {
+        isLoadingMore = false;
       }
     }
     
@@ -747,6 +920,7 @@
         filteredPostings = [...postings];
         totalPages = data.pagination?.totalPages || 1;
         currentPage = 1;
+        hasMorePages = currentPage < totalPages;
         
         // Update results count
         const resultsCountNumber = document.getElementById('resultsCountNumber');
@@ -755,6 +929,7 @@
         }
         
         renderPostings();
+        setupInfiniteScroll();
       } catch (error) {
         console.error('❌ Error applying filters:', error);
         const grid = document.getElementById('productsGrid');
@@ -1523,6 +1698,121 @@
         if (typeof lucide !== 'undefined' && lucide.createIcons) {
           lucide.createIcons();
         }
+      });
+    })();
+    
+    // ============================================
+    // FILTER DRAWER FUNCTIONALITY (MOBILE)
+    // ============================================
+    (function initFilterDrawer() {
+      const filterToggleBtn = document.getElementById('filterToggleBtn');
+      const filterDrawer = document.getElementById('filterDrawer');
+      const filterDrawerOverlay = document.getElementById('filterDrawerOverlay');
+      const filterDrawerClose = document.getElementById('filterDrawerClose');
+      const drawerApplyFilters = document.getElementById('drawerApplyFilters');
+      const drawerResetFilters = document.getElementById('drawerResetFilters');
+      
+      function openDrawer() {
+        if (filterDrawer && filterDrawerOverlay) {
+          filterDrawer.classList.add('open');
+          filterDrawerOverlay.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        }
+      }
+      
+      function closeDrawer() {
+        if (filterDrawer && filterDrawerOverlay) {
+          filterDrawer.classList.remove('open');
+          filterDrawerOverlay.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+      }
+      
+      if (filterToggleBtn) {
+        filterToggleBtn.addEventListener('click', openDrawer);
+      }
+      
+      if (filterDrawerClose) {
+        filterDrawerClose.addEventListener('click', closeDrawer);
+      }
+      
+      if (filterDrawerOverlay) {
+        filterDrawerOverlay.addEventListener('click', closeDrawer);
+      }
+      
+      // Close drawer on ESC key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && filterDrawer && filterDrawer.classList.contains('open')) {
+          closeDrawer();
+        }
+      });
+      
+      // Apply filters from drawer
+      if (drawerApplyFilters) {
+        drawerApplyFilters.addEventListener('click', () => {
+          // Sync drawer values with main filter inputs
+          const drawerPriceMin = document.getElementById('drawerPriceMin');
+          const drawerPriceMax = document.getElementById('drawerPriceMax');
+          const drawerLocation = document.getElementById('drawerLocation');
+          const priceRangeMin = document.getElementById('priceRangeMin');
+          const priceRangeMax = document.getElementById('priceRangeMax');
+          const locationFilter = document.getElementById('locationFilter');
+          
+          if (drawerPriceMin && priceRangeMin) {
+            priceRangeMin.value = drawerPriceMin.value;
+          }
+          if (drawerPriceMax && priceRangeMax) {
+            priceRangeMax.value = drawerPriceMax.value;
+          }
+          if (drawerLocation && locationFilter) {
+            locationFilter.value = drawerLocation.value;
+          }
+          
+          // Sync category filter from drawer tabs
+          const drawerActiveTab = filterDrawer.querySelector('.filter-tab.active');
+          if (drawerActiveTab) {
+            activeFilter = drawerActiveTab.dataset.filter;
+            // Update main tabs
+            document.querySelectorAll('.filter-tabs .filter-tab').forEach(tab => {
+              tab.classList.remove('active');
+              if (tab.dataset.filter === activeFilter) {
+                tab.classList.add('active');
+              }
+            });
+          }
+          
+          applyFilters();
+          closeDrawer();
+        });
+      }
+      
+      // Reset filters in drawer
+      if (drawerResetFilters) {
+        drawerResetFilters.addEventListener('click', () => {
+          const drawerPriceMin = document.getElementById('drawerPriceMin');
+          const drawerPriceMax = document.getElementById('drawerPriceMax');
+          const drawerLocation = document.getElementById('drawerLocation');
+          
+          if (drawerPriceMin) drawerPriceMin.value = '';
+          if (drawerPriceMax) drawerPriceMax.value = '';
+          if (drawerLocation) drawerLocation.value = '';
+          
+          // Reset category to "all"
+          filterDrawer.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.filter === 'all') {
+              tab.classList.add('active');
+            }
+          });
+        });
+      }
+      
+      // Handle drawer filter tab clicks
+      filterDrawer.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          filterDrawer.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+        });
       });
     })();
     
