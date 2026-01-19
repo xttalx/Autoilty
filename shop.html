@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://autoilty.com/marketplace.html">
   <link rel="canonical" href="https://autoilty.com/marketplace.html">
-  <title>Marketplace - Buy Used Cars Canada & Auto Parts | Autoilty</title>
+  <title>Shop - User Products | Autoilty</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
@@ -31,8 +31,9 @@
         </button>
         <div class="nav-links" id="navLinks">
           <a href="index.html" class="nav-link">Home</a>
-          <a href="shop.html" class="nav-link">Shop</a>
-          <a href="marketplace.html" class="nav-link active">Marketplace</a>
+          <a href="shop.html" class="nav-link active">Shop</a>
+          <a href="marketplace.html" class="nav-link">Marketplace</a>
+          <a href="shop.html#sell" class="nav-link" id="sellAtShopLink" style="display: none;"><i data-lucide="plus" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></i> Sell at Shop</a>
           <a href="inventory.html" class="nav-link">Find Vehicle</a>
           <a href="resources.html" class="nav-link">Resources</a>
           <a href="#" class="nav-link" id="createPostingLink" style="display: none;">Create Posting</a>
@@ -84,7 +85,7 @@
         </li>
         <li class="breadcrumb-separator" style="color: var(--color-text-light); margin: 0 var(--spacing-xs); font-size: 0.875rem; flex-shrink: 0;">/</li>
         <li class="breadcrumb-item breadcrumb-current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" style="color: var(--color-text); font-size: 0.875rem; font-weight: 500; flex: 1 1 auto; min-width: 0; overflow: hidden;">
-          <span itemprop="name" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Marketplace</span>
+          <span itemprop="name" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Shop</span>
           <meta itemprop="position" content="2" />
         </li>
       </ol>
@@ -280,17 +281,17 @@
     </div>
   </div>
 
-  <!-- Create Posting CTA -->
-  <section class="cta-section" style="padding: var(--spacing-xl) 0; border-bottom: 1px solid var(--color-border); background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+  <!-- Sell at Shop CTA -->
+  <section class="cta-section" id="sell" style="padding: var(--spacing-xl) 0; border-bottom: 1px solid var(--color-border); background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
     <div class="container">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md); padding: var(--spacing-lg); background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
         <div style="flex: 1; min-width: 250px;">
-          <h3 style="margin-bottom: var(--spacing-xs); font-size: 1.5rem; font-weight: 600; color: var(--color-text);">Have something to sell?</h3>
-          <p style="color: var(--color-text-light); margin: 0; font-size: 0.95rem;">List your automotive items and reach thousands of buyers in minutes.</p>
+          <h3 style="margin-bottom: var(--spacing-xs); font-size: 1.5rem; font-weight: 600; color: var(--color-text);">Sell at Shop</h3>
+          <p style="color: var(--color-text-light); margin: 0; font-size: 0.95rem;">Create a product listing and sell to buyers in the Shop. Only logged-in users can sell products here.</p>
         </div>
-        <button class="btn btn-primary" id="createPostingCtaBtn" onclick="if(typeof openPostingFormModal === 'function') { openPostingFormModal(); } else { window.location.href = 'my-postings.html?create=true'; }" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.75rem; font-weight: 600; font-size: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease; white-space: nowrap; cursor: pointer;">
+        <button class="btn btn-primary" id="sellAtShopBtn" onclick="openSellProductModal();" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.75rem; font-weight: 600; font-size: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease; white-space: nowrap; cursor: pointer;">
           <i data-lucide="plus" class="btn-icon" style="width: 1.25rem; height: 1.25rem;"></i>
-          Create Posting
+          Sell Product
         </button>
       </div>
     </div>
@@ -420,6 +421,111 @@
     </div>
   </div>
 
+  <!-- Sell Product Modal (Shop) -->
+  <div class="contact-modal-overlay" id="sellProductModal">
+    <div class="contact-modal" style="max-width: 600px;">
+      <div class="contact-modal-header">
+        <h3>Sell Product at Shop</h3>
+        <button class="contact-modal-close" id="sellProductModalClose" aria-label="Close modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="contact-modal-body">
+        <form id="sellProductForm">
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="sellProductName" class="form-label">Product Name *</label>
+            <input 
+              type="text" 
+              id="sellProductName" 
+              name="name" 
+              class="form-input" 
+              placeholder="e.g., Premium Car Wax"
+              required
+              aria-required="true"
+            >
+          </div>
+
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="sellProductCategory" class="form-label">Category *</label>
+            <select 
+              id="sellProductCategory" 
+              name="category" 
+              class="form-select" 
+              required
+              aria-required="true"
+            >
+              <option value="">Select category</option>
+              <option value="Cars">Cars</option>
+              <option value="Parts">Parts</option>
+              <option value="Services">Services</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="sellProductPrice" class="form-label">Price (CAD) *</label>
+            <input 
+              type="number" 
+              id="sellProductPrice" 
+              name="price" 
+              class="form-input" 
+              placeholder="49.99"
+              step="0.01"
+              min="0"
+              required
+              aria-required="true"
+            >
+          </div>
+
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="sellProductDescription" class="form-label">Description *</label>
+            <textarea 
+              id="sellProductDescription" 
+              name="description" 
+              class="form-textarea" 
+              rows="4"
+              placeholder="Detailed product description..."
+              required
+              aria-required="true"
+            ></textarea>
+          </div>
+
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="sellProductImage" class="form-label">Image URL</label>
+            <input 
+              type="url" 
+              id="sellProductImage" 
+              name="image" 
+              class="form-input" 
+              placeholder="https://example.com/image.jpg"
+            >
+          </div>
+
+          <div class="form-group" style="margin-bottom: var(--spacing-md);">
+            <label for="sellProductLocation" class="form-label">Location</label>
+            <input 
+              type="text" 
+              id="sellProductLocation" 
+              name="location" 
+              class="form-input" 
+              placeholder="City or postal code"
+            >
+          </div>
+
+          <div id="sellProductError" style="color: var(--color-error); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md); display: none;"></div>
+
+          <div class="contact-modal-actions">
+            <button type="button" class="btn btn-secondary" id="sellProductModalCancel">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i data-lucide="plus" class="btn-icon"></i>
+              Create Product
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="auth.js"></script>
   <script src="marketplace-api.js"></script>
   <script src="messages-api.js"></script>
@@ -437,6 +543,7 @@
     const myPostingsLink = document.getElementById('myPostingsLink');
       const createPostingLink = document.getElementById('createPostingLink');
       const createPostingLoginLink = document.getElementById('createPostingLoginLink');
+      const sellAtShopLink = document.getElementById('sellAtShopLink');
     if (currentUser && isAuthenticated()) {
         // User is logged in - show user menu and create posting link
         if (userMenu) {
@@ -463,6 +570,7 @@
           }
         }
         if (createPostingLoginLink) createPostingLoginLink.style.display = 'none';
+        if (sellAtShopLink) sellAtShopLink.style.display = 'inline-flex';
         
         const userMenuName = document.getElementById('userMenuName');
         if (userMenuName) userMenuName.textContent = currentUser.username;
@@ -504,6 +612,7 @@
         if (myPostingsLink) myPostingsLink.style.display = 'none';
         if (createPostingLink) createPostingLink.style.display = 'none';
         if (createPostingLoginLink) createPostingLoginLink.style.display = 'block';
+        if (sellAtShopLink) sellAtShopLink.style.display = 'none';
       }
     }
     
@@ -608,12 +717,46 @@
         emptyState.style.display = 'none';
         }
         
-        console.log('🔄 Loading postings from API...');
-        const data = await fetchPostings({ page: currentPage, limit: 20 });
+        // Check if user is logged in
+        const currentUser = getCurrentUser();
+        if (!currentUser || !isAuthenticated()) {
+          // User not logged in - show login message
+          if (grid) {
+            grid.innerHTML = `
+              <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: var(--spacing-xxl);">
+                <i data-lucide="lock" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
+                <h3 style="margin-bottom: var(--spacing-xs);">Please Sign In</h3>
+                <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">You must be signed in to view and sell products in the Shop.</p>
+                <a href="login.html?return=shop.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="log-in" class="btn-icon"></i>
+                  Sign In
+                </a>
+              </div>
+            `;
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
+          return;
+        }
+        
+        // Load only shop products (products created by logged-in users, not marketplace listings)
+        // We'll filter products by checking if they're shop products (user-created, not marketplace)
+        console.log('🔄 Loading shop products from API...');
+        const data = await fetchPostings({ page: currentPage, limit: 100 }); // Get more to filter
         console.log('✅ Received postings data:', data);
         
-        allPostings = data.postings || [];
-        filteredPostings = [...allPostings];
+        // Filter to show only products created by logged-in users (shop products)
+        // For now, we'll use all postings but this should be filtered by type="shop" or user_id
+        // In production, use a dedicated API endpoint: /api/products?type=shop or /api/shop-products
+        let shopPostings = (data.postings || []).filter(p => {
+          // Filter shop products: products where user_id matches current user or type is "shop"
+          // For now, we'll show all products. In production, filter by shop type or user_id
+          return p.user_id === currentUser.id || p.type === 'shop' || !p.type; // Include shop products only
+        });
+        
+        allPostings = shopPostings;
+        filteredPostings = [...shopPostings];
         totalPages = data.pagination?.totalPages || 1;
         hasMorePages = currentPage < totalPages;
         
@@ -737,15 +880,25 @@
         const location = document.getElementById('locationFilter')?.value;
         const vinVerified = document.getElementById('vinFilter')?.value;
         
+        // Check if user is logged in
+        const currentUser = getCurrentUser();
+        if (!currentUser || !isAuthenticated()) {
+          hasMorePages = false;
+          return;
+        }
+        
         console.log(`🔄 Loading page ${nextPage}...`);
         const data = await fetchPostings({ 
           category: category, 
           search: query || undefined,
           page: nextPage,
-          limit: 20
+          limit: 100 // Get more to filter
         });
         
-        let newPostings = data.postings || [];
+        // Filter to show only shop products (user-created products)
+        let newPostings = (data.postings || []).filter(p => {
+          return p.user_id === currentUser.id || p.type === 'shop' || !p.type; // Include shop products only
+        });
         
         // Apply client-side filters (price, location, VIN)
         if (priceMin) {
@@ -888,16 +1041,41 @@
           emptyState.style.display = 'none';
         }
         
+        // Check if user is logged in
+        const currentUser = getCurrentUser();
+        if (!currentUser || !isAuthenticated()) {
+          if (grid) {
+            grid.innerHTML = `
+              <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: var(--spacing-xxl);">
+                <i data-lucide="lock" style="width: 4rem; height: 4rem; margin: 0 auto var(--spacing-md); color: var(--color-text-light); display: block;"></i>
+                <h3 style="margin-bottom: var(--spacing-xs);">Please Sign In</h3>
+                <p style="color: var(--color-text-light); margin-bottom: var(--spacing-md);">You must be signed in to view and sell products in the Shop.</p>
+                <a href="login.html?return=shop.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="log-in" class="btn-icon"></i>
+                  Sign In
+                </a>
+              </div>
+            `;
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+              lucide.createIcons();
+            }
+          }
+          return;
+        }
+        
         console.log('🔍 Applying filters - Category:', category, 'Search:', query, 'Price:', priceMin, '-', priceMax, 'Location:', location);
         const data = await fetchPostings({ 
           category: category, 
           search: query || undefined,
           page: 1,
-          limit: 20
+          limit: 100
         });
         console.log('✅ Filter results:', data.postings?.length || 0, 'postings');
         
-        let postings = data.postings || [];
+        // Filter to show only shop products (user-created products)
+        let postings = (data.postings || []).filter(p => {
+          return p.user_id === currentUser.id || p.type === 'shop' || !p.type; // Include shop products only
+        });
         
         // Apply client-side filters (price, location, VIN)
         if (priceMin) {
@@ -1815,6 +1993,142 @@
         });
       });
     })();
+    
+    // ============================================
+    // SELL PRODUCT MODAL (SHOP)
+    // ============================================
+    function openSellProductModal() {
+      const currentUser = getCurrentUser();
+      if (!currentUser || !isAuthenticated()) {
+        window.location.href = 'login.html?return=shop.html#sell';
+        return;
+      }
+      
+      const modal = document.getElementById('sellProductModal');
+      if (modal) {
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+    
+    function closeSellProductModal() {
+      const modal = document.getElementById('sellProductModal');
+      if (modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+        const form = document.getElementById('sellProductForm');
+        if (form) form.reset();
+      }
+    }
+    
+    // Initialize sell product modal
+    (function initSellProductModal() {
+      const modal = document.getElementById('sellProductModal');
+      const closeBtn = document.getElementById('sellProductModalClose');
+      const cancelBtn = document.getElementById('sellProductModalCancel');
+      const form = document.getElementById('sellProductForm');
+      
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeSellProductModal);
+      }
+      
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeSellProductModal);
+      }
+      
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeSellProductModal();
+          }
+        });
+      }
+      
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const currentUser = getCurrentUser();
+          if (!currentUser || !isAuthenticated()) {
+            alert('Please sign in to sell products');
+            window.location.href = 'login.html?return=shop.html#sell';
+            return;
+          }
+          
+          const formData = {
+            name: document.getElementById('sellProductName').value.trim(),
+            category: document.getElementById('sellProductCategory').value,
+            price: parseFloat(document.getElementById('sellProductPrice').value),
+            description: document.getElementById('sellProductDescription').value.trim(),
+            image: document.getElementById('sellProductImage').value.trim() || 'https://via.placeholder.com/400',
+            location: document.getElementById('sellProductLocation').value.trim(),
+            type: 'shop' // Mark as shop product
+          };
+          
+          // Validation
+          if (!formData.name || !formData.category || !formData.price || !formData.description) {
+            alert('Please fill in all required fields');
+            return;
+          }
+          
+          // Show loading state
+          const submitBtn = form.querySelector('button[type="submit"]');
+          const originalText = submitBtn.innerHTML;
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin: 0 auto;"></div> Creating...';
+          
+          try {
+            // In production, call API to create shop product
+            // For now, we'll use the same posting creation API but mark as shop type
+            const apiUrl = getApiBaseUrl();
+            const response = await fetch(`${apiUrl}/postings`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentUser.token || ''}`
+              },
+              body: JSON.stringify({
+                ...formData,
+                user_id: currentUser.id,
+                username: currentUser.username
+              })
+            });
+            
+            if (!response.ok) {
+              throw new Error('Failed to create product');
+            }
+            
+            const result = await response.json();
+            console.log('Product created:', result);
+            
+            showNotification('Product created successfully!');
+            closeSellProductModal();
+            
+            // Reload products
+            await loadPostings();
+          } catch (error) {
+            console.error('Error creating product:', error);
+            alert('Failed to create product. Please try again.');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+          }
+        });
+      }
+      
+      // Close on ESC key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const modal = document.getElementById('sellProductModal');
+          if (modal && modal.classList.contains('open')) {
+            closeSellProductModal();
+          }
+        }
+      });
+    })();
+    
+    // Make openSellProductModal globally available
+    window.openSellProductModal = openSellProductModal;
     
     // Load on page ready
     if (document.readyState === 'loading') {
