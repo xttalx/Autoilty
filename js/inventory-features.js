@@ -311,11 +311,20 @@ async function findDealers(vehicleId) {
 
   // Show modal with loading state
   requestAnimationFrame(() => {
-    if (!modal || !modal.parentNode) {
+    if (!modal) {
+      console.error('Modal not found or could not be created');
+      alert('Unable to open dealers modal. Please refresh the page and try again.');
+      return false;
+    }
+    
+    if (!modal.parentNode) {
       document.body.appendChild(modal);
     }
     
+    // Ensure modal is visible
     modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
     document.body.style.overflow = 'hidden';
     
     const dealersList = document.getElementById('dealersList');
@@ -333,6 +342,11 @@ async function findDealers(vehicleId) {
     
     if (dealersMap) {
       dealersMap.innerHTML = '<p style="color: var(--color-text-light); text-align: center; padding: 2rem;">Loading map...</p>';
+    }
+    
+    // Re-initialize icons after setting innerHTML
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
     }
     
     // Request location and find dealers
@@ -432,6 +446,11 @@ async function requestLocationAndFindDealers(vehicle) {
     if (dealersList) {
       const isPermissionDenied = error.message.includes('permission') || error.message.includes('denied');
       
+      // Store vehicle data for button handlers
+      if (vehicle && typeof window !== 'undefined') {
+        window.currentDealerVehicle = vehicle;
+      }
+      
       dealersList.innerHTML = `
         <div style="padding: 2rem; text-align: center;">
           <i data-lucide="${isPermissionDenied ? 'map-pin-off' : 'alert-circle'}" style="width: 48px; height: 48px; color: var(--color-text-light); margin-bottom: 1rem; display: block;"></i>
@@ -440,17 +459,39 @@ async function requestLocationAndFindDealers(vehicle) {
             ${error.message || 'Unable to get your location. Please try again or enter a location manually.'}
           </p>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
-            <button class="btn btn-primary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); requestLocationAndFindDealers(${vehicle ? JSON.stringify(vehicle).replace(/"/g, '&quot;') : 'null'}); return false;" style="cursor: pointer;">
+            <button class="btn btn-primary btn-sm" id="retryLocationBtn" style="cursor: pointer;">
               <i data-lucide="refresh-cw" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
               Try Again
             </button>
-            <button class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); searchDealersByCity(${vehicle ? JSON.stringify(vehicle).replace(/"/g, '&quot;') : 'null'}); return false;" style="cursor: pointer;">
+            <button class="btn btn-secondary btn-sm" id="enterCityBtn" style="cursor: pointer;">
               <i data-lucide="map-pin" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
               Enter City
             </button>
           </div>
         </div>
       `;
+      
+      // Add event listeners for buttons
+      const retryBtn = dealersList.querySelector('#retryLocationBtn');
+      const cityBtn = dealersList.querySelector('#enterCityBtn');
+      
+      if (retryBtn) {
+        retryBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          requestLocationAndFindDealers(vehicle);
+          return false;
+        });
+      }
+      
+      if (cityBtn) {
+        cityBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          searchDealersByCity(vehicle);
+          return false;
+        });
+      }
       
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
@@ -602,11 +643,22 @@ function displayDealers(dealers, userLocation, vehicle) {
           <i data-lucide="search-x" style="width: 48px; height: 48px; color: var(--color-text-light); margin-bottom: 1rem; display: block;"></i>
           <h4 style="margin-bottom: 0.5rem;">No Dealers Found</h4>
           <p style="color: var(--color-text-light); font-size: 0.875rem;">No car dealers found near your location. Try expanding the search radius or enter a city name.</p>
-          <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="searchDealersByCity(${vehicle ? JSON.stringify(vehicle).replace(/"/g, '&quot;') : 'null'})">
+          <button class="btn btn-primary btn-sm" id="searchByCityBtn" style="margin-top: 1rem;">
             Search by City
           </button>
         </div>
       `;
+      
+      // Add event listener for search by city button
+      const searchCityBtn = dealersList.querySelector('#searchByCityBtn');
+      if (searchCityBtn) {
+        searchCityBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          searchDealersByCity(vehicle);
+          return false;
+        });
+      }
       
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
@@ -796,6 +848,11 @@ function openDealerInMaps(placeId, dealerName) {
 }
 
 async function searchDealersByCity(vehicle) {
+  // Get vehicle from parameter or from window storage
+  if (!vehicle && typeof window !== 'undefined' && window.currentDealerVehicle) {
+    vehicle = window.currentDealerVehicle;
+  }
+  
   const city = prompt('Enter a city name to search for dealers:');
   if (!city) return;
   
@@ -840,11 +897,22 @@ async function searchDealersByCity(vehicle) {
           <i data-lucide="alert-circle" style="width: 48px; height: 48px; color: #ef4444; margin-bottom: 1rem; display: block;"></i>
           <h4 style="margin-bottom: 0.5rem;">Error</h4>
           <p style="color: var(--color-text-light); font-size: 0.875rem;">${error.message || 'Unable to find dealers in that city. Please try again.'}</p>
-          <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="searchDealersByCity(${vehicle ? JSON.stringify(vehicle).replace(/"/g, '&quot;') : 'null'})">
+          <button class="btn btn-primary btn-sm" id="tryAnotherCityBtn" style="margin-top: 1rem;">
             Try Another City
           </button>
         </div>
       `;
+      
+      // Add event listener for try another city button
+      const tryAnotherBtn = dealersList.querySelector('#tryAnotherCityBtn');
+      if (tryAnotherBtn) {
+        tryAnotherBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          searchDealersByCity(vehicle || (typeof window !== 'undefined' ? window.currentDealerVehicle : null));
+          return false;
+        });
+      }
       
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
@@ -880,8 +948,8 @@ function createDealersModal() {
   });
   
   modalContent.innerHTML = `
-      <button id="dealersModalClose" type="button" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-text-light); z-index: 10001; padding: 0.5rem; display: flex; align-items: center; justify-content: center;" aria-label="Close modal">
-        <i data-lucide="x"></i>
+      <button id="dealersModalClose" type="button" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-text-light); z-index: 10001; padding: 0.5rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;" aria-label="Close modal">
+        <i data-lucide="x" style="pointer-events: none;"></i>
       </button>
       <h2 style="margin-bottom: 1.5rem; font-size: 1.75rem;">Find Local Dealers</h2>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;" id="dealersModalContent">
@@ -918,17 +986,38 @@ function createDealersModal() {
   
   modal.appendChild(modalContent);
   
-  // Add click handler for close button immediately
+  // Add click handler for close button - use event delegation and multiple methods
   const closeBtn = modalContent.querySelector('#dealersModalClose');
   if (closeBtn) {
-    closeBtn.addEventListener('click', (e) => {
+    // Remove any existing listeners by cloning
+    const newCloseBtn = closeBtn.cloneNode(true);
+    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+    
+    // Add click handler
+    newCloseBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
       closeDealersModal();
       return false;
     }, true); // Use capture phase
+    
+    // Also handle clicks on the icon inside
+    const icon = newCloseBtn.querySelector('i');
+    if (icon) {
+      icon.style.pointerEvents = 'none'; // Let clicks pass through to button
+    }
   }
+  
+  // Also use event delegation on the modal content for close button
+  modalContent.addEventListener('click', (e) => {
+    if (e.target.closest('#dealersModalClose') || e.target.id === 'dealersModalClose') {
+      e.preventDefault();
+      e.stopPropagation();
+      closeDealersModal();
+      return false;
+    }
+  }, true);
   
   // Prevent form submission or navigation
   modal.addEventListener('submit', (e) => {
@@ -981,9 +1070,12 @@ function openGoogleMaps(location) {
   window.open(url, '_blank');
 }
 
-function closeDealersModal() {
+function closeDealersModal(e) {
   // Prevent any navigation
-  if (typeof event !== 'undefined' && event) {
+  if (e && typeof e.preventDefault === 'function') {
+    e.preventDefault();
+    e.stopPropagation();
+  } else if (typeof event !== 'undefined' && event) {
     event.preventDefault();
     event.stopPropagation();
   }
@@ -993,6 +1085,11 @@ function closeDealersModal() {
     modal.style.display = 'none';
     document.body.style.overflow = '';
     console.log('✅ Dealers modal closed');
+    
+    // Clean up vehicle reference
+    if (typeof window !== 'undefined') {
+      window.currentDealerVehicle = null;
+    }
   }
   return false;
 }
