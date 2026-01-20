@@ -261,188 +261,596 @@ function close360View() {
 // ============================================
 // FIND DEALERS (GOOGLE MAPS INTEGRATION)
 // ============================================
-function findDealers(vehicleId) {
-  // Prevent any default behavior and navigation
+async function findDealers(vehicleId) {
+  // Prevent any default behavior and navigation - CRITICAL: Do not redirect
   try {
     if (typeof event !== 'undefined' && event) {
       event.preventDefault();
       event.stopPropagation();
+      event.stopImmediatePropagation();
     }
   } catch (e) {
     // Event might not be available in all contexts
   }
   
+  // Prevent any navigation or redirect
+  if (typeof window !== 'undefined') {
+    window.history.pushState(null, '', window.location.href);
+  }
+  
   console.log('🔍 findDealers called with vehicleId:', vehicleId);
   
-  if (!vehicleId) {
-    console.error('❌ Vehicle ID is required');
-    alert('Error: Vehicle ID not found. Please try again.');
-    return false;
-  }
-  
-  // Try to find vehicle from DOM first (most reliable)
-  const card = document.querySelector(`[data-vehicle-id="${vehicleId}"]`);
+  // Find vehicle info (optional, for display purposes)
   let vehicle = null;
-  
-  if (card && card.dataset.vehicleData) {
-    try {
-      const vehicleDataStr = card.dataset.vehicleData.replace(/&apos;/g, "'").replace(/&quot;/g, '"');
-      vehicle = JSON.parse(vehicleDataStr);
-      console.log('✅ Found vehicle from DOM data:', vehicle.make, vehicle.model);
-    } catch (e) {
-      console.error('Error parsing vehicle data from DOM:', e);
+  if (vehicleId) {
+    const card = document.querySelector(`[data-vehicle-id="${vehicleId}"]`);
+    if (card && card.dataset.vehicleData) {
+      try {
+        const vehicleDataStr = card.dataset.vehicleData.replace(/&apos;/g, "'").replace(/&quot;/g, '"');
+        vehicle = JSON.parse(vehicleDataStr);
+      } catch (e) {
+        console.error('Error parsing vehicle data:', e);
+      }
+    }
+    if (!vehicle && typeof window !== 'undefined' && window.vehiclesCache) {
+      vehicle = window.vehiclesCache.find(v => v && v.id === vehicleId);
     }
   }
   
-  // Fallback: Try to find in window.vehiclesCache (from inventory page)
-  if (!vehicle && typeof window !== 'undefined' && window.vehiclesCache) {
-    vehicle = window.vehiclesCache.find(v => v && v.id === vehicleId);
-    if (vehicle) {
-      console.log('✅ Found vehicle from window.vehiclesCache:', vehicle.make, vehicle.model);
-    }
-  }
-  
-  // Fallback: Try local vehiclesCache variable
-  if (!vehicle && typeof vehiclesCache !== 'undefined' && Array.isArray(vehiclesCache) && vehiclesCache.length > 0) {
-    vehicle = vehiclesCache.find(v => v && v.id === vehicleId);
-    if (vehicle) {
-      console.log('✅ Found vehicle from local cache:', vehicle.make, vehicle.model);
-    }
-  }
-  
-  // Fallback: Check window.currentPostings (from marketplace)
-  if (!vehicle && typeof window !== 'undefined' && window.currentPostings) {
-    vehicle = window.currentPostings.find(v => v && v.id === vehicleId);
-    if (vehicle) {
-      console.log('✅ Found vehicle from currentPostings:', vehicle.make || vehicle.title);
-    }
-  }
-  
-  // If still not found, create a basic vehicle object from the ID
-  if (!vehicle) {
-    console.warn('Vehicle not found, using fallback data for vehicleId:', vehicleId);
-    // Extract make and model from vehicle ID if possible (format: make-model-variant-id)
-    const parts = vehicleId.split('-');
-    vehicle = {
-      id: vehicleId,
-      make: parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1).replace(/([A-Z])/g, ' $1').trim() : 'Vehicle',
-      model: parts[1] ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1).replace(/([A-Z])/g, ' $1').trim() : 'Model',
-      variant: parts[2] || '',
-      dealer_locations: ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Pune', 'Kolkata']
-    };
-  }
-
+  // Create or get modal
   let modal = document.getElementById('dealersModal');
   if (!modal) {
     modal = createDealersModal();
     if (modal) {
       document.body.appendChild(modal);
-      console.log('✅ Dealers modal created and added to DOM');
     } else {
-      console.error('❌ Failed to create dealers modal');
       alert('Unable to open dealers modal. Please try again.');
       return false;
     }
   }
 
-  const locations = vehicle.dealer_locations || vehicle.dealerLocations || ['Mumbai', 'Delhi', 'Bangalore'];
-  const mapContainer = document.getElementById('dealersMap');
-  const dealersList = document.getElementById('dealersList');
+  // Show modal with loading state
+  requestAnimationFrame(() => {
+    if (!modal || !modal.parentNode) {
+      document.body.appendChild(modal);
+    }
+    
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    const dealersList = document.getElementById('dealersList');
+    const dealersMap = document.getElementById('dealersMap');
+    
+    // Show loading state
+    if (dealersList) {
+      dealersList.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center;">
+          <div class="loading-spinner" style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
+          <p style="color: var(--color-text-light);">Requesting location permission...</p>
+        </div>
+      `;
+    }
+    
+    if (dealersMap) {
+      dealersMap.innerHTML = '<p style="color: var(--color-text-light); text-align: center; padding: 2rem;">Loading map...</p>';
+    }
+    
+    // Request location and find dealers
+    requestLocationAndFindDealers(vehicle);
+  });
+  
+  return false;
+}
 
-  if (dealersList) {
-    dealersList.innerHTML = locations.map((location, index) => {
-      const safeLocation = escapeHtml(location);
-      const vehicleMake = escapeHtml(vehicle.make || 'Vehicle');
-      const vehicleModel = escapeHtml(vehicle.model || '');
-      return `
-        <div class="dealer-item" style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 1rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='white'" onclick="if(typeof showDealerOnMap === 'function') { event.stopPropagation(); event.preventDefault(); showDealerOnMap(${index}, '${safeLocation}'); return false; }">
-          <h4 style="margin: 0 0 0.5rem 0; font-size: 1.125rem;">${vehicleMake} ${vehicleModel} - ${safeLocation}</h4>
-          <p style="margin: 0; color: var(--color-text-light); font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
-            <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i>
-            ${safeLocation}, India
+// Request location permission and find dealers
+async function requestLocationAndFindDealers(vehicle) {
+  const dealersList = document.getElementById('dealersList');
+  const dealersMap = document.getElementById('dealersMap');
+  
+  try {
+    // Request location permission
+    if (!navigator.geolocation) {
+      throw new Error('Geolocation is not supported by your browser. Please enter a city name instead.');
+    }
+    
+    // Update loading state - requesting permission
+    if (dealersList) {
+      dealersList.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center;">
+          <div class="loading-spinner" style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
+          <p style="color: var(--color-text-light); margin-bottom: 0.5rem; font-weight: 500;">Requesting location permission...</p>
+          <p style="color: var(--color-text-light); font-size: 0.875rem;">Please allow location access in your browser</p>
+        </div>
+      `;
+    }
+    
+    // Get user's location with explicit permission request
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        resolve, 
+        (error) => {
+          // Handle different error types
+          let errorMessage = 'Unable to get your location.';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = 'Location permission denied. Please allow location access or enter a city name manually.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = 'Location information is unavailable. Please try entering a city name.';
+              break;
+            case error.TIMEOUT:
+              errorMessage = 'Location request timed out. Please try again or enter a city name.';
+              break;
+            default:
+              errorMessage = error.message || 'Unable to get your location. Please enter a city name.';
+          }
+          reject(new Error(errorMessage));
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000, // 15 seconds timeout
+          maximumAge: 0 // Don't use cached location
+        }
+      );
+    });
+    
+    const userLocation = {
+      lat: position.coords.latitude,
+      lng: position.coords.longitude
+    };
+    
+    console.log('✅ Location obtained:', userLocation);
+    
+    // Update loading state - searching for dealers
+    if (dealersList) {
+      dealersList.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center;">
+          <div class="loading-spinner" style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
+          <p style="color: var(--color-text-light);">Searching for local dealers...</p>
+        </div>
+      `;
+    }
+    
+    // Load Google Places API if not already loaded
+    try {
+      await loadGooglePlacesAPI();
+    } catch (apiError) {
+      console.error('❌ Error loading Google Places API:', apiError);
+      throw new Error('Failed to load Google Maps API. Please check your API key configuration.');
+    }
+    
+    // Search for car dealers using Google Places API
+    const dealers = await searchNearbyDealers(userLocation);
+    
+    // Display results
+    displayDealers(dealers, userLocation, vehicle);
+    
+  } catch (error) {
+    console.error('❌ Error getting location:', error);
+    
+    // Show error message with option to enter location manually
+    if (dealersList) {
+      const isPermissionDenied = error.message.includes('permission') || error.message.includes('denied');
+      
+      dealersList.innerHTML = `
+        <div style="padding: 2rem; text-align: center;">
+          <i data-lucide="${isPermissionDenied ? 'map-pin-off' : 'alert-circle'}" style="width: 48px; height: 48px; color: var(--color-text-light); margin-bottom: 1rem; display: block;"></i>
+          <h4 style="margin-bottom: 0.5rem; color: var(--color-text);">${isPermissionDenied ? 'Location Permission Required' : 'Location Error'}</h4>
+          <p style="color: var(--color-text-light); margin-bottom: 1rem; font-size: 0.875rem; line-height: 1.5;">
+            ${error.message || 'Unable to get your location. Please try again or enter a location manually.'}
           </p>
-          <button class="btn btn-primary btn-sm" style="margin-top: 0.5rem;" onclick="event.stopPropagation(); event.preventDefault(); if(typeof openGoogleMaps === 'function') { openGoogleMaps('${safeLocation}'); } return false;">
-            View on Google Maps
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+            <button class="btn btn-primary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); requestLocationAndFindDealers(${vehicle ? JSON.stringify(vehicle).replace(/"/g, '&quot;') : 'null'}); return false;" style="cursor: pointer;">
+              <i data-lucide="refresh-cw" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
+              Try Again
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="event.preventDefault(); event.stopPropagation(); searchDealersByCity(${vehicle ? JSON.stringify(vehicle).replace(/"/g, '&quot;') : 'null'}); return false;" style="cursor: pointer;">
+              <i data-lucide="map-pin" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
+              Enter City
+            </button>
+          </div>
+        </div>
+      `;
+      
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+    
+    if (dealersMap) {
+      dealersMap.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; text-align: center;">
+          <i data-lucide="map" style="width: 48px; height: 48px; color: var(--color-text-light); margin-bottom: 1rem;"></i>
+          <p style="color: var(--color-text-light);">Map will appear after location is granted</p>
+        </div>
+      `;
+      
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+  }
+}
+
+// Load Google Places API script
+function loadGooglePlacesAPI() {
+  return new Promise((resolve, reject) => {
+    // Check if already loaded
+    if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+      resolve();
+      return;
+    }
+    
+    // Get API key from config.js or window variable
+    const GOOGLE_MAPS_API_KEY = window.GOOGLE_MAPS_API_KEY || 
+                                 (typeof getGoogleMapsApiKey === 'function' ? getGoogleMapsApiKey() : '') ||
+                                 '';
+    
+    if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
+      console.error('⚠️ Google Maps API key not configured');
+      reject(new Error('Google Maps API key not configured. Please configure it in config.js'));
+      return;
+    }
+    
+    // Check if script is already being loaded
+    const existingScript = document.querySelector(`script[src*="maps.googleapis.com/maps/api/js"]`);
+    if (existingScript) {
+      // Wait for it to load
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
+      const checkLoaded = setInterval(() => {
+        attempts++;
+        if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+          clearInterval(checkLoaded);
+          resolve();
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkLoaded);
+          reject(new Error('Google Maps API failed to load within timeout'));
+        }
+      }, 100);
+      return;
+    }
+    
+    // Load the script
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMapsPlaces`;
+    script.async = true;
+    script.defer = true;
+    
+    // Set up callback
+    window.initGoogleMapsPlaces = () => {
+      if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+        console.log('✅ Google Maps Places API loaded successfully');
+        resolve();
+      } else {
+        reject(new Error('Google Maps API failed to initialize'));
+      }
+    };
+    
+    script.onerror = () => {
+      console.error('❌ Failed to load Google Maps API script');
+      reject(new Error('Failed to load Google Maps API'));
+    };
+    
+    document.head.appendChild(script);
+    
+    // Timeout fallback
+    setTimeout(() => {
+      if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+        reject(new Error('Google Maps API loading timeout'));
+      }
+    }, 10000); // 10 second timeout
+  });
+}
+
+// Search for nearby car dealers using Google Places API
+async function searchNearbyDealers(userLocation) {
+  return new Promise((resolve, reject) => {
+    if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+      reject(new Error('Google Maps API not loaded'));
+      return;
+    }
+    
+    const map = new google.maps.Map(document.createElement('div'));
+    const service = new google.maps.places.PlacesService(map);
+    
+    const request = {
+      location: new google.maps.LatLng(userLocation.lat, userLocation.lng),
+      radius: 50000, // 50km radius
+      type: 'car_dealer',
+      keyword: 'car dealer automotive'
+    };
+    
+    service.nearbySearch(request, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+        // Get detailed info for each place
+        const dealersWithDetails = results.slice(0, 10).map(result => ({
+          id: result.place_id,
+          name: result.name,
+          address: result.vicinity || result.formatted_address,
+          location: {
+            lat: result.geometry.location.lat(),
+            lng: result.geometry.location.lng()
+          },
+          rating: result.rating || null,
+          user_ratings_total: result.user_ratings_total || 0,
+          open_now: result.opening_hours ? result.opening_hours.open_now : null,
+          icon: result.icon,
+          photo: result.photos && result.photos[0] ? result.photos[0].getUrl({ maxWidth: 400 }) : null
+        }));
+        
+        resolve(dealersWithDetails);
+      } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+        resolve([]);
+      } else {
+        reject(new Error(`Places API error: ${status}`));
+      }
+    });
+  });
+}
+
+// Display dealers in the modal
+function displayDealers(dealers, userLocation, vehicle) {
+  const dealersList = document.getElementById('dealersList');
+  const dealersMap = document.getElementById('dealersMap');
+  
+  // Display dealer list
+  if (dealersList) {
+    if (dealers.length === 0) {
+      dealersList.innerHTML = `
+        <div style="padding: 2rem; text-align: center;">
+          <i data-lucide="search-x" style="width: 48px; height: 48px; color: var(--color-text-light); margin-bottom: 1rem; display: block;"></i>
+          <h4 style="margin-bottom: 0.5rem;">No Dealers Found</h4>
+          <p style="color: var(--color-text-light); font-size: 0.875rem;">No car dealers found near your location. Try expanding the search radius or enter a city name.</p>
+          <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="searchDealersByCity(${vehicle ? JSON.stringify(vehicle).replace(/"/g, '&quot;') : 'null'})">
+            Search by City
           </button>
         </div>
       `;
-    }).join('');
-  }
-
-  // Show modal first
-  // Show modal - use requestAnimationFrame to ensure DOM is ready
-  try {
-    requestAnimationFrame(() => {
-      if (!modal || !modal.parentNode) {
-        console.error('❌ Modal not in DOM, appending...');
-        document.body.appendChild(modal);
+      
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
       }
-      
-      modal.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-      
-      // Prevent any clicks on modal from causing navigation
-      modal.style.pointerEvents = 'auto';
-      
-      console.log('✅ Modal displayed');
-      
-      // Initialize Google Maps after modal is shown
-      setTimeout(() => {
-        try {
-          initializeGoogleMap(locations);
-        } catch (mapError) {
-          console.error('❌ Error initializing map:', mapError);
-          const mapContainer = document.getElementById('dealersMap');
-          if (mapContainer) {
-            mapContainer.innerHTML = `
-              <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; text-align: center;">
-                <i data-lucide="alert-circle" style="width: 48px; height: 48px; color: var(--color-text-light); margin-bottom: 1rem;"></i>
-                <p style="color: var(--color-text-light);">Map could not be loaded</p>
-                <button class="btn btn-primary btn-sm" onclick="if(typeof openGoogleMaps === 'function') { openGoogleMaps('${locations[0] || 'India'}'); } return false;" style="margin-top: 1rem;">
-                  Open in Google Maps
-                </button>
-              </div>
-            `;
-            if (typeof lucide !== 'undefined' && lucide.createIcons) {
-              lucide.createIcons();
-            }
-          }
-        }
-      }, 200);
-      
-      // Re-initialize icons after content is added
-      setTimeout(() => {
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
-        }
+    } else {
+      dealersList.innerHTML = dealers.map((dealer, index) => {
+        const safeName = escapeHtml(dealer.name);
+        const safeAddress = escapeHtml(dealer.address);
+        const ratingStars = dealer.rating ? '★'.repeat(Math.round(dealer.rating)) : '';
+        const openStatus = dealer.open_now === true ? '<span style="color: #22c55e; font-size: 0.75rem; font-weight: 600;">● Open Now</span>' : 
+                          dealer.open_now === false ? '<span style="color: #ef4444; font-size: 0.75rem; font-weight: 600;">● Closed</span>' : '';
         
-        // Re-attach close button handler
-        const closeBtn = modal.querySelector('#dealersModalClose');
-        if (closeBtn) {
-          // Remove old listeners
-          const newCloseBtn = closeBtn.cloneNode(true);
-          closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-          
-          newCloseBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            closeDealersModal();
-            return false;
-          }, true);
-        }
-      }, 300);
-    });
-  } catch (error) {
-    console.error('❌ Error showing dealers modal:', error);
-    alert('Error opening Find Dealers. Please try again.');
-    return false;
+        return `
+          <div class="dealer-item" style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 1rem; cursor: pointer; transition: background 0.2s;" 
+               onmouseover="this.style.background='#f5f5f5'; highlightDealerOnMap('${dealer.id}');" 
+               onmouseout="this.style.background='white';"
+               onclick="showDealerOnMap('${dealer.id}', ${JSON.stringify(dealer).replace(/"/g, '&quot;')})">
+            ${dealer.photo ? `<img src="${dealer.photo}" alt="${safeName}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 0.75rem;">` : ''}
+            <h4 style="margin: 0 0 0.5rem 0; font-size: 1.125rem; color: var(--color-text);">${safeName}</h4>
+            <p style="margin: 0 0 0.5rem 0; color: var(--color-text-light); font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i>
+              ${safeAddress}
+            </p>
+            ${dealer.rating ? `
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                <span style="color: #fbbf24;">${ratingStars}</span>
+                <span style="color: var(--color-text-light);">${dealer.rating.toFixed(1)} (${dealer.user_ratings_total} reviews)</span>
+              </div>
+            ` : ''}
+            ${openStatus ? `<div style="margin-bottom: 0.5rem;">${openStatus}</div>` : ''}
+            <button class="btn btn-primary btn-sm" style="margin-top: 0.5rem; width: 100%;" onclick="event.stopPropagation(); openDealerInMaps('${dealer.id}', '${safeName}');">
+              View on Google Maps
+            </button>
+          </div>
+        `;
+      }).join('');
+      
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
   }
   
-  console.log('✅ Dealers modal opened for vehicle:', vehicle.make, vehicle.model);
+  // Display map with markers
+  if (dealersMap && dealers.length > 0) {
+    initializeDealersMap(dealers, userLocation);
+  } else if (dealersMap) {
+    dealersMap.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; text-align: center;">
+        <i data-lucide="map" style="width: 48px; height: 48px; color: var(--color-text-light); margin-bottom: 1rem;"></i>
+        <p style="color: var(--color-text-light);">Map will appear when dealers are found</p>
+      </div>
+    `;
+    
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+  }
+}
+
+// Initialize map with dealer markers
+function initializeDealersMap(dealers, userLocation) {
+  const mapContainer = document.getElementById('dealersMap');
+  if (!mapContainer) return;
   
-  // Explicitly prevent navigation - return false
-  return false;
+  const GOOGLE_MAPS_API_KEY = window.GOOGLE_MAPS_API_KEY || '';
+  
+  if (typeof google === 'undefined' || !google.maps) {
+    // Fallback to embed API
+    if (GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY') {
+      const firstDealer = dealers[0];
+      const query = encodeURIComponent(`${firstDealer.location.lat},${firstDealer.location.lng}`);
+      const embedUrl = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${query}&zoom=13`;
+      
+      mapContainer.innerHTML = `
+        <iframe 
+          width="100%" 
+          height="100%" 
+          style="border:0; border-radius: 8px;" 
+          loading="lazy" 
+          allowfullscreen
+          src="${embedUrl}"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Dealer locations map">
+        </iframe>
+      `;
+    }
+    return;
+  }
+  
+  // Use Google Maps JavaScript API
+  const map = new google.maps.Map(mapContainer, {
+    center: { lat: userLocation.lat, lng: userLocation.lng },
+    zoom: 13,
+    styles: [
+      {
+        featureType: "poi",
+        elementType: "labels",
+        stylers: [{ visibility: "off" }]
+      }
+    ]
+  });
+  
+  // Store map and markers globally for highlighting
+  window.dealersMapInstance = map;
+  window.dealersMarkers = {};
+  
+  // Add user location marker
+  new google.maps.Marker({
+    position: userLocation,
+    map: map,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 8,
+      fillColor: '#4285F4',
+      fillOpacity: 1,
+      strokeColor: '#ffffff',
+      strokeWeight: 2
+    },
+    title: 'Your Location'
+  });
+  
+  // Add dealer markers
+  dealers.forEach(dealer => {
+    const marker = new google.maps.Marker({
+      position: { lat: dealer.location.lat, lng: dealer.location.lng },
+      map: map,
+      title: dealer.name,
+      animation: google.maps.Animation.DROP
+    });
+    
+    const infoWindow = new google.maps.InfoWindow({
+      content: `
+        <div style="padding: 0.5rem;">
+          <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem;">${escapeHtml(dealer.name)}</h4>
+          <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem; color: #666;">${escapeHtml(dealer.address)}</p>
+          ${dealer.rating ? `<p style="margin: 0; font-size: 0.875rem;">Rating: ${dealer.rating.toFixed(1)} ⭐</p>` : ''}
+          <button onclick="openDealerInMaps('${dealer.id}', '${escapeHtml(dealer.name)}')" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: var(--color-primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.875rem;">
+            View on Google Maps
+          </button>
+        </div>
+      `
+    });
+    
+    marker.addListener('click', () => {
+      infoWindow.open(map, marker);
+    });
+    
+    window.dealersMarkers[dealer.id] = { marker, infoWindow };
+  });
+  
+  // Fit bounds to show all markers
+  if (dealers.length > 1) {
+    const bounds = new google.maps.LatLngBounds();
+    bounds.extend(userLocation);
+    dealers.forEach(dealer => {
+      bounds.extend({ lat: dealer.location.lat, lng: dealer.location.lng });
+    });
+    map.fitBounds(bounds);
+  }
+}
+
+// Helper functions
+function highlightDealerOnMap(dealerId) {
+  if (window.dealersMarkers && window.dealersMarkers[dealerId]) {
+    const { marker, infoWindow } = window.dealersMarkers[dealerId];
+    marker.setAnimation(google.maps.Animation.BOUNCE);
+    setTimeout(() => marker.setAnimation(null), 750);
+    infoWindow.open(window.dealersMapInstance, marker);
+  }
+}
+
+function showDealerOnMap(dealerId, dealer) {
+  if (window.dealersMarkers && window.dealersMarkers[dealerId]) {
+    const { marker, infoWindow } = window.dealersMarkers[dealerId];
+    window.dealersMapInstance.setCenter(marker.getPosition());
+    window.dealersMapInstance.setZoom(16);
+    infoWindow.open(window.dealersMapInstance, marker);
+    marker.setAnimation(google.maps.Animation.BOUNCE);
+    setTimeout(() => marker.setAnimation(null), 1500);
+  }
+}
+
+function openDealerInMaps(placeId, dealerName) {
+  const url = `https://www.google.com/maps/place/?q=place_id:${placeId}`;
+  window.open(url, '_blank');
+}
+
+async function searchDealersByCity(vehicle) {
+  const city = prompt('Enter a city name to search for dealers:');
+  if (!city) return;
+  
+  const dealersList = document.getElementById('dealersList');
+  if (dealersList) {
+    dealersList.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center;">
+        <div class="loading-spinner" style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
+        <p style="color: var(--color-text-light);">Searching for dealers in ${city}...</p>
+      </div>
+    `;
+  }
+  
+  try {
+    await loadGooglePlacesAPI();
+    
+    // Geocode the city to get coordinates
+    const geocoder = new google.maps.Geocoder();
+    const geocodeResult = await new Promise((resolve, reject) => {
+      geocoder.geocode({ address: city }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          resolve(results[0].geometry.location);
+        } else {
+          reject(new Error('City not found'));
+        }
+      });
+    });
+    
+    const cityLocation = {
+      lat: geocodeResult.lat(),
+      lng: geocodeResult.lng()
+    };
+    
+    const dealers = await searchNearbyDealers(cityLocation);
+    displayDealers(dealers, cityLocation, vehicle);
+    
+  } catch (error) {
+    console.error('Error searching by city:', error);
+    if (dealersList) {
+      dealersList.innerHTML = `
+        <div style="padding: 2rem; text-align: center;">
+          <i data-lucide="alert-circle" style="width: 48px; height: 48px; color: #ef4444; margin-bottom: 1rem; display: block;"></i>
+          <h4 style="margin-bottom: 0.5rem;">Error</h4>
+          <p style="color: var(--color-text-light); font-size: 0.875rem;">${error.message || 'Unable to find dealers in that city. Please try again.'}</p>
+          <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="searchDealersByCity(${vehicle ? JSON.stringify(vehicle).replace(/"/g, '&quot;') : 'null'})">
+            Try Another City
+          </button>
+        </div>
+      `;
+      
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+  }
 }
 
 function createDealersModal() {
@@ -475,11 +883,11 @@ function createDealersModal() {
       <button id="dealersModalClose" type="button" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-text-light); z-index: 10001; padding: 0.5rem; display: flex; align-items: center; justify-content: center;" aria-label="Close modal">
         <i data-lucide="x"></i>
       </button>
-      <h2 style="margin-bottom: 1.5rem; font-size: 1.75rem;">Find Dealers</h2>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <h2 style="margin-bottom: 1.5rem; font-size: 1.75rem;">Find Local Dealers</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;" id="dealersModalContent">
         <div>
           <h3 style="margin-bottom: 1rem; font-size: 1.125rem;">Dealer Locations</h3>
-          <div id="dealersList"></div>
+          <div id="dealersList" style="max-height: 60vh; overflow-y: auto;"></div>
         </div>
         <div>
           <h3 style="margin-bottom: 1rem; font-size: 1.125rem;">Map</h3>
@@ -489,6 +897,24 @@ function createDealersModal() {
         </div>
       </div>
     `;
+  
+  // Make modal responsive on mobile
+  const style = document.createElement('style');
+  style.textContent = `
+    @media (max-width: 768px) {
+      #dealersModalContent {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+      }
+      #dealersMap {
+        height: 300px !important;
+      }
+      #dealersList {
+        max-height: 40vh !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
   
   modal.appendChild(modalContent);
   
@@ -529,105 +955,20 @@ function createDealersModal() {
   return modal;
 }
 
-function initializeGoogleMap(locations) {
-  // Get API key from config.js file (public/config.js) or environment
-  const GOOGLE_MAPS_API_KEY = window.GOOGLE_MAPS_API_KEY || '';
-  
-  console.log('🗺️  Initializing Google Map with API key:', GOOGLE_MAPS_API_KEY ? 'Present' : 'Missing');
-  console.log('📍 Locations:', locations);
-  
-  const mapContainer = document.getElementById('dealersMap');
-  if (!mapContainer) {
-    console.error('Map container not found');
-    return;
-  }
-  
-  // Option 1: Using Google Maps Embed API (simpler, no JavaScript SDK needed)
-  // Check if API key is valid (starts with AIza and is long enough)
-  const isValidApiKey = GOOGLE_MAPS_API_KEY && 
-      GOOGLE_MAPS_API_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY' && 
-      GOOGLE_MAPS_API_KEY !== 'YOUR_API_KEY_HERE' &&
-      GOOGLE_MAPS_API_KEY.length > 30 &&
-      GOOGLE_MAPS_API_KEY.startsWith('AIza');
-  
-  // Option 2: Check if Google Maps JavaScript API is available
-  const hasGoogleMapsJS = typeof google !== 'undefined' && google.maps;
-  
-  if (isValidApiKey) {
-    // Use Embed API (simpler, works without JavaScript SDK)
-    const firstLocation = locations[0] || 'India';
-    const query = encodeURIComponent(firstLocation + ', India');
-    const embedUrl = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${query}`;
-    
-    console.log('✅ Loading Google Maps embed for:', firstLocation);
-    
-    mapContainer.innerHTML = `
-      <iframe 
-        width="100%" 
-        height="100%" 
-        style="border:0; border-radius: 8px;" 
-        loading="lazy" 
-        allowfullscreen
-        src="${embedUrl}"
-        referrerpolicy="no-referrer-when-downgrade"
-        title="Dealer locations map">
-      </iframe>
-    `;
-  } else if (hasGoogleMapsJS) {
-    // Use JavaScript API (more features, interactive maps with markers)
-    console.log('✅ Using Google Maps JavaScript API');
-    const map = new google.maps.Map(mapContainer, {
-      center: { lat: 20.5937, lng: 78.9629 }, // Center of India
-      zoom: 5,
-      styles: [
-        {
-          featureType: "poi",
-          elementType: "labels",
-          stylers: [{ visibility: "off" }]
-        }
-      ]
-    });
-    
-    // Add markers for each dealer location
-    const geocoder = new google.maps.Geocoder();
-    locations.forEach(location => {
-      geocoder.geocode({ address: location + ', India' }, (results, status) => {
-        if (status === 'OK' && results[0]) {
-          const marker = new google.maps.Marker({
-            map: map,
-            position: results[0].geometry.location,
-            title: location
-          });
-          
-          const infoWindow = new google.maps.InfoWindow({
-            content: `<strong>${location}</strong><br>Dealer Location`
-          });
-          
-          marker.addListener('click', () => {
-            infoWindow.open(map, marker);
-          });
-        }
-      });
-    });
-  } else {
-    // Fallback: Show placeholder with links to Google Maps
-    console.warn('⚠️  Google Maps API key not configured or invalid. Showing fallback.');
-    mapContainer.innerHTML = `
-      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; text-align: center;">
-        <i data-lucide="map-pin" style="width: 48px; height: 48px; color: var(--color-text-light); margin-bottom: 1rem;"></i>
-        <p style="color: var(--color-text-light); margin-bottom: 0.5rem; font-weight: 500;">Google Maps</p>
-        <p style="font-size: 0.875rem; color: var(--color-text-light); margin-bottom: 1rem;">Click below to view locations on Google Maps</p>
-        ${locations.map((loc, idx) => `
-          <button class="btn btn-primary btn-sm" onclick="if(typeof openGoogleMaps === 'function') { openGoogleMaps('${escapeHtml(loc)}'); } return false;" style="width: 100%; margin-bottom: 0.5rem;">
-            View ${escapeHtml(loc)} on Maps
-          </button>
-        `).join('')}
-      </div>
-    `;
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons();
+// Add CSS animation for loading spinner
+if (!document.querySelector('#loadingSpinnerStyle')) {
+  const style = document.createElement('style');
+  style.id = 'loadingSpinnerStyle';
+  style.textContent = `
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-  }
+    .loading-spinner {
+      animation: spin 1s linear infinite;
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 function showDealerOnMap(index, location) {
@@ -1036,6 +1377,10 @@ if (typeof window !== 'undefined') {
   window.closeDealersModal = closeDealersModal;
   window.showDealerOnMap = showDealerOnMap;
   window.openGoogleMaps = openGoogleMaps;
+  window.openDealerInMaps = openDealerInMaps;
+  window.highlightDealerOnMap = highlightDealerOnMap;
+  window.requestLocationAndFindDealers = requestLocationAndFindDealers;
+  window.searchDealersByCity = searchDealersByCity;
   window.showPriceHistory = showPriceHistory;
   window.closePriceHistoryModal = closePriceHistoryModal;
   window.showSimilarVehicles = showSimilarVehicles;
