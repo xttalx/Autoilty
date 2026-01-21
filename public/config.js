@@ -48,6 +48,17 @@ window.API_URL = window.API_URL || (() => {
 //
 window.GOOGLE_MAPS_API_KEY = window.GOOGLE_MAPS_API_KEY || 'AIzaSyD3Q4MGmDsCIt8-h-jAHLU4aEWGNaZdWNk';
 
+// Supabase Configuration for Realtime Notifications
+// 
+// To enable Supabase Realtime for notifications:
+// 1. Get your Supabase URL and anon key from: https://app.supabase.com/project/YOUR_PROJECT/settings/api
+// 2. Replace 'YOUR_SUPABASE_URL' and 'YOUR_SUPABASE_ANON_KEY' below with your actual values
+// 3. Ensure Realtime is enabled in Supabase Dashboard → Database → Replication
+// 4. Enable Realtime for the notifications table
+//
+window.SUPABASE_URL = window.SUPABASE_URL || process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL';
+window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+
 // Alternative: Load Google Maps JavaScript API (for interactive maps with markers)
 // Uncomment the line below and replace YOUR_GOOGLE_MAPS_API_KEY with your actual key
 // This will enable full interactive maps instead of just embed iframes

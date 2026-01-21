@@ -162,11 +162,11 @@ async function markAllNotificationsAsRead(pool, userId) {
       `UPDATE notifications
        SET read_at = NOW()
        WHERE user_id = $1 AND read_at IS NULL
-       RETURNING COUNT(*) as count`,
+       RETURNING id`,
       [userId]
     );
     
-    return parseInt(result.rows[0]?.count || 0);
+    return result.rows.length;
   } catch (error) {
     console.error('Error marking all notifications as read:', error);
     throw error;
