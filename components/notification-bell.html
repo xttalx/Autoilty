@@ -1,0 +1,60 @@
+<!-- Notification Bell Component -->
+<!-- Add this inside nav-links, before or after cart-toggle -->
+<button 
+  class="notification-toggle" 
+  id="notificationToggle" 
+  aria-label="Notifications"
+  style="position: relative; padding: var(--spacing-xs); color: var(--color-text); background: none; border: none; cursor: pointer; transition: opacity 0.2s;"
+>
+  <i data-lucide="bell" style="width: 1.5rem; height: 1.5rem;"></i>
+  <span 
+    class="notification-badge" 
+    id="notificationBadge" 
+    style="display: none; position: absolute; top: 0; right: 0; background: var(--color-primary); color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.75rem; font-weight: 600; min-width: 18px; text-align: center; transform: translate(25%, -25%); line-height: 1.2; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+  >0</span>
+</button>
+
+<!-- Notification Dropdown -->
+<div 
+  class="notification-dropdown" 
+  id="notificationDropdown"
+  style="display: none; position: fixed; top: 64px; right: 1rem; width: 400px; max-width: calc(100vw - 2rem); max-height: calc(100vh - 100px); background: white; border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden;"
+>
+  <div style="padding: 1rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; background: white; position: sticky; top: 0; z-index: 1;">
+    <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--color-text);">Notifications</h3>
+    <div style="display: flex; gap: 0.5rem;">
+      <button 
+        id="markAllReadBtn" 
+        style="padding: 0.25rem 0.75rem; font-size: 0.8125rem; color: var(--color-primary); background: none; border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer; transition: background-color 0.2s;"
+        onclick="window.notificationSystem.markAllAsRead()"
+      >
+        Mark all read
+      </button>
+      <button 
+        id="closeNotificationDropdown" 
+        style="padding: 0.25rem; background: none; border: none; cursor: pointer; color: var(--color-text-light);"
+        onclick="window.notificationSystem.closeDropdown()"
+      >
+        <i data-lucide="x" style="width: 1.25rem; height: 1.25rem;"></i>
+      </button>
+    </div>
+  </div>
+  <div 
+    id="notificationList" 
+    style="max-height: calc(100vh - 200px); overflow-y: auto; background: white;"
+  >
+    <!-- Notifications will be rendered here -->
+    <div style="padding: 2rem; text-align: center; color: var(--color-text-light);">
+      <i data-lucide="loader-2" style="width: 2rem; height: 2rem; margin: 0 auto 1rem; display: block; animation: spin 1s linear infinite;"></i>
+      <p>Loading notifications...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Overlay (closes dropdown when clicked) -->
+<div 
+  class="notification-overlay" 
+  id="notificationOverlay"
+  style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 999;"
+  onclick="window.notificationSystem.closeDropdown()"
+></div>

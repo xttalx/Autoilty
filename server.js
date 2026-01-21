@@ -1401,6 +1401,27 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
 
     const messageId = result.rows[0].id;
 
+    // Create notification for recipient (non-blocking)
+    try {
+      const { createMessageNotification } = require('./api/notifications');
+      const postingTitle = postingIdValue ? (await dbGet('SELECT title FROM postings WHERE id = $1', [postingIdValue]))?.title : null;
+      
+      await createMessageNotification(pool, {
+        toUserId: parseInt(toUserId),
+        fromUserId: fromUserId,
+        fromUsername: fromName || 'Someone',
+        messageId: messageId,
+        postingId: postingIdValue,
+        postingTitle: postingTitle,
+        messageText: message.trim()
+      });
+      
+      console.log(`✅ Notification created for message ${messageId}`);
+    } catch (notifError) {
+      // Don't fail message creation if notification fails
+      console.error('⚠️  Failed to create notification (non-critical):', notifError.message);
+    }
+
     // No email sending - pure in-app messaging
 
     res.status(201).json({
@@ -1633,6 +1654,82 @@ app.put('/api/messages/:id/read', authenticateToken, async (req, res) => {
     if (error.message && error.message.includes('column "read" does not exist')) {
       return res.json({ message: 'Message marked as read' });
     }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ============================================
+// NOTIFICATIONS ROUTES
+// ============================================
+
+const {
+  getUserNotifications,
+  getUnreadNotificationCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead
+} = require('./api/notifications');
+
+// Get user notifications (protected)
+app.get('/api/notifications', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { limit = 50, offset = 0, unreadOnly = false } = req.query;
+
+    const notifications = await getUserNotifications(pool, userId, {
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      unreadOnly: unreadOnly === 'true'
+    });
+
+    res.json({ notifications });
+  } catch (error) {
+    console.error('Get notifications error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get unread notification count (protected)
+app.get('/api/notifications/unread-count', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const count = await getUnreadNotificationCount(pool, userId);
+    res.json({ unreadCount: count });
+  } catch (error) {
+    console.error('Get unread notification count error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Mark notification as read (protected)
+app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const updated = await markNotificationAsRead(pool, id, userId);
+    
+    if (!updated) {
+      return res.status(404).json({ error: 'Notification not found or already read' });
+    }
+
+    res.json({ message: 'Notification marked as read' });
+  } catch (error) {
+    console.error('Mark notification as read error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Mark all notifications as read (protected)
+app.put('/api/notifications/read-all', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const count = await markAllNotificationsAsRead(pool, userId);
+    res.json({ 
+      message: 'All notifications marked as read',
+      count 
+    });
+  } catch (error) {
+    console.error('Mark all notifications as read error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
