@@ -488,6 +488,7 @@ async function requestLocationAndFindDealers(vehicle) {
         cityBtn.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
+          // Show city input modal
           searchDealersByCity(vehicle);
           return false;
         });
@@ -655,6 +656,7 @@ function displayDealers(dealers, userLocation, vehicle) {
         searchCityBtn.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
+          // Show city input modal
           searchDealersByCity(vehicle);
           return false;
         });
@@ -847,21 +849,177 @@ function openDealerInMaps(placeId, dealerName) {
   window.open(url, '_blank');
 }
 
-async function searchDealersByCity(vehicle) {
+// Create city input modal
+function createCityInputModal(vehicle) {
   // Get vehicle from parameter or from window storage
   if (!vehicle && typeof window !== 'undefined' && window.currentDealerVehicle) {
     vehicle = window.currentDealerVehicle;
   }
   
-  const city = prompt('Enter a city name to search for dealers:');
-  if (!city) return;
+  // Remove existing city modal if present
+  const existingModal = document.getElementById('cityInputModal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  const modal = document.createElement('div');
+  modal.id = 'cityInputModal';
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10001; align-items: center; justify-content: center; padding: 2rem;';
+  
+  const modalContent = document.createElement('div');
+  modalContent.className = 'modal-content';
+  modalContent.style.cssText = 'background: white; border-radius: 12px; max-width: 500px; width: 100%; padding: 2rem; position: relative;';
+  
+  modalContent.innerHTML = `
+    <button id="cityInputModalClose" type="button" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-text-light); z-index: 10002; padding: 0.5rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;" aria-label="Close modal">
+      <i data-lucide="x" style="pointer-events: none;"></i>
+    </button>
+    <h2 style="margin-bottom: 1rem; font-size: 1.5rem; color: var(--color-text);">Enter City Name</h2>
+    <p style="color: var(--color-text-light); margin-bottom: 1.5rem; font-size: 0.875rem;">Enter the name of the city where you want to find dealers.</p>
+    <form id="cityInputForm" style="margin-bottom: 0;">
+      <div style="margin-bottom: 1.5rem;">
+        <label for="cityInput" class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--color-text);">City Name *</label>
+        <input 
+          type="text" 
+          id="cityInput" 
+          name="city" 
+          class="form-input" 
+          placeholder="e.g., Toronto, Winnipeg, Vancouver"
+          required
+          autofocus
+          style="width: 100%; padding: 0.875rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 1rem; box-sizing: border-box;"
+        >
+      </div>
+      <div id="cityInputError" style="color: var(--color-error); font-size: 0.875rem; margin-bottom: 1rem; display: none;"></div>
+      <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary" id="cityInputCancel" style="padding: 0.875rem 1.5rem; cursor: pointer;">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" id="cityInputSubmit" style="padding: 0.875rem 1.5rem; cursor: pointer;">
+          <i data-lucide="search" class="btn-icon" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+          Search
+        </button>
+      </div>
+    </form>
+  `;
+  
+  modal.appendChild(modalContent);
+  document.body.appendChild(modal);
+  
+  // Initialize icons
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+  
+  // Focus on input
+  const cityInput = modalContent.querySelector('#cityInput');
+  if (cityInput) {
+    setTimeout(() => cityInput.focus(), 100);
+  }
+  
+  // Close button handler
+  const closeBtn = modalContent.querySelector('#cityInputModalClose');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeCityInputModal();
+      return false;
+    }, true);
+  }
+  
+  // Cancel button handler
+  const cancelBtn = modalContent.querySelector('#cityInputCancel');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeCityInputModal();
+      return false;
+    });
+  }
+  
+  // Form submit handler
+  const form = modalContent.querySelector('#cityInputForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const cityInput = document.getElementById('cityInput');
+      const errorDiv = document.getElementById('cityInputError');
+      const submitBtn = document.getElementById('cityInputSubmit');
+      
+      if (!cityInput || !cityInput.value.trim()) {
+        if (errorDiv) {
+          errorDiv.textContent = 'Please enter a city name';
+          errorDiv.style.display = 'block';
+        }
+        return false;
+      }
+      
+      const city = cityInput.value.trim();
+      
+      // Close modal
+      closeCityInputModal();
+      
+      // Perform search
+      await performCitySearch(city, vehicle);
+      
+      return false;
+    });
+  }
+  
+  // Close on overlay click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeCityInputModal();
+    }
+  });
+  
+  // Close on ESC key
+  const escHandler = (e) => {
+    if (e.key === 'Escape') {
+      const cityModal = document.getElementById('cityInputModal');
+      if (cityModal && cityModal.style.display === 'flex') {
+        e.preventDefault();
+        closeCityInputModal();
+        return false;
+      }
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+  modal._escHandler = escHandler;
+  
+  return modal;
+}
+
+// Close city input modal
+function closeCityInputModal() {
+  const modal = document.getElementById('cityInputModal');
+  if (modal) {
+    // Remove ESC handler
+    if (modal._escHandler) {
+      document.removeEventListener('keydown', modal._escHandler);
+    }
+    modal.remove();
+  }
+}
+
+// Perform city search
+async function performCitySearch(city, vehicle) {
+  // Get vehicle from parameter or from window storage
+  if (!vehicle && typeof window !== 'undefined' && window.currentDealerVehicle) {
+    vehicle = window.currentDealerVehicle;
+  }
   
   const dealersList = document.getElementById('dealersList');
   if (dealersList) {
     dealersList.innerHTML = `
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center;">
         <div class="loading-spinner" style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
-        <p style="color: var(--color-text-light);">Searching for dealers in ${city}...</p>
+        <p style="color: var(--color-text-light);">Searching for dealers in ${escapeHtml(city)}...</p>
       </div>
     `;
   }
@@ -876,7 +1034,7 @@ async function searchDealersByCity(vehicle) {
         if (status === 'OK' && results[0]) {
           resolve(results[0].geometry.location);
         } else {
-          reject(new Error('City not found'));
+          reject(new Error('City not found. Please check the spelling and try again.'));
         }
       });
     });
@@ -896,8 +1054,9 @@ async function searchDealersByCity(vehicle) {
         <div style="padding: 2rem; text-align: center;">
           <i data-lucide="alert-circle" style="width: 48px; height: 48px; color: #ef4444; margin-bottom: 1rem; display: block;"></i>
           <h4 style="margin-bottom: 0.5rem;">Error</h4>
-          <p style="color: var(--color-text-light); font-size: 0.875rem;">${error.message || 'Unable to find dealers in that city. Please try again.'}</p>
+          <p style="color: var(--color-text-light); font-size: 0.875rem; margin-bottom: 1rem;">${escapeHtml(error.message || 'Unable to find dealers in that city. Please try again.')}</p>
           <button class="btn btn-primary btn-sm" id="tryAnotherCityBtn" style="margin-top: 1rem;">
+            <i data-lucide="map-pin" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
             Try Another City
           </button>
         </div>
@@ -909,7 +1068,8 @@ async function searchDealersByCity(vehicle) {
         tryAnotherBtn.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          searchDealersByCity(vehicle || (typeof window !== 'undefined' ? window.currentDealerVehicle : null));
+          const vehicle = typeof window !== 'undefined' ? window.currentDealerVehicle : null;
+          createCityInputModal(vehicle);
           return false;
         });
       }
@@ -919,6 +1079,16 @@ async function searchDealersByCity(vehicle) {
       }
     }
   }
+}
+
+async function searchDealersByCity(vehicle) {
+  // Get vehicle from parameter or from window storage
+  if (!vehicle && typeof window !== 'undefined' && window.currentDealerVehicle) {
+    vehicle = window.currentDealerVehicle;
+  }
+  
+  // Show city input modal instead of using prompt
+  createCityInputModal(vehicle);
 }
 
 function createDealersModal() {
