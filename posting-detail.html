@@ -106,18 +106,6 @@
 
       <!-- Posting Content -->
       <div id="postingContent" style="display: none;">
-        <!-- Breadcrumbs -->
-        <nav aria-label="Breadcrumb" style="margin-bottom: var(--spacing-lg);">
-          <ol style="display: flex; align-items: center; gap: var(--spacing-xs); list-style: none; padding: 0; margin: 0; flex-wrap: wrap;">
-            <li><a href="index.html" style="color: var(--color-text-light); text-decoration: none; font-size: 0.9375rem;">Home</a></li>
-            <li style="color: var(--color-text-light);">/</li>
-            <li><a href="marketplace.html" style="color: var(--color-text-light); text-decoration: none; font-size: 0.9375rem;">Marketplace</a></li>
-            <li style="color: var(--color-text-light);">/</li>
-            <li id="breadcrumbCategory" style="color: var(--color-text-light); font-size: 0.9375rem;"></li>
-            <li style="color: var(--color-text-light);">/</li>
-            <li id="breadcrumbPostingTitle" style="color: var(--color-text); font-size: 0.9375rem; font-weight: 500;" aria-current="page"></li>
-          </ol>
-        </nav>
         
         <!-- Back Button -->
         <div style="margin-bottom: var(--spacing-lg);">
@@ -640,12 +628,6 @@
         if (usernameEl) usernameEl.textContent = posting.username || 'Unknown';
         if (descriptionEl) descriptionEl.textContent = posting.description || 'No description provided.';
         
-        // Update breadcrumb
-        const breadcrumbTitle = document.getElementById('breadcrumbPostingTitle');
-        if (breadcrumbTitle) {
-          breadcrumbTitle.textContent = (posting.title || 'Posting Details').substring(0, 50) + ((posting.title || '').length > 50 ? '...' : '');
-        }
-
         // Format date
         if (posting.created_at && dateEl) {
           const date = new Date(posting.created_at);

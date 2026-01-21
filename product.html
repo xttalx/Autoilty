@@ -34,19 +34,6 @@
     </div>
   </nav>
 
-  <!-- Breadcrumb -->
-  <div class="breadcrumb-container">
-    <div class="container">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="index.html">Home</a>
-        <i data-lucide="chevron-right" class="breadcrumb-separator"></i>
-        <a href="marketplace.html">Marketplace</a>
-        <i data-lucide="chevron-right" class="breadcrumb-separator"></i>
-        <span id="breadcrumbProduct">Product</span>
-      </nav>
-    </div>
-  </div>
-
   <!-- Product Detail -->
   <main class="product-detail-container">
     <div class="container">
@@ -170,7 +157,6 @@
       document.getElementById('productPrice').textContent = `$${currentProduct.price.toFixed(2)} CAD`;
       document.getElementById('productCategory').textContent = currentProduct.category === 'auto' ? 'AUTO' : 'APPAREL';
       document.getElementById('productDescription').textContent = currentProduct.description || 'No description available.';
-      document.getElementById('breadcrumbProduct').textContent = currentProduct.name;
       
       // Size selector (clothing only)
       if (currentProduct.category === 'clothing' && currentProduct.sizes && currentProduct.sizes.length > 0) {
